@@ -1,18 +1,18 @@
 import { ThemedText } from '@/components/ThemedText';
-import { ThemedView } from '@/components/ThemedView';
+import { Palette } from '@/constants/Colors';
 import { getEntryById } from '@/data/firebase/entries';
 import { getExerciseById } from '@/data/firebase/exercises';
 import { timestampToDate } from '@/data/firebase/helpers';
 import { Entry, Exercise } from '@/data/firebase/types';
+import { useAppColors } from '@/hooks/useAppColors';
 import { useLocalSearchParams } from 'expo-router';
 import React, { useEffect, useState } from 'react';
-import { ScrollView, StyleSheet } from 'react-native';
+import { ScrollView, StyleSheet, View } from 'react-native';
 
 export default function EntryDetailScreen() {
+  const colors = useAppColors();
   const { entryId } = useLocalSearchParams<{ entryId: string }>();
-  const [entry, setEntry] = useState<(Entry & { exercise: Exercise }) | null>(
-    null
-  );
+  const [entry, setEntry] = useState<(Entry & { exercise: Exercise }) | null>(null);
 
   useEffect(() => {
     const fetchEntry = async () => {
@@ -24,182 +24,126 @@ export default function EntryDetailScreen() {
         }
       }
     };
-    if (entryId) {
-      fetchEntry();
-    }
+    if (entryId) fetchEntry();
   }, [entryId]);
 
   if (!entryId || !entry) {
     return (
-      <ThemedView style={styles.container}>
+      <View style={[styles.container, { backgroundColor: colors.backgroundPrimary }]}>
         <ThemedText>Entry not found</ThemedText>
-      </ThemedView>
+      </View>
     );
   }
 
   const exerciseName = entry.exercise.name;
-  const formattedDate = timestampToDate(entry.createdDate).toLocaleDateString(
-    'en-US',
-    {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric',
-    }
-  );
+  const formattedDate = timestampToDate(entry.createdDate).toLocaleDateString('en-US', {
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric',
+  });
 
   return (
-    <ThemedView style={styles.container}>
-      <ThemedView style={styles.header}>
-        <ThemedText type="title" style={styles.headerTitle}>
-          Entry Details
-        </ThemedText>
-      </ThemedView>
+    <View style={[styles.container, { backgroundColor: colors.backgroundPrimary }]}>
+      <View style={styles.header}>
+        <ThemedText type="title" style={styles.headerTitle}>Entry Details</ThemedText>
+      </View>
 
       <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
-        <ThemedView style={styles.section}>
-          <ThemedText type="subtitle" style={styles.sectionTitle}>
-            Exercise
-          </ThemedText>
+        <View style={[styles.card, { backgroundColor: colors.backgroundSecondary, borderColor: colors.border }]}>
+          <ThemedText style={[styles.cardLabel, { color: colors.textSecondary }]}>Exercise</ThemedText>
           <ThemedText style={styles.exerciseName}>{exerciseName}</ThemedText>
           {entry.exercise?.description && (
-            <ThemedText style={styles.exerciseDescription}>
+            <ThemedText style={[styles.exerciseDescription, { color: colors.textSecondary }]}>
               {entry.exercise.description}
             </ThemedText>
           )}
-        </ThemedView>
+        </View>
 
-        <ThemedView style={styles.section}>
-          <ThemedText type="subtitle" style={styles.sectionTitle}>
-            Performance
-          </ThemedText>
-          <ThemedView style={styles.performanceContainer}>
-            <ThemedView style={styles.performanceItem}>
-              <ThemedText style={styles.performanceLabel}>Weight</ThemedText>
-              <ThemedText style={styles.performanceValue}>
-                {entry.value} {entry.unit}
-              </ThemedText>
-            </ThemedView>
-            <ThemedView style={styles.performanceItem}>
-              <ThemedText style={styles.performanceLabel}>Rep Max</ThemedText>
-              <ThemedText style={styles.performanceValue}>
-                {entry.repMax} RM
-              </ThemedText>
-            </ThemedView>
-          </ThemedView>
-        </ThemedView>
+        <View style={styles.performanceRow}>
+          <View style={[styles.performanceCard, { backgroundColor: colors.backgroundSecondary, borderColor: colors.border }]}>
+            <ThemedText style={[styles.cardLabel, { color: colors.textSecondary }]}>Weight</ThemedText>
+            <ThemedText style={styles.performanceValue}>
+              {entry.value} {entry.unit}
+            </ThemedText>
+          </View>
+          <View style={[styles.performanceCard, { backgroundColor: colors.backgroundSecondary, borderColor: colors.border }]}>
+            <ThemedText style={[styles.cardLabel, { color: colors.textSecondary }]}>Rep Max</ThemedText>
+            <ThemedText style={styles.performanceValue}>{entry.repMax} RM</ThemedText>
+          </View>
+        </View>
 
-        <ThemedView style={styles.section}>
-          <ThemedText type="subtitle" style={styles.sectionTitle}>
-            Date
-          </ThemedText>
+        <View style={[styles.card, { backgroundColor: colors.backgroundSecondary, borderColor: colors.border }]}>
+          <ThemedText style={[styles.cardLabel, { color: colors.textSecondary }]}>Date</ThemedText>
           <ThemedText style={styles.dateText}>{formattedDate}</ThemedText>
-        </ThemedView>
+        </View>
 
         {entry.tags.length > 0 && (
-          <ThemedView style={styles.section}>
-            <ThemedText type="subtitle" style={styles.sectionTitle}>
-              Tags
-            </ThemedText>
-            <ThemedView style={styles.tagsContainer}>
+          <View style={[styles.card, { backgroundColor: colors.backgroundSecondary, borderColor: colors.border }]}>
+            <ThemedText style={[styles.cardLabel, { color: colors.textSecondary }]}>Tags</ThemedText>
+            <View style={styles.tagsContainer}>
               {entry.tags.map((tag, index) => (
-                <ThemedView key={index} style={styles.tag}>
-                  <ThemedText style={styles.tagText}>{tag}</ThemedText>
-                </ThemedView>
+                <View key={index} style={[styles.tagBadge, { backgroundColor: colors.accentBackground, borderColor: colors.border }]}>
+                  <ThemedText style={[styles.tagText, { color: colors.accentText }]}>{tag}</ThemedText>
+                </View>
               ))}
-            </ThemedView>
-          </ThemedView>
+            </View>
+          </View>
         )}
 
         {entry.notes && (
-          <ThemedView style={styles.section}>
-            <ThemedText type="subtitle" style={styles.sectionTitle}>
-              Notes
-            </ThemedText>
+          <View style={[styles.card, { backgroundColor: colors.backgroundSecondary, borderColor: colors.border }]}>
+            <ThemedText style={[styles.cardLabel, { color: colors.textSecondary }]}>Notes</ThemedText>
             <ThemedText style={styles.notesText}>{entry.notes}</ThemedText>
-          </ThemedView>
+          </View>
         )}
+
+        <View style={{ height: 40 }} />
       </ScrollView>
-    </ThemedView>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
-  header: {
-    paddingTop: 60,
-    paddingHorizontal: 20,
-    paddingBottom: 20,
-  },
-  headerTitle: {
-    textAlign: 'center',
-  },
-  content: {
-    flex: 1,
-    paddingHorizontal: 20,
-  },
-  section: {
-    marginBottom: 24,
-  },
-  sectionTitle: {
+  container: { flex: 1 },
+  header: { paddingTop: 60, paddingHorizontal: 20, paddingBottom: 16 },
+  headerTitle: { textAlign: 'center' },
+  content: { flex: 1, paddingHorizontal: 20 },
+  card: {
+    padding: 16,
+    borderRadius: 14,
+    borderWidth: 1,
     marginBottom: 12,
-    fontSize: 18,
+    shadowColor: Palette.black,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.06,
+    shadowRadius: 8,
+    elevation: 2,
   },
-  exerciseName: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    marginBottom: 8,
+  cardLabel: {
+    fontSize: 13,
+    fontWeight: '500',
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
+    marginBottom: 6,
   },
-  exerciseDescription: {
-    fontSize: 16,
-    opacity: 0.8,
-    lineHeight: 22,
-  },
-  performanceContainer: {
-    flexDirection: 'row',
-    gap: 20,
-  },
-  performanceItem: {
+  exerciseName: { fontSize: 22, fontWeight: 'bold', marginBottom: 4 },
+  exerciseDescription: { fontSize: 15, lineHeight: 22, marginTop: 4 },
+  performanceRow: { flexDirection: 'row', gap: 12, marginBottom: 12 },
+  performanceCard: {
     flex: 1,
     padding: 16,
-    borderRadius: 12,
-    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+    borderRadius: 14,
     borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.2)',
+    shadowColor: Palette.black,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.06,
+    shadowRadius: 8,
+    elevation: 2,
   },
-  performanceLabel: {
-    fontSize: 14,
-    opacity: 0.7,
-    marginBottom: 4,
-  },
-  performanceValue: {
-    fontSize: 20,
-    fontWeight: 'bold',
-  },
-  dateText: {
-    fontSize: 18,
-  },
-  tagsContainer: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 8,
-  },
-  tag: {
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 16,
-    backgroundColor: 'rgba(0, 122, 255, 0.2)',
-    borderWidth: 1,
-    borderColor: 'rgba(0, 122, 255, 0.3)',
-  },
-  tagText: {
-    fontSize: 14,
-    color: '#007AFF',
-  },
-  notesText: {
-    fontSize: 16,
-    lineHeight: 22,
-    opacity: 0.9,
-  },
+  performanceValue: { fontSize: 20, fontWeight: 'bold' },
+  dateText: { fontSize: 17 },
+  tagsContainer: { flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginTop: 4 },
+  tagBadge: { paddingHorizontal: 12, paddingVertical: 6, borderRadius: 14, borderWidth: 1 },
+  tagText: { fontSize: 14 },
+  notesText: { fontSize: 16, lineHeight: 22 },
 });

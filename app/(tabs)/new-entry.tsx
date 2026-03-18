@@ -1,9 +1,10 @@
 import { ThemedText } from '@/components/ThemedText';
-import { ThemedView } from '@/components/ThemedView';
+import { Palette } from '@/constants/Colors';
 import { IconSymbol } from '@/components/ui/IconSymbol';
 import { addEntry } from '@/data/firebase/entries';
 import { ExerciseWithId, getExercises } from '@/data/firebase/exercises';
 import { dateToTimestamp } from '@/data/firebase/helpers';
+import { useAppColors } from '@/hooks/useAppColors';
 import React, { useEffect, useState } from 'react';
 import {
   ActivityIndicator,
@@ -18,9 +19,11 @@ import {
   StyleSheet,
   TextInput,
   TouchableOpacity,
+  View,
 } from 'react-native';
 
 export default function NewEntryScreen() {
+  const colors = useAppColors();
   const [selectedExercise, setSelectedExercise] = useState('');
   const [weight, setWeight] = useState('');
   const [repMax, setRepMax] = useState('');
@@ -32,32 +35,19 @@ export default function NewEntryScreen() {
   const [showSuccess, setShowSuccess] = useState(false);
   const [exerciseOptions, setExerciseOptions] = useState<ExerciseWithId[]>([]);
 
-  // Animation values
   const successOpacity = new Animated.Value(0);
   const checkmarkScale = new Animated.Value(0);
 
-  const availableTags = [
-    'pr',
-    'strength',
-    'technique',
-    'explosive',
-    'test',
-    '1rm',
-  ];
+  const availableTags = ['pr', 'strength', 'technique', 'explosive', 'test', '1rm'];
   const repMaxOptions = Array.from({ length: 10 }, (_, i) => i + 1);
 
-  // Check if form is valid (all required fields filled)
   const isFormValid = selectedExercise && weight && repMax;
 
-  // Function to handle weight input validation (numbers and decimal only)
+
   const handleWeightChange = (text: string) => {
-    // Allow only numbers and one decimal point
     const numericValue = text.replace(/[^0-9.]/g, '');
-    // Prevent multiple decimal points
     const parts = numericValue.split('.');
-    if (parts.length > 2) {
-      return;
-    }
+    if (parts.length > 2) return;
     setWeight(numericValue);
   };
 
@@ -69,60 +59,28 @@ export default function NewEntryScreen() {
     }
   };
 
-  // Success animation sequence
   const animateSuccess = () => {
-    // Reset animation values
     successOpacity.setValue(0);
     checkmarkScale.setValue(0);
-
-    // Start animations in sequence
     Animated.sequence([
-      // Fade in the overlay
-      Animated.timing(successOpacity, {
-        toValue: 1,
-        duration: 300,
-        useNativeDriver: true,
-      }),
-      // Scale up the checkmark
-      Animated.timing(checkmarkScale, {
-        toValue: 1,
-        duration: 500,
-        easing: Easing.elastic(1),
-        useNativeDriver: true,
-      }),
-      // Wait for a moment
+      Animated.timing(successOpacity, { toValue: 1, duration: 300, useNativeDriver: true }),
+      Animated.timing(checkmarkScale, { toValue: 1, duration: 500, easing: Easing.elastic(1), useNativeDriver: true }),
       Animated.delay(1000),
-      // Fade out everything
-      Animated.timing(successOpacity, {
-        toValue: 0,
-        duration: 300,
-        useNativeDriver: true,
-      }),
-    ]).start(() => {
-      // After animation completes
-      setShowSuccess(false);
-    });
+      Animated.timing(successOpacity, { toValue: 0, duration: 300, useNativeDriver: true }),
+    ]).start(() => setShowSuccess(false));
   };
 
-  // Effect to start animation when success state changes
   useEffect(() => {
-    if (showSuccess) {
-      animateSuccess();
-    }
-  }, [animateSuccess, showSuccess]);
+    if (showSuccess) animateSuccess();
+  }, [showSuccess]);
 
   const saveEntry = async () => {
-    // Validation
-    if (!selectedExercise || !weight || !repMax) {
-      // Could add more validation or error messaging
-      return;
-    }
+    if (!selectedExercise || !weight || !repMax) return;
 
-    // Prepare entry data
     const newEntry = {
       exerciseId: selectedExercise,
       value: parseFloat(weight),
-      unit: 'lbs', // This could be made configurable
+      unit: 'lbs',
       repMax: parseInt(repMax, 10),
       createdDate: dateToTimestamp(new Date()),
       tags: selectedTags,
@@ -130,29 +88,21 @@ export default function NewEntryScreen() {
     };
 
     try {
-      // Start loading state
       setIsLoading(true);
-
-      // Save entry to data store
       const newEntryId = await addEntry(newEntry);
       console.log('New entry created with ID:', newEntryId);
-
-      // Show success state
       setIsLoading(false);
       setShowSuccess(true);
-
-      // Reset form after success animation completes
       setTimeout(() => {
         setSelectedExercise('');
         setWeight('');
         setRepMax('');
         setNotes('');
         setSelectedTags([]);
-      }, 1800); // Allow time for success animation to complete
+      }, 1800);
     } catch (error) {
       console.error('Error saving entry:', error);
       setIsLoading(false);
-      // Could add error state/messaging here
     }
   };
 
@@ -161,262 +111,212 @@ export default function NewEntryScreen() {
       const exercises = await getExercises();
       setExerciseOptions(exercises);
     };
-
     fetchExercises();
   }, []);
 
   return (
     <KeyboardAvoidingView
-      style={styles.container}
+      style={[styles.container, { backgroundColor: colors.backgroundPrimary }]}
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
     >
-      <ScrollView
-        style={styles.scrollView}
-        showsVerticalScrollIndicator={false}
-      >
-        <ThemedView style={styles.header}>
+      <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
+        <View style={styles.header}>
           <ThemedText type="title">New Entry</ThemedText>
-        </ThemedView>
+        </View>
 
-        <ThemedView style={styles.formSection}>
+        {/* Select Exercise */}
+        <View style={styles.section}>
           <ThemedText type="subtitle">Select Exercise</ThemedText>
           <Pressable
-            style={styles.dropdownButton}
+            style={[styles.dropdown, { backgroundColor: colors.backgroundSecondary, borderColor: colors.border }]}
             onPress={() => setIsDropdownOpen(true)}
           >
-            <ThemedText style={styles.dropdownButtonText}>
+            <ThemedText style={[styles.dropdownText, !selectedExercise && { color: colors.textMuted }]}>
               {selectedExercise
-                ? exerciseOptions.find((ex) => ex.id === selectedExercise)
-                    ?.name || 'Select an exercise'
+                ? exerciseOptions.find((ex) => ex.id === selectedExercise)?.name || 'Select an exercise'
                 : 'Select an exercise'}
             </ThemedText>
-            <IconSymbol size={20} name="chevron.down" color="#FFFFFF" />
+            <IconSymbol size={18} name="chevron.down" color={colors.textSecondary} />
           </Pressable>
 
-          <Modal
-            visible={isDropdownOpen}
-            transparent={true}
-            animationType="slide"
-            onRequestClose={() => setIsDropdownOpen(false)}
-          >
-            <Pressable
-              style={styles.modalOverlay}
-              onPress={() => setIsDropdownOpen(false)}
-            >
-              <ThemedView style={styles.modalContent}>
-                <ThemedView style={styles.modalHeader}>
+          <Modal visible={isDropdownOpen} transparent animationType="slide" onRequestClose={() => setIsDropdownOpen(false)}>
+            <Pressable style={[styles.modalOverlay, { backgroundColor: colors.overlay }]} onPress={() => setIsDropdownOpen(false)}>
+              <View style={[styles.modalContent, { backgroundColor: colors.backgroundSecondary }]}>
+                <View style={styles.modalHeader}>
                   <ThemedText type="subtitle">Select Exercise</ThemedText>
                   <Pressable onPress={() => setIsDropdownOpen(false)}>
-                    <IconSymbol size={24} name="xmark" color="#FFFFFF" />
+                    <IconSymbol size={22} name="xmark" color={colors.textSecondary} />
                   </Pressable>
-                </ThemedView>
-
+                </View>
                 <FlatList
                   data={exerciseOptions}
                   keyExtractor={(item) => item.id}
                   renderItem={({ item }) => (
                     <TouchableOpacity
                       style={[
-                        styles.exerciseListItem,
-                        selectedExercise === item.id &&
-                          styles.selectedExerciseItem,
+                        styles.listItem,
+                        { borderBottomColor: colors.border },
+                        selectedExercise === item.id && { backgroundColor: colors.accentBackground },
                       ]}
-                      onPress={() => {
-                        setSelectedExercise(item.id);
-                        setIsDropdownOpen(false);
-                      }}
+                      onPress={() => { setSelectedExercise(item.id); setIsDropdownOpen(false); }}
                     >
-                      <ThemedText
-                        style={[
-                          styles.exerciseItemText,
-                          selectedExercise === item.id &&
-                            styles.selectedExerciseText,
-                        ]}
-                      >
+                      <ThemedText style={[styles.listItemText, selectedExercise === item.id && { color: colors.accentText, fontWeight: '600' }]}>
                         {item.name}
                       </ThemedText>
-                      {selectedExercise === item.id && (
-                        <IconSymbol
-                          size={20}
-                          name="checkmark"
-                          color="#0a7ea4"
-                        />
-                      )}
+                      {selectedExercise === item.id && <IconSymbol size={18} name="checkmark" color={colors.accentText} />}
                     </TouchableOpacity>
                   )}
-                  style={styles.exerciseList}
+                  style={styles.list}
                 />
-              </ThemedView>
+              </View>
             </Pressable>
           </Modal>
-        </ThemedView>
+        </View>
 
-        <ThemedView style={styles.formSection}>
+        {/* Performance */}
+        <View style={styles.section}>
           <ThemedText type="subtitle">Performance</ThemedText>
-          <ThemedView style={styles.performanceContainer}>
-            <ThemedView style={styles.inputContainer}>
-              <ThemedText style={styles.inputLabel}>Weight (lbs)</ThemedText>
+          <View style={styles.performanceRow}>
+            <View style={styles.inputHalf}>
+              <ThemedText style={[styles.inputLabel, { color: colors.textSecondary }]}>Weight (lbs)</ThemedText>
               <TextInput
-                style={styles.input}
+                style={[styles.input, { backgroundColor: colors.backgroundSecondary, borderColor: colors.border, color: colors.textPrimary }]}
                 value={weight}
                 onChangeText={handleWeightChange}
                 placeholder="0"
                 keyboardType="decimal-pad"
-                placeholderTextColor="#999"
-                selectionColor="#0a7ea4"
+                placeholderTextColor={colors.textMuted}
+                selectionColor={colors.tint}
               />
-            </ThemedView>
-
-            <ThemedView style={styles.inputContainer}>
-              <ThemedText style={styles.inputLabel}>Rep Max</ThemedText>
+            </View>
+            <View style={styles.inputHalf}>
+              <ThemedText style={[styles.inputLabel, { color: colors.textSecondary }]}>Rep Max</ThemedText>
               <Pressable
-                style={styles.performanceDropdown}
+                style={[styles.dropdown, styles.dropdownSmall, { backgroundColor: colors.backgroundSecondary, borderColor: colors.border }]}
                 onPress={() => setIsRepMaxDropdownOpen(true)}
               >
-                <ThemedText style={styles.dropdownButtonText}>
-                  {repMax || 'Select rep max'}
+                <ThemedText style={[styles.dropdownText, !repMax && { color: colors.textMuted }]}>
+                  {repMax ? `${repMax} RM` : 'Select'}
                 </ThemedText>
-                <IconSymbol size={20} name="chevron.down" color="#FFFFFF" />
+                <IconSymbol size={16} name="chevron.down" color={colors.textSecondary} />
               </Pressable>
-            </ThemedView>
-          </ThemedView>
+            </View>
+          </View>
 
-          <Modal
-            visible={isRepMaxDropdownOpen}
-            transparent={true}
-            animationType="slide"
-            onRequestClose={() => setIsRepMaxDropdownOpen(false)}
-          >
-            <Pressable
-              style={styles.modalOverlay}
-              onPress={() => setIsRepMaxDropdownOpen(false)}
-            >
-              <ThemedView style={styles.modalContent}>
-                <ThemedView style={styles.modalHeader}>
+          <Modal visible={isRepMaxDropdownOpen} transparent animationType="slide" onRequestClose={() => setIsRepMaxDropdownOpen(false)}>
+            <Pressable style={[styles.modalOverlay, { backgroundColor: colors.overlay }]} onPress={() => setIsRepMaxDropdownOpen(false)}>
+              <View style={[styles.modalContent, { backgroundColor: colors.backgroundSecondary }]}>
+                <View style={styles.modalHeader}>
                   <ThemedText type="subtitle">Select Rep Max</ThemedText>
                   <Pressable onPress={() => setIsRepMaxDropdownOpen(false)}>
-                    <IconSymbol size={24} name="xmark" color="#FFFFFF" />
+                    <IconSymbol size={22} name="xmark" color={colors.textSecondary} />
                   </Pressable>
-                </ThemedView>
-
+                </View>
                 <FlatList
                   data={repMaxOptions}
                   keyExtractor={(item) => item.toString()}
                   renderItem={({ item }) => (
                     <TouchableOpacity
                       style={[
-                        styles.exerciseListItem,
-                        repMax === item.toString() &&
-                          styles.selectedExerciseItem,
+                        styles.listItem,
+                        { borderBottomColor: colors.border },
+                        repMax === item.toString() && { backgroundColor: colors.accentBackground },
                       ]}
-                      onPress={() => {
-                        setRepMax(item.toString());
-                        setIsRepMaxDropdownOpen(false);
-                      }}
+                      onPress={() => { setRepMax(item.toString()); setIsRepMaxDropdownOpen(false); }}
                     >
-                      <ThemedText
-                        style={[
-                          styles.exerciseItemText,
-                          repMax === item.toString() &&
-                            styles.selectedExerciseText,
-                        ]}
-                      >
+                      <ThemedText style={[styles.listItemText, repMax === item.toString() && { color: colors.accentText, fontWeight: '600' }]}>
                         {item} Rep Max
                       </ThemedText>
-                      {repMax === item.toString() && (
-                        <IconSymbol
-                          size={20}
-                          name="checkmark"
-                          color="#0a7ea4"
-                        />
-                      )}
+                      {repMax === item.toString() && <IconSymbol size={18} name="checkmark" color={colors.accentText} />}
                     </TouchableOpacity>
                   )}
-                  style={styles.exerciseList}
+                  style={styles.list}
                 />
-              </ThemedView>
+              </View>
             </Pressable>
           </Modal>
-        </ThemedView>
+        </View>
 
-        <ThemedView style={styles.formSection}>
+        {/* Tags */}
+        <View style={styles.section}>
           <ThemedText type="subtitle">Tags</ThemedText>
-          <ThemedView style={styles.tagsContainer}>
-            {availableTags.map((tag) => (
-              <Pressable
-                key={tag}
-                style={[
-                  styles.tagOption,
-                  selectedTags.includes(tag) && styles.selectedTag,
-                ]}
-                onPress={() => toggleTag(tag)}
-              >
-                <ThemedText
+          <View style={styles.tagsContainer}>
+            {availableTags.map((tag) => {
+              const isSelected = selectedTags.includes(tag);
+              return (
+                <Pressable
+                  key={tag}
                   style={[
-                    styles.tagText,
-                    selectedTags.includes(tag) && styles.selectedTagText,
+                    styles.tag,
+                    {
+                      backgroundColor: isSelected ? colors.accentBackgroundStrong : colors.accentBackground,
+                      borderColor: isSelected ? colors.accentBorder : colors.border,
+                    },
                   ]}
+                  onPress={() => toggleTag(tag)}
                 >
-                  {tag}
-                </ThemedText>
-              </Pressable>
-            ))}
-          </ThemedView>
-        </ThemedView>
+                  <ThemedText
+                    style={[
+                      styles.tagText,
+                      { color: isSelected ? colors.accentText : colors.textSecondary },
+                      isSelected && { fontWeight: '600' },
+                    ]}
+                  >
+                    {tag}
+                  </ThemedText>
+                </Pressable>
+              );
+            })}
+          </View>
+        </View>
 
-        <ThemedView style={styles.formSection}>
+        {/* Notes */}
+        <View style={styles.section}>
           <ThemedText type="subtitle">Notes (Optional)</ThemedText>
           <TextInput
-            style={styles.notesInput}
+            style={[styles.notesInput, { backgroundColor: colors.backgroundSecondary, borderColor: colors.border, color: colors.textPrimary }]}
             multiline
             numberOfLines={4}
             value={notes}
             onChangeText={setNotes}
             placeholder="Add any details about this workout..."
-            placeholderTextColor="#999"
-            selectionColor="#0a7ea4"
+            placeholderTextColor={colors.textMuted}
+            selectionColor={colors.tint}
           />
-        </ThemedView>
+        </View>
 
+        {/* Save Button */}
         <Pressable
-          style={[
-            styles.saveButton,
-            (isLoading || !isFormValid) && styles.disabledButton,
-          ]}
+          style={[styles.saveButton, { backgroundColor: colors.tint }, (isLoading || !isFormValid) && styles.disabledButton]}
           onPress={saveEntry}
           disabled={isLoading || !isFormValid}
         >
           <ThemedText style={styles.saveButtonText}>Save Entry</ThemedText>
-          <IconSymbol size={20} name="checkmark" color="#FFFFFF" />
+          <IconSymbol size={18} name="checkmark" color={Palette.white} />
         </Pressable>
+
+        <View style={{ height: 40 }} />
       </ScrollView>
 
       {/* Loading Overlay */}
       {isLoading && (
-        <ThemedView style={styles.overlayContainer}>
-          <ThemedView style={styles.loadingContainer}>
-            <ActivityIndicator size="large" color="#0a7ea4" />
+        <View style={[styles.overlayContainer, { backgroundColor: colors.overlay }]}>
+          <View style={[styles.loadingBox, { backgroundColor: colors.backgroundSecondary }]}>
+            <ActivityIndicator size="large" color={colors.tint} />
             <ThemedText style={styles.loadingText}>Saving entry...</ThemedText>
-          </ThemedView>
-        </ThemedView>
+          </View>
+        </View>
       )}
 
       {/* Success Overlay */}
       {showSuccess && (
-        <Animated.View
-          style={[styles.overlayContainer, { opacity: successOpacity }]}
-        >
-          <ThemedView style={styles.successContainer}>
-            <Animated.View
-              style={[
-                styles.checkmarkCircle,
-                { transform: [{ scale: checkmarkScale }] },
-              ]}
-            >
-              <IconSymbol size={40} name="checkmark" color="#FFFFFF" />
+        <Animated.View style={[styles.overlayContainer, { backgroundColor: colors.overlay, opacity: successOpacity }]}>
+          <View style={styles.successContainer}>
+            <Animated.View style={[styles.checkmarkCircle, { backgroundColor: colors.tint, transform: [{ scale: checkmarkScale }] }]}>
+              <IconSymbol size={40} name="checkmark" color={Palette.white} />
             </Animated.View>
             <ThemedText style={styles.successText}>Entry Saved!</ThemedText>
-          </ThemedView>
+          </View>
         </Animated.View>
       )}
     </KeyboardAvoidingView>
@@ -424,51 +324,29 @@ export default function NewEntryScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
-  scrollView: {
-    flex: 1,
-  },
-  header: {
-    paddingTop: 60,
-    paddingHorizontal: 20,
-    paddingBottom: 20,
-  },
-  formSection: {
-    paddingHorizontal: 20,
-    marginBottom: 20,
-    marginTop: 8,
-  },
-  dropdownButton: {
+  container: { flex: 1 },
+  scrollView: { flex: 1 },
+  header: { paddingTop: 60, paddingHorizontal: 20, paddingBottom: 16 },
+  section: { paddingHorizontal: 20, marginBottom: 24 },
+  dropdown: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginTop: 20,
-    padding: 16,
-    borderRadius: 8,
-    backgroundColor: 'rgba(255, 255, 255, 0.1)',
-    borderWidth: 2,
-    borderColor: 'rgba(255, 255, 255, 0.5)',
-    shadowColor: '#000',
+    marginTop: 12,
+    padding: 14,
+    borderRadius: 12,
+    borderWidth: 1,
+    shadowColor: Palette.black,
     shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.2,
-    shadowRadius: 1.5,
-    elevation: 2,
+    shadowOpacity: 0.06,
+    shadowRadius: 4,
+    elevation: 1,
   },
-  dropdownButtonText: {
-    fontSize: 16,
-    color: '#ffffff',
-    fontWeight: '500',
-  },
-  modalOverlay: {
-    flex: 1,
-    justifyContent: 'flex-end',
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
-  },
+  dropdownSmall: { height: 48, marginTop: 0, padding: 12 },
+  dropdownText: { fontSize: 16 },
+  modalOverlay: { flex: 1, justifyContent: 'flex-end' },
   modalContent: {
     maxHeight: '70%',
-    backgroundColor: '#151718',
     borderTopLeftRadius: 20,
     borderTopRightRadius: 20,
     paddingTop: 20,
@@ -479,194 +357,96 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'center',
     paddingHorizontal: 20,
-    marginBottom: 15,
+    marginBottom: 12,
   },
-  exerciseList: {
-    paddingHorizontal: 10,
-  },
-  exerciseListItem: {
+  list: { paddingHorizontal: 10 },
+  listItem: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    paddingVertical: 15,
-    paddingHorizontal: 15,
+    paddingVertical: 14,
+    paddingHorizontal: 14,
     borderBottomWidth: 1,
-    borderBottomColor: 'rgba(255, 255, 255, 0.1)',
+    borderRadius: 8,
+    marginHorizontal: 4,
+    marginVertical: 1,
   },
-  selectedExerciseItem: {
-    backgroundColor: 'rgba(10, 126, 164, 0.1)',
-  },
-  exerciseItemText: {
-    fontSize: 16,
-    color: '#ffffff',
-  },
-  selectedExerciseText: {
-    color: '#0a7ea4',
-    fontWeight: '600',
-  },
-  performanceContainer: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginTop: 20,
-  },
-  inputContainer: {
-    flex: 1,
-    marginRight: 10,
-  },
-  inputLabel: {
-    marginBottom: 6,
-    fontSize: 14,
-    opacity: 0.7,
-  },
+  listItemText: { fontSize: 16 },
+  performanceRow: { flexDirection: 'row', gap: 12, marginTop: 12 },
+  inputHalf: { flex: 1 },
+  inputLabel: { marginBottom: 6, fontSize: 14 },
   input: {
     height: 48,
-    borderWidth: 2,
-    borderColor: 'rgba(255, 255, 255, 0.5)',
-    borderRadius: 8,
-    padding: 12,
-    fontSize: 16,
-    backgroundColor: 'rgba(255, 255, 255, 0.9)',
-    color: '#000000',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.2,
-    shadowRadius: 1.5,
-    elevation: 2,
-  },
-  performanceDropdown: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    height: 48,
-    padding: 12,
-    borderRadius: 8,
-    backgroundColor: 'rgba(255, 255, 255, 0.1)',
-    borderWidth: 2,
-    borderColor: 'rgba(255, 255, 255, 0.5)',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.2,
-    shadowRadius: 1.5,
-    elevation: 2,
-  },
-  tagsContainer: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    marginTop: 20,
-  },
-  tagOption: {
+    borderWidth: 1,
+    borderRadius: 12,
     paddingHorizontal: 14,
-    paddingVertical: 8,
-    borderRadius: 16,
-    backgroundColor: 'rgba(255, 255, 255, 0.1)',
-    marginRight: 8,
-    marginBottom: 8,
-    borderWidth: 2,
-    borderColor: 'rgba(255, 255, 255, 0.5)',
-    shadowColor: '#000',
+    fontSize: 16,
+    shadowColor: Palette.black,
     shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.15,
-    shadowRadius: 1,
+    shadowOpacity: 0.06,
+    shadowRadius: 4,
     elevation: 1,
   },
-  selectedTag: {
-    backgroundColor: 'rgba(0, 122, 255, 0.3)',
-    borderColor: 'rgba(0, 122, 255, 0.7)',
-    borderWidth: 2,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.2,
-    shadowRadius: 2,
-    elevation: 3,
-  },
-  tagText: {
-    fontSize: 14,
-    color: '#000000',
-  },
-  selectedTagText: {
-    color: '#007AFF',
-    fontWeight: '600',
-  },
+  tagsContainer: { flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginTop: 12 },
+  tag: { paddingHorizontal: 16, paddingVertical: 8, borderRadius: 20, borderWidth: 1 },
+  tagText: { fontSize: 14 },
   notesInput: {
-    height: 100,
-    borderWidth: 2,
-    borderColor: 'rgba(255, 255, 255, 0.5)',
-    borderRadius: 8,
-    padding: 12,
-    marginTop: 20,
+    minHeight: 100,
+    borderWidth: 1,
+    borderRadius: 12,
+    padding: 14,
+    marginTop: 12,
     textAlignVertical: 'top',
     fontSize: 16,
-    backgroundColor: 'rgba(255, 255, 255, 0.9)',
-    color: '#000000',
-    shadowColor: '#000',
+    shadowColor: Palette.black,
     shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.2,
-    shadowRadius: 1.5,
-    elevation: 2,
+    shadowOpacity: 0.06,
+    shadowRadius: 4,
+    elevation: 1,
   },
   saveButton: {
     flexDirection: 'row',
-    backgroundColor: '#0a7ea4',
-    borderRadius: 8,
+    borderRadius: 14,
     padding: 16,
     alignItems: 'center',
     justifyContent: 'center',
     marginHorizontal: 20,
-    marginTop: 0,
-    marginBottom: 0,
-    borderWidth: 2,
-    borderColor: 'rgba(255, 255, 255, 0.5)',
-    shadowColor: '#000',
+    gap: 8,
+    shadowColor: Palette.black,
     shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.25,
-    shadowRadius: 3,
-    elevation: 4,
+    shadowOpacity: 0.15,
+    shadowRadius: 6,
+    elevation: 3,
   },
-  saveButtonText: {
-    color: '#FFFFFF',
-    fontSize: 18,
-    fontWeight: '600',
-    marginRight: 8,
-  },
-  disabledButton: {
-    opacity: 0.4,
-  },
+  saveButtonText: { color: Palette.white, fontSize: 18, fontWeight: '600' },
+  disabledButton: { opacity: 0.4 },
   overlayContainer: {
     ...StyleSheet.absoluteFillObject,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: 'rgba(0, 0, 0, 0.7)',
     zIndex: 10,
   },
-  loadingContainer: {
-    backgroundColor: '#151718',
-    borderRadius: 12,
+  loadingBox: {
+    borderRadius: 16,
     padding: 24,
     alignItems: 'center',
     width: '80%',
     maxWidth: 280,
+    shadowColor: Palette.black,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.15,
+    shadowRadius: 12,
+    elevation: 5,
   },
-  loadingText: {
-    marginTop: 16,
-    fontSize: 16,
-    fontWeight: '500',
-  },
-  successContainer: {
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
+  loadingText: { marginTop: 16, fontSize: 16, fontWeight: '500' },
+  successContainer: { alignItems: 'center', justifyContent: 'center' },
   checkmarkCircle: {
     width: 80,
     height: 80,
     borderRadius: 40,
-    backgroundColor: '#0a7ea4',
     justifyContent: 'center',
     alignItems: 'center',
     marginBottom: 16,
   },
-  successText: {
-    fontSize: 20,
-    fontWeight: 'bold',
-    color: '#FFFFFF',
-  },
+  successText: { fontSize: 20, fontWeight: 'bold', color: Palette.white },
 });
