@@ -5,25 +5,28 @@ import { Platform, StyleSheet, View } from 'react-native';
 import { HapticTab } from '@/components/HapticTab';
 import { IconSymbol } from '@/components/ui/IconSymbol';
 import TabBarBackground from '@/components/ui/TabBarBackground';
-import { Colors } from '@/constants/Colors';
+import { Colors, Palette } from '@/constants/Colors';
 import { useColorScheme } from '@/hooks/useColorScheme';
 
 export default function TabLayout() {
-  const colorScheme = useColorScheme();
-
+  const colorScheme = useColorScheme() ?? 'light';
+  const colors = Colors[colorScheme];
   return (
     <Tabs
       screenOptions={{
-        tabBarActiveTintColor: Colors[colorScheme ?? 'light'].tint,
+        tabBarActiveTintColor: colors.tint,
+        tabBarInactiveTintColor: colors.tabIconDefault,
         headerShown: false,
         tabBarButton: HapticTab,
         tabBarBackground: TabBarBackground,
         tabBarStyle: Platform.select({
           ios: {
-            // Use a transparent background on iOS to show the blur effect
             position: 'absolute',
           },
-          default: {},
+          default: {
+            backgroundColor: colors.backgroundSecondary,
+            borderTopColor: colors.border,
+          },
         }),
       }}
     >
@@ -40,9 +43,9 @@ export default function TabLayout() {
         name="new-entry"
         options={{
           title: '',
-          tabBarIcon: ({ color }) => (
-            <View style={styles.addButtonContainer}>
-              <IconSymbol size={28} name="plus" color="#FFFFFF" />
+          tabBarIcon: () => (
+            <View style={[styles.addButtonContainer, { backgroundColor: colors.tint }]}>
+              <IconSymbol size={28} name="plus" color={Palette.white} />
             </View>
           ),
         }}
@@ -74,17 +77,13 @@ const styles = StyleSheet.create({
     width: 56,
     height: 56,
     borderRadius: 28,
-    backgroundColor: '#0a7ea4',
     justifyContent: 'center',
     alignItems: 'center',
     marginBottom: 20,
-    shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.25,
-    shadowRadius: 3.84,
-    elevation: 5,
+    shadowColor: Palette.black,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 6,
+    elevation: 4,
   },
 });

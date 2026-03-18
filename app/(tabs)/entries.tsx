@@ -1,18 +1,21 @@
 import { ThemedText } from '@/components/ThemedText';
-import { ThemedView } from '@/components/ThemedView';
+import { Palette } from '@/constants/Colors';
 import { EntryWithId, getEntries } from '@/data/firebase/entries';
 import { ExerciseWithId, getExercises } from '@/data/firebase/exercises';
 import { timestampToDate } from '@/data/firebase/helpers';
+import { useAppColors } from '@/hooks/useAppColors';
 import { router } from 'expo-router';
 import React, { useEffect, useState } from 'react';
-import { FlatList, Pressable, StyleSheet } from 'react-native';
+import { FlatList, Pressable, StyleSheet, View } from 'react-native';
 
 function EntryListItem({
   item,
   exercises,
+  colors,
 }: {
   item: EntryWithId;
   exercises: ExerciseWithId[];
+  colors: ReturnType<typeof useAppColors>;
 }) {
   const exercise = exercises.find((ex) => ex.id === item.exerciseId);
   const exerciseName = exercise?.name || 'Unknown Exercise';
@@ -20,37 +23,36 @@ function EntryListItem({
 
   return (
     <Pressable
-      style={styles.entryItem}
+      style={[styles.entryCard, { backgroundColor: colors.backgroundSecondary, borderColor: colors.border }]}
       onPress={() =>
-        router.push({
-          pathname: '/entry-detail',
-          params: { entryId: item.id },
-        })
+        router.push({ pathname: '/entry-detail', params: { entryId: item.id } })
       }
     >
-      <ThemedView style={styles.entryContainer}>
-        <ThemedView style={styles.entryHeader}>
-          <ThemedText type="defaultSemiBold" style={styles.exerciseName}>
-            {exerciseName}
-          </ThemedText>
-          <ThemedText style={styles.date}>{formattedDate}</ThemedText>
-        </ThemedView>
-        <ThemedView style={styles.entryDetails}>
-          <ThemedText style={styles.value}>
-            {item.value} {item.unit}
-          </ThemedText>
-          <ThemedText style={styles.repMax}>{item.repMax} RM</ThemedText>
-        </ThemedView>
-      </ThemedView>
+      <View style={styles.entryHeader}>
+        <ThemedText type="defaultSemiBold" style={styles.exerciseName}>
+          {exerciseName}
+        </ThemedText>
+        <ThemedText style={[styles.date, { color: colors.textSecondary }]}>
+          {formattedDate}
+        </ThemedText>
+      </View>
+      <View style={styles.entryDetails}>
+        <ThemedText style={styles.value}>
+          {item.value} {item.unit}
+        </ThemedText>
+        <ThemedText style={[styles.repMax, { color: colors.textSecondary }]}>
+          {item.repMax} RM
+        </ThemedText>
+      </View>
     </Pressable>
   );
 }
 
 export default function EntriesScreen() {
+  const colors = useAppColors();
   const [entries, setEntries] = useState<EntryWithId[]>([]);
   const [exercises, setExercises] = useState<ExerciseWithId[]>([]);
 
-  // TODO: cache the exercises so we don't have to fetch them every time
   useEffect(() => {
     const fetchData = async () => {
       const [entriesData, exercisesData] = await Promise.all([
@@ -64,44 +66,37 @@ export default function EntriesScreen() {
   }, []);
 
   return (
-    <ThemedView style={styles.container}>
-      <ThemedView style={styles.header}>
+    <View style={[styles.container, { backgroundColor: colors.backgroundPrimary }]}>
+      <View style={styles.header}>
         <ThemedText type="title">Entries</ThemedText>
-      </ThemedView>
+      </View>
       <FlatList
         data={entries}
         keyExtractor={(item) => item.id}
         renderItem={({ item }) => (
-          <EntryListItem item={item} exercises={exercises} />
+          <EntryListItem item={item} exercises={exercises} colors={colors} />
         )}
         contentContainerStyle={styles.list}
         showsVerticalScrollIndicator={false}
       />
-    </ThemedView>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    paddingTop: 60,
-  },
-  header: {
-    paddingHorizontal: 20,
-    paddingBottom: 20,
-  },
-  list: {
-    paddingHorizontal: 20,
-  },
-  entryItem: {
-    marginBottom: 12,
-  },
-  entryContainer: {
+  container: { flex: 1, paddingTop: 60 },
+  header: { paddingHorizontal: 20, paddingBottom: 16 },
+  list: { paddingHorizontal: 20, paddingBottom: 20 },
+  entryCard: {
     padding: 16,
-    borderRadius: 12,
-    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+    borderRadius: 14,
     borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.2)',
+    marginBottom: 12,
+    shadowColor: Palette.black,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.06,
+    shadowRadius: 8,
+    elevation: 2,
   },
   entryHeader: {
     flexDirection: 'row',
@@ -109,25 +104,13 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginBottom: 8,
   },
-  exerciseName: {
-    fontSize: 18,
-    flex: 1,
-  },
-  date: {
-    fontSize: 14,
-    opacity: 0.7,
-  },
+  exerciseName: { fontSize: 17, flex: 1 },
+  date: { fontSize: 14 },
   entryDetails: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
   },
-  value: {
-    fontSize: 16,
-    fontWeight: '600',
-  },
-  repMax: {
-    fontSize: 14,
-    opacity: 0.8,
-  },
+  value: { fontSize: 16, fontWeight: '600' },
+  repMax: { fontSize: 14 },
 });

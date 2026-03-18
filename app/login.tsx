@@ -1,7 +1,7 @@
 import { ThemedText } from '@/components/ThemedText';
-import { ThemedView } from '@/components/ThemedView';
+import { Palette } from '@/constants/Colors';
 import { auth } from '@/data/firebase/firebaseConfig';
-import { useThemeColor } from '@/hooks/useThemeColor';
+import { useAppColors } from '@/hooks/useAppColors';
 import { useRouter } from 'expo-router';
 import {
   createUserWithEmailAndPassword,
@@ -15,27 +15,22 @@ import {
   StyleSheet,
   TextInput,
   TouchableOpacity,
+  View,
 } from 'react-native';
 
 export default function LoginScreen() {
   const router = useRouter();
+  const colors = useAppColors();
   const [isSignUpMode, setIsSignUpMode] = useState(false);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
 
-  const tintColor = useThemeColor({}, 'tint');
-  const backgroundColor = useThemeColor({}, 'background');
-  const textColor = useThemeColor({}, 'text');
-  const iconColor = useThemeColor({}, 'icon');
-
-  // Placeholder functions - to be implemented later
   const handleLogin = async () => {
     if (!email || !password) {
       Alert.alert('Error', 'Please fill in all fields');
       return;
     }
-
     setIsLoading(true);
     try {
       await signInWithEmailAndPassword(auth, email, password);
@@ -53,7 +48,6 @@ export default function LoginScreen() {
       Alert.alert('Error', 'Please fill in all fields');
       return;
     }
-
     setIsLoading(true);
     try {
       await createUserWithEmailAndPassword(auth, email, password);
@@ -67,140 +61,96 @@ export default function LoginScreen() {
 
   const toggleMode = () => {
     setIsSignUpMode(!isSignUpMode);
-    // Clear form when switching modes
     setEmail('');
     setPassword('');
   };
 
   return (
-    <ThemedView style={styles.container}>
+    <View style={[styles.container, { backgroundColor: colors.backgroundPrimary }]}>
       <KeyboardAvoidingView
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
         style={styles.keyboardAvoidingView}
       >
-        <ThemedView style={styles.formContainer}>
-          {/* Title */}
+        <View style={styles.formContainer}>
           <ThemedText type="title" style={styles.title}>
             {isSignUpMode ? 'Sign Up' : 'Log In'}
           </ThemedText>
 
-          {/* Email Input */}
-          <ThemedView style={styles.inputContainer}>
-            <ThemedText type="defaultSemiBold" style={styles.label}>
-              Email
-            </ThemedText>
+          <View style={styles.inputContainer}>
+            <ThemedText type="defaultSemiBold" style={styles.label}>Email</ThemedText>
             <TextInput
-              style={[
-                styles.input,
-                {
-                  borderColor: iconColor,
-                  color: textColor,
-                  backgroundColor: backgroundColor,
-                },
-              ]}
+              style={[styles.input, { borderColor: colors.border, color: colors.textPrimary, backgroundColor: colors.backgroundSecondary }]}
               placeholder="Enter your email"
-              placeholderTextColor={iconColor}
+              placeholderTextColor={colors.textMuted}
               value={email}
               onChangeText={setEmail}
               keyboardType="email-address"
               autoCapitalize="none"
               autoCorrect={false}
+              selectionColor={colors.tint}
             />
-          </ThemedView>
+          </View>
 
-          {/* Password Input */}
-          <ThemedView style={styles.inputContainer}>
-            <ThemedText type="defaultSemiBold" style={styles.label}>
-              Password
-            </ThemedText>
+          <View style={styles.inputContainer}>
+            <ThemedText type="defaultSemiBold" style={styles.label}>Password</ThemedText>
             <TextInput
-              style={[
-                styles.input,
-                {
-                  borderColor: iconColor,
-                  color: textColor,
-                  backgroundColor: backgroundColor,
-                },
-              ]}
+              style={[styles.input, { borderColor: colors.border, color: colors.textPrimary, backgroundColor: colors.backgroundSecondary }]}
               placeholder="Enter your password"
-              placeholderTextColor={iconColor}
+              placeholderTextColor={colors.textMuted}
               value={password}
               onChangeText={setPassword}
               secureTextEntry
               autoCapitalize="none"
               autoCorrect={false}
+              selectionColor={colors.tint}
             />
-          </ThemedView>
+          </View>
 
-          {/* Submit Button */}
           <TouchableOpacity
-            style={[styles.submitButton, { backgroundColor: tintColor }]}
+            style={[styles.submitButton, { backgroundColor: colors.tint }]}
             onPress={isSignUpMode ? handleSignUp : handleLogin}
             disabled={isLoading}
           >
-            <ThemedText
-              style={[styles.submitButtonText, { color: '#fff' }]}
-              type="defaultSemiBold"
-            >
-              {isLoading
-                ? 'Please wait...'
-                : isSignUpMode
-                ? 'Sign Up'
-                : 'Log In'}
+            <ThemedText style={styles.submitButtonText} type="defaultSemiBold">
+              {isLoading ? 'Please wait...' : isSignUpMode ? 'Sign Up' : 'Log In'}
             </ThemedText>
           </TouchableOpacity>
 
-          {/* Toggle Mode Link */}
           <TouchableOpacity onPress={toggleMode} style={styles.toggleContainer}>
-            <ThemedText
-              type="link"
-              style={[styles.toggleText, { color: tintColor }]}
-            >
+            <ThemedText style={[styles.toggleText, { color: colors.tint }]}>
               {isSignUpMode
                 ? 'Already have an account? Log in'
                 : "Don't have an account? Sign up"}
             </ThemedText>
           </TouchableOpacity>
-        </ThemedView>
+        </View>
       </KeyboardAvoidingView>
-    </ThemedView>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
-  keyboardAvoidingView: {
-    flex: 1,
-    justifyContent: 'center',
-  },
-  formContainer: {
-    paddingHorizontal: 32,
-    paddingVertical: 24,
-  },
-  title: {
-    textAlign: 'center',
-    marginBottom: 32,
-    fontSize: 28,
-  },
-  inputContainer: {
-    marginBottom: 20,
-  },
-  label: {
-    marginBottom: 8,
-    fontSize: 16,
-  },
+  container: { flex: 1 },
+  keyboardAvoidingView: { flex: 1, justifyContent: 'center' },
+  formContainer: { paddingHorizontal: 32, paddingVertical: 24 },
+  title: { textAlign: 'center', marginBottom: 32, fontSize: 28 },
+  inputContainer: { marginBottom: 20 },
+  label: { marginBottom: 8, fontSize: 16 },
   input: {
     borderWidth: 1,
-    borderRadius: 8,
+    borderRadius: 12,
     paddingHorizontal: 16,
     paddingVertical: 12,
     fontSize: 16,
     minHeight: 48,
+    shadowColor: Palette.black,
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.06,
+    shadowRadius: 4,
+    elevation: 1,
   },
   submitButton: {
-    borderRadius: 8,
+    borderRadius: 14,
     paddingVertical: 16,
     paddingHorizontal: 24,
     marginTop: 16,
@@ -208,16 +158,13 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     minHeight: 52,
+    shadowColor: Palette.black,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.15,
+    shadowRadius: 6,
+    elevation: 3,
   },
-  submitButtonText: {
-    fontSize: 16,
-  },
-  toggleContainer: {
-    alignItems: 'center',
-    paddingVertical: 8,
-  },
-  toggleText: {
-    fontSize: 14,
-    textDecorationLine: 'underline',
-  },
+  submitButtonText: { fontSize: 16, color: Palette.white },
+  toggleContainer: { alignItems: 'center', paddingVertical: 8 },
+  toggleText: { fontSize: 14, textDecorationLine: 'underline' },
 });
