@@ -1,5 +1,5 @@
 import { ThemedText } from '@/components/ThemedText';
-import { ThemedView } from '@/components/ThemedView';
+import { Palette } from '@/constants/Colors';
 import { IconSymbol } from '@/components/ui/IconSymbol';
 import {
   addExercise,
@@ -7,6 +7,7 @@ import {
   getExercises,
 } from '@/data/firebase/exercises';
 import { commonExerciseTags } from '@/data/firebase/types';
+import { useAppColors } from '@/hooks/useAppColors';
 import React, { useEffect, useState } from 'react';
 import {
   Animated,
@@ -17,21 +18,21 @@ import {
   ScrollView,
   StyleSheet,
   TextInput,
+  View,
 } from 'react-native';
 
 export default function ExercisesScreen() {
+  const colors = useAppColors();
   const [isAddModalVisible, setIsAddModalVisible] = useState(false);
   const [exerciseList, setExerciseList] = useState<ExerciseWithId[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
 
-  // Form state
   const [newExerciseName, setNewExerciseName] = useState('');
   const [newExerciseDescription, setNewExerciseDescription] = useState('');
   const [newExerciseLink, setNewExerciseLink] = useState('');
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
 
-  // Animation values
   const successOpacity = new Animated.Value(0);
   const checkmarkScale = new Animated.Value(0);
 
@@ -40,50 +41,22 @@ export default function ExercisesScreen() {
       const exercises = await getExercises();
       setExerciseList(exercises);
     };
-
     fetchExercises();
   }, []);
 
-  // Success animation sequence
   const animateSuccess = () => {
-    // Reset animation values
     successOpacity.setValue(0);
     checkmarkScale.setValue(0);
-
-    // Start animations in sequence
     Animated.sequence([
-      // Fade in the overlay
-      Animated.timing(successOpacity, {
-        toValue: 1,
-        duration: 300,
-        useNativeDriver: true,
-      }),
-      // Scale up the checkmark
-      Animated.timing(checkmarkScale, {
-        toValue: 1,
-        duration: 500,
-        easing: Easing.elastic(1),
-        useNativeDriver: true,
-      }),
-      // Wait for a moment
+      Animated.timing(successOpacity, { toValue: 1, duration: 300, useNativeDriver: true }),
+      Animated.timing(checkmarkScale, { toValue: 1, duration: 500, easing: Easing.elastic(1), useNativeDriver: true }),
       Animated.delay(1000),
-      // Fade out everything
-      Animated.timing(successOpacity, {
-        toValue: 0,
-        duration: 300,
-        useNativeDriver: true,
-      }),
-    ]).start(() => {
-      // After animation completes
-      setShowSuccess(false);
-    });
+      Animated.timing(successOpacity, { toValue: 0, duration: 300, useNativeDriver: true }),
+    ]).start(() => setShowSuccess(false));
   };
 
-  // Effect to start animation when success state changes
   useEffect(() => {
-    if (showSuccess) {
-      animateSuccess();
-    }
+    if (showSuccess) animateSuccess();
   }, [showSuccess]);
 
   const toggleTag = (tag: string) => {
@@ -95,10 +68,7 @@ export default function ExercisesScreen() {
   };
 
   const handleAddExercise = async () => {
-    // Validate input
-    if (!newExerciseName.trim()) {
-      return; // Could add error state here
-    }
+    if (!newExerciseName.trim()) return;
 
     const newExercise = {
       name: newExerciseName.trim(),
@@ -109,17 +79,11 @@ export default function ExercisesScreen() {
 
     try {
       setIsLoading(true);
-
-      // Add the exercise
       const newId = await addExercise(newExercise);
       console.log('New exercise created with ID:', newId);
-
-      // Close modal and show success
       setIsAddModalVisible(false);
       setIsLoading(false);
       setShowSuccess(true);
-
-      // Reset form
       setNewExerciseName('');
       setNewExerciseDescription('');
       setNewExerciseLink('');
@@ -130,43 +94,39 @@ export default function ExercisesScreen() {
     }
   };
 
-  const renderExerciseItem = ({ item }: { item: ExerciseWithId }) => {
-    return (
-      <ThemedView style={styles.exerciseItem}>
-        <ThemedView style={styles.exerciseHeader}>
-          <ThemedText type="defaultSemiBold" style={styles.exerciseName}>
-            {item.name}
-          </ThemedText>
-        </ThemedView>
+  const renderExerciseItem = ({ item }: { item: ExerciseWithId }) => (
+    <View style={[styles.exerciseCard, { backgroundColor: colors.backgroundSecondary, borderColor: colors.border }]}>
+      <ThemedText type="defaultSemiBold" style={styles.exerciseName}>
+        {item.name}
+      </ThemedText>
 
-        <ThemedView style={styles.tagContainer}>
-          {item.tags.map((tag, index) => (
-            <ThemedView key={index} style={styles.tag}>
-              <ThemedText style={styles.tagText}>{tag}</ThemedText>
-            </ThemedView>
-          ))}
-        </ThemedView>
+      <View style={styles.tagRow}>
+        {item.tags.map((tag, index) => (
+          <View key={index} style={[styles.tagBadge, { backgroundColor: colors.accentBackground, borderColor: colors.border }]}>
+            <ThemedText style={[styles.tagBadgeText, { color: colors.accentText }]}>{tag}</ThemedText>
+          </View>
+        ))}
+      </View>
 
-        {item.description ? (
-          <ThemedText style={styles.description} numberOfLines={2}>
-            {item.description}
-          </ThemedText>
-        ) : null}
-      </ThemedView>
-    );
-  };
+      {item.description ? (
+        <ThemedText style={[styles.description, { color: colors.textSecondary }]} numberOfLines={2}>
+          {item.description}
+        </ThemedText>
+      ) : null}
+    </View>
+  );
 
   return (
-    <ThemedView style={styles.container}>
-      <ThemedView style={styles.header}>
+    <View style={[styles.container, { backgroundColor: colors.backgroundPrimary }]}>
+      <View style={styles.header}>
         <ThemedText type="title">Exercises</ThemedText>
         <Pressable
-          style={styles.addButton}
+          style={[styles.addButton, { backgroundColor: colors.tint }]}
           onPress={() => setIsAddModalVisible(true)}
         >
-          <IconSymbol size={24} name="plus" color="#FFFFFF" />
+          <IconSymbol size={22} name="plus" color={Palette.white} />
         </Pressable>
-      </ThemedView>
+      </View>
 
       <FlatList
         data={exerciseList}
@@ -176,344 +136,216 @@ export default function ExercisesScreen() {
         showsVerticalScrollIndicator={false}
       />
 
-      {/* Add Exercise Modal */}
-      <Modal
-        visible={isAddModalVisible}
-        transparent={true}
-        animationType="slide"
-        onRequestClose={() => setIsAddModalVisible(false)}
-      >
-        <ThemedView style={styles.modalOverlay}>
-          <ThemedView style={styles.modalContent}>
-            <ThemedView style={styles.modalHeader}>
+      <Modal visible={isAddModalVisible} transparent animationType="slide" onRequestClose={() => setIsAddModalVisible(false)}>
+        <View style={[styles.modalOverlay, { backgroundColor: colors.overlay }]}>
+          <View style={[styles.modalContent, { backgroundColor: colors.backgroundSecondary }]}>
+            <View style={styles.modalHeader}>
               <ThemedText type="subtitle">Add New Exercise</ThemedText>
               <Pressable onPress={() => setIsAddModalVisible(false)}>
-                <IconSymbol size={24} name="xmark" color="#FFFFFF" />
+                <IconSymbol size={22} name="xmark" color={colors.textSecondary} />
               </Pressable>
-            </ThemedView>
+            </View>
 
             <ScrollView style={styles.formContainer}>
-              <ThemedView style={styles.formSection}>
-                <ThemedText style={styles.inputLabel}>
-                  Exercise Name *
-                </ThemedText>
+              <View style={styles.formField}>
+                <ThemedText style={[styles.inputLabel, { color: colors.textSecondary }]}>Exercise Name *</ThemedText>
                 <TextInput
-                  style={styles.input}
+                  style={[styles.input, { backgroundColor: colors.backgroundSecondary, borderColor: colors.border, color: colors.textPrimary }]}
                   value={newExerciseName}
                   onChangeText={setNewExerciseName}
                   placeholder="Name of the exercise"
-                  placeholderTextColor="#999"
-                  selectionColor="#0a7ea4"
+                  placeholderTextColor={colors.textMuted}
+                  selectionColor={colors.tint}
                 />
-              </ThemedView>
+              </View>
 
-              <ThemedView style={styles.formSection}>
-                <ThemedText style={styles.inputLabel}>Description</ThemedText>
+              <View style={styles.formField}>
+                <ThemedText style={[styles.inputLabel, { color: colors.textSecondary }]}>Description</ThemedText>
                 <TextInput
-                  style={[styles.input, styles.textArea]}
+                  style={[styles.input, styles.textArea, { backgroundColor: colors.backgroundSecondary, borderColor: colors.border, color: colors.textPrimary }]}
                   value={newExerciseDescription}
                   onChangeText={setNewExerciseDescription}
                   placeholder="Describe the exercise and technique"
-                  placeholderTextColor="#999"
+                  placeholderTextColor={colors.textMuted}
                   multiline
                   numberOfLines={4}
                   textAlignVertical="top"
-                  selectionColor="#0a7ea4"
+                  selectionColor={colors.tint}
                 />
-              </ThemedView>
+              </View>
 
-              <ThemedView style={styles.formSection}>
-                <ThemedText style={styles.inputLabel}>
-                  Link (Optional)
-                </ThemedText>
+              <View style={styles.formField}>
+                <ThemedText style={[styles.inputLabel, { color: colors.textSecondary }]}>Link (Optional)</ThemedText>
                 <TextInput
-                  style={styles.input}
+                  style={[styles.input, { backgroundColor: colors.backgroundSecondary, borderColor: colors.border, color: colors.textPrimary }]}
                   value={newExerciseLink}
                   onChangeText={setNewExerciseLink}
                   placeholder="URL to video or guide"
-                  placeholderTextColor="#999"
+                  placeholderTextColor={colors.textMuted}
                   keyboardType="url"
-                  selectionColor="#0a7ea4"
+                  selectionColor={colors.tint}
                 />
-              </ThemedView>
+              </View>
 
-              <ThemedView style={styles.formSection}>
-                <ThemedText style={styles.inputLabel}>Tags</ThemedText>
-                <ThemedView style={styles.tagsContainer}>
-                  {commonExerciseTags.map((tag) => (
-                    <Pressable
-                      key={tag}
-                      style={[
-                        styles.tagOption,
-                        selectedTags.includes(tag) && styles.selectedTag,
-                      ]}
-                      onPress={() => toggleTag(tag)}
-                    >
-                      <ThemedText
+              <View style={styles.formField}>
+                <ThemedText style={[styles.inputLabel, { color: colors.textSecondary }]}>Tags</ThemedText>
+                <View style={styles.tagsContainer}>
+                  {commonExerciseTags.map((tag) => {
+                    const isSelected = selectedTags.includes(tag);
+                    return (
+                      <Pressable
+                        key={tag}
                         style={[
-                          styles.tagOptionText,
-                          selectedTags.includes(tag) && styles.selectedTagText,
+                          styles.tag,
+                          {
+                            backgroundColor: isSelected ? colors.accentBackgroundStrong : colors.accentBackground,
+                            borderColor: isSelected ? colors.accentBorder : colors.border,
+                          },
                         ]}
+                        onPress={() => toggleTag(tag)}
                       >
-                        {tag}
-                      </ThemedText>
-                    </Pressable>
-                  ))}
-                </ThemedView>
-              </ThemedView>
+                        <ThemedText
+                          style={[
+                            styles.tagText,
+                            { color: isSelected ? colors.accentText : colors.textSecondary },
+                            isSelected && { fontWeight: '600' },
+                          ]}
+                        >
+                          {tag}
+                        </ThemedText>
+                      </Pressable>
+                    );
+                  })}
+                </View>
+              </View>
 
               <Pressable
-                style={[
-                  styles.saveButton,
-                  (!newExerciseName.trim() || isLoading) &&
-                    styles.disabledButton,
-                ]}
+                style={[styles.saveButton, { backgroundColor: colors.tint }, (!newExerciseName.trim() || isLoading) && styles.disabledButton]}
                 onPress={handleAddExercise}
                 disabled={!newExerciseName.trim() || isLoading}
               >
                 <ThemedText style={styles.saveButtonText}>
                   {isLoading ? 'Saving...' : 'Save Exercise'}
                 </ThemedText>
-                {!isLoading && (
-                  <IconSymbol size={20} name="checkmark" color="#FFFFFF" />
-                )}
+                {!isLoading && <IconSymbol size={18} name="checkmark" color={Palette.white} />}
               </Pressable>
             </ScrollView>
-          </ThemedView>
-        </ThemedView>
+          </View>
+        </View>
       </Modal>
 
-      {/* Success Overlay */}
       {showSuccess && (
-        <Animated.View
-          style={[styles.overlayContainer, { opacity: successOpacity }]}
-        >
-          <ThemedView style={styles.successContainer}>
-            <Animated.View
-              style={[
-                styles.checkmarkCircle,
-                { transform: [{ scale: checkmarkScale }] },
-              ]}
-            >
-              <IconSymbol size={40} name="checkmark" color="#FFFFFF" />
+        <Animated.View style={[styles.overlayContainer, { backgroundColor: colors.overlay, opacity: successOpacity }]}>
+          <View style={styles.successContainer}>
+            <Animated.View style={[styles.checkmarkCircle, { backgroundColor: colors.tint, transform: [{ scale: checkmarkScale }] }]}>
+              <IconSymbol size={40} name="checkmark" color={Palette.white} />
             </Animated.View>
             <ThemedText style={styles.successText}>Exercise Added!</ThemedText>
-          </ThemedView>
+          </View>
         </Animated.View>
       )}
-    </ThemedView>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
+  container: { flex: 1 },
   header: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
     paddingTop: 60,
     paddingHorizontal: 20,
-    paddingBottom: 20,
+    paddingBottom: 16,
   },
   addButton: {
-    backgroundColor: '#0a7ea4',
     width: 40,
     height: 40,
     borderRadius: 20,
     alignItems: 'center',
     justifyContent: 'center',
-    shadowColor: '#000',
+    shadowColor: Palette.black,
     shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.3,
-    shadowRadius: 3,
-    elevation: 4,
+    shadowOpacity: 0.15,
+    shadowRadius: 6,
+    elevation: 3,
   },
-  list: {
-    paddingHorizontal: 20,
-    paddingBottom: 20,
-  },
-  exerciseItem: {
+  list: { paddingHorizontal: 20, paddingBottom: 20 },
+  exerciseCard: {
     padding: 16,
-    borderRadius: 12,
-    marginBottom: 16,
-    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+    borderRadius: 14,
+    marginBottom: 12,
     borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.2)',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.2,
-    shadowRadius: 1.5,
+    shadowColor: Palette.black,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.06,
+    shadowRadius: 8,
     elevation: 2,
   },
-  exerciseHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginBottom: 8,
-  },
-  exerciseName: {
-    fontSize: 18,
-    marginBottom: 4,
-  },
-  tagContainer: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    marginVertical: 8,
-    gap: 6,
-  },
-  tag: {
-    backgroundColor: 'rgba(10, 126, 164, 0.15)',
-    paddingHorizontal: 10,
-    paddingVertical: 4,
-    borderRadius: 12,
-    borderWidth: 1,
-    borderColor: 'rgba(10, 126, 164, 0.3)',
-  },
-  tagText: {
-    fontSize: 12,
-    color: '#0a7ea4',
-  },
-  description: {
-    fontSize: 14,
-    opacity: 0.8,
-    marginTop: 8,
-  },
-  modalOverlay: {
-    flex: 1,
-    justifyContent: 'flex-end',
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
-  },
-  modalContent: {
-    maxHeight: '80%',
-    backgroundColor: '#151718',
-    borderTopLeftRadius: 20,
-    borderTopRightRadius: 20,
-    paddingTop: 20,
-  },
+  exerciseName: { fontSize: 17, marginBottom: 8 },
+  tagRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 6, marginBottom: 4 },
+  tagBadge: { paddingHorizontal: 10, paddingVertical: 4, borderRadius: 12, borderWidth: 1 },
+  tagBadgeText: { fontSize: 12 },
+  description: { fontSize: 14, marginTop: 8, lineHeight: 20 },
+  modalOverlay: { flex: 1, justifyContent: 'flex-end' },
+  modalContent: { maxHeight: '80%', borderTopLeftRadius: 20, borderTopRightRadius: 20, paddingTop: 20 },
   modalHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
     paddingHorizontal: 20,
-    marginBottom: 15,
+    marginBottom: 12,
   },
-  formContainer: {
-    paddingHorizontal: 20,
-  },
-  formSection: {
-    marginBottom: 20,
-  },
-  inputLabel: {
-    fontSize: 16,
-    marginBottom: 8,
-    opacity: 0.8,
-  },
+  formContainer: { paddingHorizontal: 20 },
+  formField: { marginBottom: 20 },
+  inputLabel: { fontSize: 15, marginBottom: 8 },
   input: {
     height: 48,
-    borderWidth: 2,
-    borderColor: 'rgba(255, 255, 255, 0.5)',
-    borderRadius: 8,
-    padding: 12,
+    borderWidth: 1,
+    borderRadius: 12,
+    paddingHorizontal: 14,
     fontSize: 16,
-    backgroundColor: 'rgba(255, 255, 255, 0.9)',
-    color: '#000000',
-    shadowColor: '#000',
+    shadowColor: Palette.black,
     shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.2,
-    shadowRadius: 1.5,
-    elevation: 2,
-  },
-  textArea: {
-    height: 100,
-    textAlignVertical: 'top',
-  },
-  tagsContainer: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 8,
-    marginTop: 5,
-  },
-  tagOption: {
-    paddingHorizontal: 12,
-    paddingVertical: 8,
-    borderRadius: 16,
-    backgroundColor: 'rgba(255, 255, 255, 0.1)',
-    borderWidth: 2,
-    borderColor: 'rgba(255, 255, 255, 0.5)',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.15,
-    shadowRadius: 1,
+    shadowOpacity: 0.06,
+    shadowRadius: 4,
     elevation: 1,
   },
-  selectedTag: {
-    backgroundColor: 'rgba(0, 122, 255, 0.3)',
-    borderColor: 'rgba(0, 122, 255, 0.7)',
-    borderWidth: 2,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.2,
-    shadowRadius: 2,
-    elevation: 3,
-  },
-  tagOptionText: {
-    fontSize: 14,
-    color: '#ffffff',
-  },
-  selectedTagText: {
-    color: '#007AFF',
-    fontWeight: '600',
-  },
+  textArea: { height: 100, paddingTop: 12, textAlignVertical: 'top' },
+  tagsContainer: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
+  tag: { paddingHorizontal: 16, paddingVertical: 8, borderRadius: 20, borderWidth: 1 },
+  tagText: { fontSize: 14 },
   saveButton: {
     flexDirection: 'row',
-    backgroundColor: '#0a7ea4',
-    borderRadius: 8,
+    borderRadius: 14,
     padding: 16,
     alignItems: 'center',
     justifyContent: 'center',
     marginBottom: 40,
     marginTop: 10,
-    borderWidth: 2,
-    borderColor: 'rgba(255, 255, 255, 0.5)',
-    shadowColor: '#000',
+    gap: 8,
+    shadowColor: Palette.black,
     shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.25,
-    shadowRadius: 3,
-    elevation: 4,
+    shadowOpacity: 0.15,
+    shadowRadius: 6,
+    elevation: 3,
   },
-  saveButtonText: {
-    color: '#FFFFFF',
-    fontSize: 18,
-    fontWeight: '600',
-    marginRight: 8,
-  },
-  disabledButton: {
-    opacity: 0.4,
-  },
+  saveButtonText: { color: Palette.white, fontSize: 18, fontWeight: '600' },
+  disabledButton: { opacity: 0.4 },
   overlayContainer: {
     ...StyleSheet.absoluteFillObject,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: 'rgba(0, 0, 0, 0.7)',
     zIndex: 10,
   },
-  successContainer: {
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
+  successContainer: { alignItems: 'center', justifyContent: 'center' },
   checkmarkCircle: {
     width: 80,
     height: 80,
     borderRadius: 40,
-    backgroundColor: '#0a7ea4',
     justifyContent: 'center',
     alignItems: 'center',
     marginBottom: 16,
   },
-  successText: {
-    fontSize: 20,
-    fontWeight: 'bold',
-    color: '#FFFFFF',
-  },
+  successText: { fontSize: 20, fontWeight: 'bold', color: Palette.white },
 });

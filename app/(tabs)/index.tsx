@@ -1,26 +1,34 @@
+import { Palette } from '@/constants/Colors';
+import { useAppColors } from '@/hooks/useAppColors';
 import { router } from 'expo-router';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 
 export default function Index() {
+  const colors = useAppColors();
+
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>Fitness Benchmarks App</Text>
-      <Text style={styles.subtitle}>
+    <View style={[styles.container, { backgroundColor: colors.backgroundPrimary }]}>
+      <Text style={[styles.title, { color: colors.textPrimary }]}>
+        Fitness Benchmarks
+      </Text>
+      <Text style={[styles.subtitle, { color: colors.textSecondary }]}>
         Track your workout performance and progress
       </Text>
 
       <Pressable
-        style={styles.button}
+        style={[styles.button, { backgroundColor: colors.tint }]}
         onPress={() => router.push('/new-entry')}
       >
         <Text style={styles.buttonText}>Record New Entry</Text>
       </Pressable>
 
       <Pressable
-        style={[styles.button, styles.secondaryButton]}
+        style={[styles.secondaryButton, { borderColor: colors.tint }]}
         onPress={() => router.push('/entries')}
       >
-        <Text style={styles.secondaryButtonText}>View All Entries</Text>
+        <Text style={[styles.secondaryButtonText, { color: colors.tint }]}>
+          View All Entries
+        </Text>
       </Pressable>
     </View>
   );
@@ -32,42 +40,47 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     padding: 20,
-    backgroundColor: '#151718',
   },
   title: {
     fontSize: 28,
     fontWeight: 'bold',
-    color: '#ECEDEE',
     marginBottom: 12,
     textAlign: 'center',
   },
   subtitle: {
     fontSize: 16,
-    color: '#9BA1A6',
     marginBottom: 40,
     textAlign: 'center',
   },
   button: {
-    backgroundColor: '#0a7ea4',
     paddingVertical: 16,
     paddingHorizontal: 24,
-    borderRadius: 12,
+    borderRadius: 14,
     marginBottom: 16,
     width: '80%',
     alignItems: 'center',
+    shadowColor: Palette.black,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.12,
+    shadowRadius: 6,
+    elevation: 3,
   },
   buttonText: {
-    color: '#FFFFFF',
+    color: Palette.white,
     fontSize: 18,
     fontWeight: '600',
   },
   secondaryButton: {
+    paddingVertical: 16,
+    paddingHorizontal: 24,
+    borderRadius: 14,
+    marginBottom: 16,
+    width: '80%',
+    alignItems: 'center',
     backgroundColor: 'transparent',
-    borderWidth: 1,
-    borderColor: '#0a7ea4',
+    borderWidth: 1.5,
   },
   secondaryButtonText: {
-    color: '#0a7ea4',
     fontSize: 18,
     fontWeight: '600',
   },
