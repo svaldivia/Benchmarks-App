@@ -1,5 +1,7 @@
 import ReactNativeAsyncStorage from '@react-native-async-storage/async-storage';
 import { initializeApp } from 'firebase/app';
+// `firebase/auth`'s umbrella types omit `getReactNativePersistence`; metro resolves to the RN build at runtime.
+// @ts-expect-error
 import { getReactNativePersistence, initializeAuth } from 'firebase/auth';
 import { getFirestore } from 'firebase/firestore';
 
