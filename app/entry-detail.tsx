@@ -52,11 +52,11 @@ export default function EntryDetailScreen() {
         <View style={[styles.card, { backgroundColor: colors.backgroundSecondary, borderColor: colors.border }]}>
           <ThemedText style={[styles.cardLabel, { color: colors.textSecondary }]}>Exercise</ThemedText>
           <ThemedText style={styles.exerciseName}>{exerciseName}</ThemedText>
-          {entry.exercise?.description && (
+          {entry.exercise?.description ? (
             <ThemedText style={[styles.exerciseDescription, { color: colors.textSecondary }]}>
               {entry.exercise.description}
             </ThemedText>
-          )}
+          ) : null}
         </View>
 
         <View style={styles.performanceRow}>
@@ -77,7 +77,7 @@ export default function EntryDetailScreen() {
           <ThemedText style={styles.dateText}>{formattedDate}</ThemedText>
         </View>
 
-        {entry.tags.length > 0 && (
+        {entry.tags && entry.tags.length > 0 ? (
           <View style={[styles.card, { backgroundColor: colors.backgroundSecondary, borderColor: colors.border }]}>
             <ThemedText style={[styles.cardLabel, { color: colors.textSecondary }]}>Tags</ThemedText>
             <View style={styles.tagsContainer}>
@@ -88,14 +88,14 @@ export default function EntryDetailScreen() {
               ))}
             </View>
           </View>
-        )}
+        ) : null}
 
-        {entry.notes && (
+        {entry.notes ? (
           <View style={[styles.card, { backgroundColor: colors.backgroundSecondary, borderColor: colors.border }]}>
             <ThemedText style={[styles.cardLabel, { color: colors.textSecondary }]}>Notes</ThemedText>
             <ThemedText style={styles.notesText}>{entry.notes}</ThemedText>
           </View>
-        )}
+        ) : null}
 
         <View style={{ height: 40 }} />
       </ScrollView>
