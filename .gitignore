@@ -36,7 +36,5 @@ yarn-error.*
 # typescript
 *.tsbuildinfo
 
-app-example
-
-# local agent memory
-.memsearch/
+# AI
+.memsearch

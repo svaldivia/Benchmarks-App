@@ -1,7 +1,7 @@
 {
   "expo": {
     "name": "benchmarks-app",
-    "slug": "benchmarks-app",
+    "slug": "benchmark-app",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
@@ -38,6 +38,13 @@
     ],
     "experiments": {
       "typedRoutes": true
-    }
+    },
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "f6605239-ea2b-4477-a860-a47694fb70be"
+      }
+    },
+    "owner": "svaldivia"
   }
 }
