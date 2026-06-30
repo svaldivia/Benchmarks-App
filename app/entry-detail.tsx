@@ -1,18 +1,20 @@
-import { ThemedText } from '@/components/ThemedText';
-import { Palette } from '@/constants/Colors';
-import { getEntryById } from '@/data/firebase/entries';
-import { getExerciseById } from '@/data/firebase/exercises';
-import { timestampToDate } from '@/data/firebase/helpers';
-import { Entry, Exercise } from '@/data/firebase/types';
-import { useAppColors } from '@/hooks/useAppColors';
-import { useLocalSearchParams } from 'expo-router';
-import React, { useEffect, useState } from 'react';
-import { ScrollView, StyleSheet, View } from 'react-native';
+import { ThemedText } from "@/components/ThemedText";
+import { getEntryById } from "@/data/firebase/entries";
+import { getExerciseById } from "@/data/firebase/exercises";
+import { timestampToDate } from "@/data/firebase/helpers";
+import { Entry, Exercise } from "@/data/firebase/types";
+import { useLocalSearchParams } from "expo-router";
+import React, { useEffect, useState } from "react";
+import { ScrollView, View } from "react-native";
+
+const CARD = "mb-3 rounded-md border border-border bg-surface p-4 shadow-sm";
+const LABEL = "mb-1.5 text-sm font-medium uppercase tracking-wide text-text-2";
 
 export default function EntryDetailScreen() {
-  const colors = useAppColors();
   const { entryId } = useLocalSearchParams<{ entryId: string }>();
-  const [entry, setEntry] = useState<(Entry & { exercise: Exercise }) | null>(null);
+  const [entry, setEntry] = useState<(Entry & { exercise: Exercise }) | null>(
+    null
+  );
 
   useEffect(() => {
     const fetchEntry = async () => {
@@ -29,61 +31,73 @@ export default function EntryDetailScreen() {
 
   if (!entryId || !entry) {
     return (
-      <View style={[styles.container, { backgroundColor: colors.backgroundPrimary }]}>
+      <View className="flex-1 bg-bg">
         <ThemedText>Entry not found</ThemedText>
       </View>
     );
   }
 
   const exerciseName = entry.exercise.name;
-  const formattedDate = timestampToDate(entry.createdDate).toLocaleDateString('en-US', {
-    year: 'numeric',
-    month: 'long',
-    day: 'numeric',
-  });
+  const formattedDate = timestampToDate(entry.createdDate).toLocaleDateString(
+    "en-US",
+    {
+      year: "numeric",
+      month: "long",
+      day: "numeric",
+    }
+  );
 
   return (
-    <View style={[styles.container, { backgroundColor: colors.backgroundPrimary }]}>
-      <View style={styles.header}>
-        <ThemedText type="title" style={styles.headerTitle}>Entry Details</ThemedText>
+    <View className="flex-1 bg-bg">
+      <View className="px-5 pb-4 pt-[60px]">
+        <ThemedText type="title" className="text-center">
+          Entry Details
+        </ThemedText>
       </View>
 
-      <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
-        <View style={[styles.card, { backgroundColor: colors.backgroundSecondary, borderColor: colors.border }]}>
-          <ThemedText style={[styles.cardLabel, { color: colors.textSecondary }]}>Exercise</ThemedText>
-          <ThemedText style={styles.exerciseName}>{exerciseName}</ThemedText>
+      <ScrollView className="flex-1 px-5" showsVerticalScrollIndicator={false}>
+        <View className={CARD}>
+          <ThemedText className={LABEL}>Exercise</ThemedText>
+          <ThemedText className="mb-1 text-h3 font-bold">
+            {exerciseName}
+          </ThemedText>
           {entry.exercise?.description ? (
-            <ThemedText style={[styles.exerciseDescription, { color: colors.textSecondary }]}>
+            <ThemedText className="mt-1 text-body leading-snug text-text-2">
               {entry.exercise.description}
             </ThemedText>
           ) : null}
         </View>
 
-        <View style={styles.performanceRow}>
-          <View style={[styles.performanceCard, { backgroundColor: colors.backgroundSecondary, borderColor: colors.border }]}>
-            <ThemedText style={[styles.cardLabel, { color: colors.textSecondary }]}>Weight</ThemedText>
-            <ThemedText style={styles.performanceValue}>
+        <View className="mb-3 flex-row gap-3">
+          <View className="flex-1 rounded-md border border-border bg-surface p-4 shadow-sm">
+            <ThemedText className={LABEL}>Weight</ThemedText>
+            <ThemedText className="text-xl font-bold">
               {entry.value} {entry.unit}
             </ThemedText>
           </View>
-          <View style={[styles.performanceCard, { backgroundColor: colors.backgroundSecondary, borderColor: colors.border }]}>
-            <ThemedText style={[styles.cardLabel, { color: colors.textSecondary }]}>Rep Max</ThemedText>
-            <ThemedText style={styles.performanceValue}>{entry.repMax} RM</ThemedText>
+          <View className="flex-1 rounded-md border border-border bg-surface p-4 shadow-sm">
+            <ThemedText className={LABEL}>Rep Max</ThemedText>
+            <ThemedText className="text-xl font-bold">
+              {entry.repMax} RM
+            </ThemedText>
           </View>
         </View>
 
-        <View style={[styles.card, { backgroundColor: colors.backgroundSecondary, borderColor: colors.border }]}>
-          <ThemedText style={[styles.cardLabel, { color: colors.textSecondary }]}>Date</ThemedText>
-          <ThemedText style={styles.dateText}>{formattedDate}</ThemedText>
+        <View className={CARD}>
+          <ThemedText className={LABEL}>Date</ThemedText>
+          <ThemedText className="text-body-lg">{formattedDate}</ThemedText>
         </View>
 
         {entry.tags && entry.tags.length > 0 ? (
-          <View style={[styles.card, { backgroundColor: colors.backgroundSecondary, borderColor: colors.border }]}>
-            <ThemedText style={[styles.cardLabel, { color: colors.textSecondary }]}>Tags</ThemedText>
-            <View style={styles.tagsContainer}>
+          <View className={CARD}>
+            <ThemedText className={LABEL}>Tags</ThemedText>
+            <View className="mt-1 flex-row flex-wrap gap-2">
               {entry.tags.map((tag, index) => (
-                <View key={index} style={[styles.tagBadge, { backgroundColor: colors.accentBackground, borderColor: colors.border }]}>
-                  <ThemedText style={[styles.tagText, { color: colors.accentText }]}>{tag}</ThemedText>
+                <View
+                  key={index}
+                  className="rounded-md border border-border bg-brand-subtle px-3 py-1.5"
+                >
+                  <ThemedText className="text-sm text-brand">{tag}</ThemedText>
                 </View>
               ))}
             </View>
@@ -91,59 +105,16 @@ export default function EntryDetailScreen() {
         ) : null}
 
         {entry.notes ? (
-          <View style={[styles.card, { backgroundColor: colors.backgroundSecondary, borderColor: colors.border }]}>
-            <ThemedText style={[styles.cardLabel, { color: colors.textSecondary }]}>Notes</ThemedText>
-            <ThemedText style={styles.notesText}>{entry.notes}</ThemedText>
+          <View className={CARD}>
+            <ThemedText className={LABEL}>Notes</ThemedText>
+            <ThemedText className="text-base leading-snug">
+              {entry.notes}
+            </ThemedText>
           </View>
         ) : null}
 
-        <View style={{ height: 40 }} />
+        <View className="h-10" />
       </ScrollView>
     </View>
   );
 }
-
-const styles = StyleSheet.create({
-  container: { flex: 1 },
-  header: { paddingTop: 60, paddingHorizontal: 20, paddingBottom: 16 },
-  headerTitle: { textAlign: 'center' },
-  content: { flex: 1, paddingHorizontal: 20 },
-  card: {
-    padding: 16,
-    borderRadius: 14,
-    borderWidth: 1,
-    marginBottom: 12,
-    shadowColor: Palette.black,
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.06,
-    shadowRadius: 8,
-    elevation: 2,
-  },
-  cardLabel: {
-    fontSize: 13,
-    fontWeight: '500',
-    textTransform: 'uppercase',
-    letterSpacing: 0.5,
-    marginBottom: 6,
-  },
-  exerciseName: { fontSize: 22, fontWeight: 'bold', marginBottom: 4 },
-  exerciseDescription: { fontSize: 15, lineHeight: 22, marginTop: 4 },
-  performanceRow: { flexDirection: 'row', gap: 12, marginBottom: 12 },
-  performanceCard: {
-    flex: 1,
-    padding: 16,
-    borderRadius: 14,
-    borderWidth: 1,
-    shadowColor: Palette.black,
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.06,
-    shadowRadius: 8,
-    elevation: 2,
-  },
-  performanceValue: { fontSize: 20, fontWeight: 'bold' },
-  dateText: { fontSize: 17 },
-  tagsContainer: { flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginTop: 4 },
-  tagBadge: { paddingHorizontal: 12, paddingVertical: 6, borderRadius: 14, borderWidth: 1 },
-  tagText: { fontSize: 14 },
-  notesText: { fontSize: 16, lineHeight: 22 },
-});

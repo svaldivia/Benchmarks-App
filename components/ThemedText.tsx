@@ -1,60 +1,37 @@
-import { StyleSheet, Text, type TextProps } from 'react-native';
-
-import { useThemeColor } from '@/hooks/useThemeColor';
+import { Text, type TextProps } from "react-native";
 
 export type ThemedTextProps = TextProps & {
-  lightColor?: string;
-  darkColor?: string;
-  type?: 'default' | 'title' | 'defaultSemiBold' | 'subtitle' | 'link';
+  className?: string;
+  type?: "default" | "title" | "defaultSemiBold" | "subtitle" | "link";
 };
 
+const TYPE_CLASSES: Record<NonNullable<ThemedTextProps["type"]>, string> = {
+  default: "text-body leading-normal",
+  defaultSemiBold: "text-body leading-normal font-semibold",
+  title: "font-display text-h1 font-bold leading-tight",
+  subtitle: "text-h3 font-bold",
+  link: "text-body-lg leading-relaxed text-text-link",
+};
+
+// Matches an explicit DS text-color utility (not sizes like text-base / text-h1).
+// When the caller supplies one, we drop the default `text-text` so it doesn't
+// win on CSS source order.
+const COLOR_RE =
+  /(?:^|\s)text-(text-2|text-3|text-link|text-disabled|text-on-fill|text|brand-hover|brand|accent|on-brand|on-accent|success|warning|danger|info|white|black)(?![\w-])/;
+
 export function ThemedText({
-  style,
-  lightColor,
-  darkColor,
-  type = 'default',
+  className,
+  type = "default",
   ...rest
 }: ThemedTextProps) {
-  const color = useThemeColor({ light: lightColor, dark: darkColor }, 'textPrimary');
+  const typeHasColor = COLOR_RE.test(TYPE_CLASSES[type]);
+  const propHasColor = className ? COLOR_RE.test(className) : false;
+  const base = typeHasColor || propHasColor ? "" : "text-text";
 
   return (
     <Text
-      style={[
-        { color },
-        type === 'default' ? styles.default : undefined,
-        type === 'title' ? styles.title : undefined,
-        type === 'defaultSemiBold' ? styles.defaultSemiBold : undefined,
-        type === 'subtitle' ? styles.subtitle : undefined,
-        type === 'link' ? styles.link : undefined,
-        style,
-      ]}
+      className={[base, TYPE_CLASSES[type], className].filter(Boolean).join(" ")}
       {...rest}
     />
   );
 }
-
-const styles = StyleSheet.create({
-  default: {
-    fontSize: 16,
-    lineHeight: 24,
-  },
-  defaultSemiBold: {
-    fontSize: 16,
-    lineHeight: 24,
-    fontWeight: '600',
-  },
-  title: {
-    fontSize: 32,
-    fontWeight: 'bold',
-    lineHeight: 32,
-  },
-  subtitle: {
-    fontSize: 20,
-    fontWeight: 'bold',
-  },
-  link: {
-    lineHeight: 30,
-    fontSize: 16,
-    color: '#2563eb',
-  },
-});

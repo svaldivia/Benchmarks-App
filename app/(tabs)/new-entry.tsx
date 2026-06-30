@@ -1,11 +1,11 @@
-import { ThemedText } from '@/components/ThemedText';
-import { Palette } from '@/constants/Colors';
-import { IconSymbol } from '@/components/ui/IconSymbol';
-import { addEntry } from '@/data/firebase/entries';
-import { ExerciseWithId, getExercises } from '@/data/firebase/exercises';
-import { dateToTimestamp } from '@/data/firebase/helpers';
-import { useAppColors } from '@/hooks/useAppColors';
-import React, { useEffect, useState } from 'react';
+import { ThemedText } from "@/components/ThemedText";
+import { IconSymbol } from "@/components/ui/IconSymbol";
+import { Palette } from "@/constants/Colors";
+import { addEntry } from "@/data/firebase/entries";
+import { ExerciseWithId, getExercises } from "@/data/firebase/exercises";
+import { dateToTimestamp } from "@/data/firebase/helpers";
+import { useAppColors } from "@/hooks/useAppColors";
+import React, { useEffect, useState } from "react";
 import {
   ActivityIndicator,
   Animated,
@@ -16,18 +16,17 @@ import {
   Platform,
   Pressable,
   ScrollView,
-  StyleSheet,
   TextInput,
   TouchableOpacity,
   View,
-} from 'react-native';
+} from "react-native";
 
 export default function NewEntryScreen() {
   const colors = useAppColors();
-  const [selectedExercise, setSelectedExercise] = useState('');
-  const [weight, setWeight] = useState('');
-  const [repMax, setRepMax] = useState('');
-  const [notes, setNotes] = useState('');
+  const [selectedExercise, setSelectedExercise] = useState("");
+  const [weight, setWeight] = useState("");
+  const [repMax, setRepMax] = useState("");
+  const [notes, setNotes] = useState("");
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [isRepMaxDropdownOpen, setIsRepMaxDropdownOpen] = useState(false);
@@ -38,15 +37,14 @@ export default function NewEntryScreen() {
   const successOpacity = new Animated.Value(0);
   const checkmarkScale = new Animated.Value(0);
 
-  const availableTags = ['pr', 'strength', 'technique', 'explosive', 'test', '1rm'];
+  const availableTags = ["pr", "strength", "technique", "explosive", "test", "1rm"];
   const repMaxOptions = Array.from({ length: 10 }, (_, i) => i + 1);
 
   const isFormValid = selectedExercise && weight && repMax;
 
-
   const handleWeightChange = (text: string) => {
-    const numericValue = text.replace(/[^0-9.]/g, '');
-    const parts = numericValue.split('.');
+    const numericValue = text.replace(/[^0-9.]/g, "");
+    const parts = numericValue.split(".");
     if (parts.length > 2) return;
     setWeight(numericValue);
   };
@@ -80,7 +78,7 @@ export default function NewEntryScreen() {
     const newEntry = {
       exerciseId: selectedExercise,
       value: parseFloat(weight),
-      unit: 'lbs',
+      unit: "lbs",
       repMax: parseInt(repMax, 10),
       createdDate: dateToTimestamp(new Date()),
       tags: selectedTags,
@@ -90,18 +88,18 @@ export default function NewEntryScreen() {
     try {
       setIsLoading(true);
       const newEntryId = await addEntry(newEntry);
-      console.log('New entry created with ID:', newEntryId);
+      console.log("New entry created with ID:", newEntryId);
       setIsLoading(false);
       setShowSuccess(true);
       setTimeout(() => {
-        setSelectedExercise('');
-        setWeight('');
-        setRepMax('');
-        setNotes('');
+        setSelectedExercise("");
+        setWeight("");
+        setRepMax("");
+        setNotes("");
         setSelectedTags([]);
       }, 1800);
     } catch (error) {
-      console.error('Error saving entry:', error);
+      console.error("Error saving entry:", error);
       setIsLoading(false);
     }
   };
@@ -116,33 +114,36 @@ export default function NewEntryScreen() {
 
   return (
     <KeyboardAvoidingView
-      style={[styles.container, { backgroundColor: colors.backgroundPrimary }]}
-      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+      className="flex-1 bg-bg"
+      behavior={Platform.OS === "ios" ? "padding" : "height"}
     >
-      <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
-        <View style={styles.header}>
+      <ScrollView className="flex-1" showsVerticalScrollIndicator={false}>
+        <View className="px-5 pb-4 pt-[60px]">
           <ThemedText type="title">New Entry</ThemedText>
         </View>
 
         {/* Select Exercise */}
-        <View style={styles.section}>
+        <View className="mb-6 px-5">
           <ThemedText type="subtitle">Select Exercise</ThemedText>
           <Pressable
-            style={[styles.dropdown, { backgroundColor: colors.backgroundSecondary, borderColor: colors.border }]}
+            className="mt-3 flex-row items-center justify-between rounded-md border border-border bg-surface p-3.5 shadow-xs"
             onPress={() => setIsDropdownOpen(true)}
           >
-            <ThemedText style={[styles.dropdownText, !selectedExercise && { color: colors.textMuted }]}>
+            <ThemedText
+              className={`text-base ${selectedExercise ? "" : "text-text-3"}`}
+            >
               {selectedExercise
-                ? exerciseOptions.find((ex) => ex.id === selectedExercise)?.name || 'Select an exercise'
-                : 'Select an exercise'}
+                ? exerciseOptions.find((ex) => ex.id === selectedExercise)?.name ||
+                  "Select an exercise"
+                : "Select an exercise"}
             </ThemedText>
             <IconSymbol size={18} name="chevron.down" color={colors.textSecondary} />
           </Pressable>
 
           <Modal visible={isDropdownOpen} transparent animationType="slide" onRequestClose={() => setIsDropdownOpen(false)}>
-            <Pressable style={[styles.modalOverlay, { backgroundColor: colors.overlay }]} onPress={() => setIsDropdownOpen(false)}>
-              <View style={[styles.modalContent, { backgroundColor: colors.backgroundSecondary }]}>
-                <View style={styles.modalHeader}>
+            <Pressable className="flex-1 justify-end bg-scrim" onPress={() => setIsDropdownOpen(false)}>
+              <View className="max-h-[70%] rounded-t-[20px] bg-surface pb-[30px] pt-5">
+                <View className="mb-3 flex-row items-center justify-between px-5">
                   <ThemedText type="subtitle">Select Exercise</ThemedText>
                   <Pressable onPress={() => setIsDropdownOpen(false)}>
                     <IconSymbol size={22} name="xmark" color={colors.textSecondary} />
@@ -153,20 +154,27 @@ export default function NewEntryScreen() {
                   keyExtractor={(item) => item.id}
                   renderItem={({ item }) => (
                     <TouchableOpacity
-                      style={[
-                        styles.listItem,
-                        { borderBottomColor: colors.border },
-                        selectedExercise === item.id && { backgroundColor: colors.accentBackground },
-                      ]}
-                      onPress={() => { setSelectedExercise(item.id); setIsDropdownOpen(false); }}
+                      className={`mx-1 my-px flex-row items-center justify-between rounded-sm border-b border-border px-3.5 py-3.5 ${
+                        selectedExercise === item.id ? "bg-brand-subtle" : ""
+                      }`}
+                      onPress={() => {
+                        setSelectedExercise(item.id);
+                        setIsDropdownOpen(false);
+                      }}
                     >
-                      <ThemedText style={[styles.listItemText, selectedExercise === item.id && { color: colors.accentText, fontWeight: '600' }]}>
+                      <ThemedText
+                        className={`text-base ${
+                          selectedExercise === item.id ? "font-semibold text-brand" : ""
+                        }`}
+                      >
                         {item.name}
                       </ThemedText>
-                      {selectedExercise === item.id && <IconSymbol size={18} name="checkmark" color={colors.accentText} />}
+                      {selectedExercise === item.id && (
+                        <IconSymbol size={18} name="checkmark" color={colors.accentText} />
+                      )}
                     </TouchableOpacity>
                   )}
-                  style={styles.list}
+                  className="px-2.5"
                 />
               </View>
             </Pressable>
@@ -174,13 +182,13 @@ export default function NewEntryScreen() {
         </View>
 
         {/* Performance */}
-        <View style={styles.section}>
+        <View className="mb-6 px-5">
           <ThemedText type="subtitle">Performance</ThemedText>
-          <View style={styles.performanceRow}>
-            <View style={styles.inputHalf}>
-              <ThemedText style={[styles.inputLabel, { color: colors.textSecondary }]}>Weight (lbs)</ThemedText>
+          <View className="mt-3 flex-row gap-3">
+            <View className="flex-1">
+              <ThemedText className="mb-1.5 text-sm text-text-2">Weight (lbs)</ThemedText>
               <TextInput
-                style={[styles.input, { backgroundColor: colors.backgroundSecondary, borderColor: colors.border, color: colors.textPrimary }]}
+                className="h-12 rounded-md border border-border bg-surface px-3.5 text-base text-text shadow-xs"
                 value={weight}
                 onChangeText={handleWeightChange}
                 placeholder="0"
@@ -189,14 +197,14 @@ export default function NewEntryScreen() {
                 selectionColor={colors.tint}
               />
             </View>
-            <View style={styles.inputHalf}>
-              <ThemedText style={[styles.inputLabel, { color: colors.textSecondary }]}>Rep Max</ThemedText>
+            <View className="flex-1">
+              <ThemedText className="mb-1.5 text-sm text-text-2">Rep Max</ThemedText>
               <Pressable
-                style={[styles.dropdown, styles.dropdownSmall, { backgroundColor: colors.backgroundSecondary, borderColor: colors.border }]}
+                className="h-12 flex-row items-center justify-between rounded-md border border-border bg-surface p-3 shadow-xs"
                 onPress={() => setIsRepMaxDropdownOpen(true)}
               >
-                <ThemedText style={[styles.dropdownText, !repMax && { color: colors.textMuted }]}>
-                  {repMax ? `${repMax} RM` : 'Select'}
+                <ThemedText className={`text-base ${repMax ? "" : "text-text-3"}`}>
+                  {repMax ? `${repMax} RM` : "Select"}
                 </ThemedText>
                 <IconSymbol size={16} name="chevron.down" color={colors.textSecondary} />
               </Pressable>
@@ -204,9 +212,9 @@ export default function NewEntryScreen() {
           </View>
 
           <Modal visible={isRepMaxDropdownOpen} transparent animationType="slide" onRequestClose={() => setIsRepMaxDropdownOpen(false)}>
-            <Pressable style={[styles.modalOverlay, { backgroundColor: colors.overlay }]} onPress={() => setIsRepMaxDropdownOpen(false)}>
-              <View style={[styles.modalContent, { backgroundColor: colors.backgroundSecondary }]}>
-                <View style={styles.modalHeader}>
+            <Pressable className="flex-1 justify-end bg-scrim" onPress={() => setIsRepMaxDropdownOpen(false)}>
+              <View className="max-h-[70%] rounded-t-[20px] bg-surface pb-[30px] pt-5">
+                <View className="mb-3 flex-row items-center justify-between px-5">
                   <ThemedText type="subtitle">Select Rep Max</ThemedText>
                   <Pressable onPress={() => setIsRepMaxDropdownOpen(false)}>
                     <IconSymbol size={22} name="xmark" color={colors.textSecondary} />
@@ -217,20 +225,27 @@ export default function NewEntryScreen() {
                   keyExtractor={(item) => item.toString()}
                   renderItem={({ item }) => (
                     <TouchableOpacity
-                      style={[
-                        styles.listItem,
-                        { borderBottomColor: colors.border },
-                        repMax === item.toString() && { backgroundColor: colors.accentBackground },
-                      ]}
-                      onPress={() => { setRepMax(item.toString()); setIsRepMaxDropdownOpen(false); }}
+                      className={`mx-1 my-px flex-row items-center justify-between rounded-sm border-b border-border px-3.5 py-3.5 ${
+                        repMax === item.toString() ? "bg-brand-subtle" : ""
+                      }`}
+                      onPress={() => {
+                        setRepMax(item.toString());
+                        setIsRepMaxDropdownOpen(false);
+                      }}
                     >
-                      <ThemedText style={[styles.listItemText, repMax === item.toString() && { color: colors.accentText, fontWeight: '600' }]}>
+                      <ThemedText
+                        className={`text-base ${
+                          repMax === item.toString() ? "font-semibold text-brand" : ""
+                        }`}
+                      >
                         {item} Rep Max
                       </ThemedText>
-                      {repMax === item.toString() && <IconSymbol size={18} name="checkmark" color={colors.accentText} />}
+                      {repMax === item.toString() && (
+                        <IconSymbol size={18} name="checkmark" color={colors.accentText} />
+                      )}
                     </TouchableOpacity>
                   )}
-                  style={styles.list}
+                  className="px-2.5"
                 />
               </View>
             </Pressable>
@@ -238,29 +253,25 @@ export default function NewEntryScreen() {
         </View>
 
         {/* Tags */}
-        <View style={styles.section}>
+        <View className="mb-6 px-5">
           <ThemedText type="subtitle">Tags</ThemedText>
-          <View style={styles.tagsContainer}>
+          <View className="mt-3 flex-row flex-wrap gap-2">
             {availableTags.map((tag) => {
               const isSelected = selectedTags.includes(tag);
               return (
                 <Pressable
                   key={tag}
-                  style={[
-                    styles.tag,
-                    {
-                      backgroundColor: isSelected ? colors.accentBackgroundStrong : colors.accentBackground,
-                      borderColor: isSelected ? colors.accentBorder : colors.border,
-                    },
-                  ]}
+                  className={`rounded-pill border px-4 py-2 ${
+                    isSelected
+                      ? "border-brand bg-brand-subtle-2"
+                      : "border-border bg-brand-subtle"
+                  }`}
                   onPress={() => toggleTag(tag)}
                 >
                   <ThemedText
-                    style={[
-                      styles.tagText,
-                      { color: isSelected ? colors.accentText : colors.textSecondary },
-                      isSelected && { fontWeight: '600' },
-                    ]}
+                    className={`text-sm ${
+                      isSelected ? "font-semibold text-brand" : "text-text-2"
+                    }`}
                   >
                     {tag}
                   </ThemedText>
@@ -271,10 +282,11 @@ export default function NewEntryScreen() {
         </View>
 
         {/* Notes */}
-        <View style={styles.section}>
+        <View className="mb-6 px-5">
           <ThemedText type="subtitle">Notes (Optional)</ThemedText>
           <TextInput
-            style={[styles.notesInput, { backgroundColor: colors.backgroundSecondary, borderColor: colors.border, color: colors.textPrimary }]}
+            className="mt-3 min-h-[100px] rounded-md border border-border bg-surface p-3.5 text-base text-text shadow-xs"
+            style={{ textAlignVertical: "top" }}
             multiline
             numberOfLines={4}
             value={notes}
@@ -287,166 +299,52 @@ export default function NewEntryScreen() {
 
         {/* Save Button */}
         <Pressable
-          style={[styles.saveButton, { backgroundColor: colors.tint }, (isLoading || !isFormValid) && styles.disabledButton]}
+          className={`mx-5 flex-row items-center justify-center gap-2 rounded-md bg-brand p-4 shadow-sm ${
+            isLoading || !isFormValid ? "opacity-40" : ""
+          }`}
           onPress={saveEntry}
           disabled={isLoading || !isFormValid}
         >
-          <ThemedText style={styles.saveButtonText}>Save Entry</ThemedText>
+          <ThemedText className="text-lg font-semibold text-on-brand">
+            Save Entry
+          </ThemedText>
           <IconSymbol size={18} name="checkmark" color={Palette.white} />
         </Pressable>
 
-        <View style={{ height: 40 }} />
+        <View className="h-10" />
       </ScrollView>
 
       {/* Loading Overlay */}
       {isLoading && (
-        <View style={[styles.overlayContainer, { backgroundColor: colors.overlay }]}>
-          <View style={[styles.loadingBox, { backgroundColor: colors.backgroundSecondary }]}>
+        <View className="absolute inset-0 z-10 items-center justify-center bg-scrim">
+          <View className="w-4/5 max-w-[280px] items-center rounded-lg bg-surface p-6 shadow-lg">
             <ActivityIndicator size="large" color={colors.tint} />
-            <ThemedText style={styles.loadingText}>Saving entry...</ThemedText>
+            <ThemedText className="mt-4 text-base font-medium">
+              Saving entry...
+            </ThemedText>
           </View>
         </View>
       )}
 
       {/* Success Overlay */}
       {showSuccess && (
-        <Animated.View style={[styles.overlayContainer, { backgroundColor: colors.overlay, opacity: successOpacity }]}>
-          <View style={styles.successContainer}>
-            <Animated.View style={[styles.checkmarkCircle, { backgroundColor: colors.tint, transform: [{ scale: checkmarkScale }] }]}>
+        <Animated.View
+          style={{ opacity: successOpacity }}
+          className="absolute inset-0 z-10 items-center justify-center bg-scrim"
+        >
+          <View className="items-center justify-center">
+            <Animated.View
+              style={{ transform: [{ scale: checkmarkScale }] }}
+              className="mb-4 h-20 w-20 items-center justify-center rounded-full bg-brand"
+            >
               <IconSymbol size={40} name="checkmark" color={Palette.white} />
             </Animated.View>
-            <ThemedText style={styles.successText}>Entry Saved!</ThemedText>
+            <ThemedText className="text-xl font-bold text-on-brand">
+              Entry Saved!
+            </ThemedText>
           </View>
         </Animated.View>
       )}
     </KeyboardAvoidingView>
   );
 }
-
-const styles = StyleSheet.create({
-  container: { flex: 1 },
-  scrollView: { flex: 1 },
-  header: { paddingTop: 60, paddingHorizontal: 20, paddingBottom: 16 },
-  section: { paddingHorizontal: 20, marginBottom: 24 },
-  dropdown: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginTop: 12,
-    padding: 14,
-    borderRadius: 12,
-    borderWidth: 1,
-    shadowColor: Palette.black,
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.06,
-    shadowRadius: 4,
-    elevation: 1,
-  },
-  dropdownSmall: { height: 48, marginTop: 0, padding: 12 },
-  dropdownText: { fontSize: 16 },
-  modalOverlay: { flex: 1, justifyContent: 'flex-end' },
-  modalContent: {
-    maxHeight: '70%',
-    borderTopLeftRadius: 20,
-    borderTopRightRadius: 20,
-    paddingTop: 20,
-    paddingBottom: 30,
-  },
-  modalHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingHorizontal: 20,
-    marginBottom: 12,
-  },
-  list: { paddingHorizontal: 10 },
-  listItem: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingVertical: 14,
-    paddingHorizontal: 14,
-    borderBottomWidth: 1,
-    borderRadius: 8,
-    marginHorizontal: 4,
-    marginVertical: 1,
-  },
-  listItemText: { fontSize: 16 },
-  performanceRow: { flexDirection: 'row', gap: 12, marginTop: 12 },
-  inputHalf: { flex: 1 },
-  inputLabel: { marginBottom: 6, fontSize: 14 },
-  input: {
-    height: 48,
-    borderWidth: 1,
-    borderRadius: 12,
-    paddingHorizontal: 14,
-    fontSize: 16,
-    shadowColor: Palette.black,
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.06,
-    shadowRadius: 4,
-    elevation: 1,
-  },
-  tagsContainer: { flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginTop: 12 },
-  tag: { paddingHorizontal: 16, paddingVertical: 8, borderRadius: 20, borderWidth: 1 },
-  tagText: { fontSize: 14 },
-  notesInput: {
-    minHeight: 100,
-    borderWidth: 1,
-    borderRadius: 12,
-    padding: 14,
-    marginTop: 12,
-    textAlignVertical: 'top',
-    fontSize: 16,
-    shadowColor: Palette.black,
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.06,
-    shadowRadius: 4,
-    elevation: 1,
-  },
-  saveButton: {
-    flexDirection: 'row',
-    borderRadius: 14,
-    padding: 16,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginHorizontal: 20,
-    gap: 8,
-    shadowColor: Palette.black,
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.15,
-    shadowRadius: 6,
-    elevation: 3,
-  },
-  saveButtonText: { color: Palette.white, fontSize: 18, fontWeight: '600' },
-  disabledButton: { opacity: 0.4 },
-  overlayContainer: {
-    ...StyleSheet.absoluteFillObject,
-    justifyContent: 'center',
-    alignItems: 'center',
-    zIndex: 10,
-  },
-  loadingBox: {
-    borderRadius: 16,
-    padding: 24,
-    alignItems: 'center',
-    width: '80%',
-    maxWidth: 280,
-    shadowColor: Palette.black,
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.15,
-    shadowRadius: 12,
-    elevation: 5,
-  },
-  loadingText: { marginTop: 16, fontSize: 16, fontWeight: '500' },
-  successContainer: { alignItems: 'center', justifyContent: 'center' },
-  checkmarkCircle: {
-    width: 80,
-    height: 80,
-    borderRadius: 40,
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginBottom: 16,
-  },
-  successText: { fontSize: 20, fontWeight: 'bold', color: Palette.white },
-});
