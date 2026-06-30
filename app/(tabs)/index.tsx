@@ -1,87 +1,31 @@
-import { Palette } from '@/constants/Colors';
-import { useAppColors } from '@/hooks/useAppColors';
-import { router } from 'expo-router';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { router } from "expo-router";
+import { Pressable, Text, View } from "react-native";
 
 export default function Index() {
-  const colors = useAppColors();
-
   return (
-    <View style={[styles.container, { backgroundColor: colors.backgroundPrimary }]}>
-      <Text style={[styles.title, { color: colors.textPrimary }]}>
+    <View className="flex-1 items-center justify-center bg-bg p-5">
+      <Text className="mb-3 text-center font-display text-3xl font-bold text-text">
         Fitness Benchmarks
       </Text>
-      <Text style={[styles.subtitle, { color: colors.textSecondary }]}>
+      <Text className="mb-10 text-center text-body-lg text-text-2">
         Track your workout performance and progress
       </Text>
 
       <Pressable
-        style={[styles.button, { backgroundColor: colors.tint }]}
-        onPress={() => router.push('/new-entry')}
+        className="mb-4 w-4/5 items-center rounded-md bg-brand px-6 py-4 shadow-sm"
+        onPress={() => router.push("/new-entry")}
       >
-        <Text style={styles.buttonText}>Record New Entry</Text>
+        <Text className="text-lg font-semibold text-on-brand">
+          Record New Entry
+        </Text>
       </Pressable>
 
       <Pressable
-        style={[styles.secondaryButton, { borderColor: colors.tint }]}
-        onPress={() => router.push('/entries')}
+        className="mb-4 w-4/5 items-center rounded-md border-[1.5px] border-brand bg-transparent px-6 py-4"
+        onPress={() => router.push("/entries")}
       >
-        <Text style={[styles.secondaryButtonText, { color: colors.tint }]}>
-          View All Entries
-        </Text>
+        <Text className="text-lg font-semibold text-brand">View All Entries</Text>
       </Pressable>
     </View>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    padding: 20,
-  },
-  title: {
-    fontSize: 28,
-    fontWeight: 'bold',
-    marginBottom: 12,
-    textAlign: 'center',
-  },
-  subtitle: {
-    fontSize: 16,
-    marginBottom: 40,
-    textAlign: 'center',
-  },
-  button: {
-    paddingVertical: 16,
-    paddingHorizontal: 24,
-    borderRadius: 14,
-    marginBottom: 16,
-    width: '80%',
-    alignItems: 'center',
-    shadowColor: Palette.black,
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.12,
-    shadowRadius: 6,
-    elevation: 3,
-  },
-  buttonText: {
-    color: Palette.white,
-    fontSize: 18,
-    fontWeight: '600',
-  },
-  secondaryButton: {
-    paddingVertical: 16,
-    paddingHorizontal: 24,
-    borderRadius: 14,
-    marginBottom: 16,
-    width: '80%',
-    alignItems: 'center',
-    backgroundColor: 'transparent',
-    borderWidth: 1.5,
-  },
-  secondaryButtonText: {
-    fontSize: 18,
-    fontWeight: '600',
-  },
-});

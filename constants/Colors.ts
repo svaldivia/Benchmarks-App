@@ -1,61 +1,55 @@
-// Palette – Tailwind-inspired color scales.
-// We use blue, slate, gray, and red.
+// Benchmark Design System palette (JS mirror of tokens/colors.css).
+// The CSS variables in global.css are the source of truth for className
+// styling; this file exists for the few JS-side consumers that need a real
+// color value (React Navigation theme/tab options, icon `color` props,
+// TextInput placeholder/selection colors) where a className can't reach.
 
 const Palette = {
+  // Blue — primary, "athletic azure"
   blue: {
-    50: '#eff6ff',
-    100: '#dbeafe',
-    200: '#bfdbfe',
-    300: '#93c5fd',
-    400: '#60a5fa',
-    500: '#3b82f6',
-    600: '#2563eb',
-    700: '#1d4ed8',
-    800: '#1e40af',
-    900: '#1e3a8a',
-    950: '#172554',
+    50: "#eaf1ff",
+    100: "#d6e4ff",
+    200: "#aecbff",
+    300: "#82a9ff",
+    400: "#4f84ff",
+    500: "#2c6bff",
+    600: "#1a52e6",
+    700: "#1542b4",
+    800: "#163a8f",
+    900: "#16336f",
+    950: "#101f44",
   },
+  // Coral — warm accent
+  coral: {
+    50: "#fff1ee",
+    100: "#ffe0da",
+    200: "#ffc0b4",
+    300: "#ff9786",
+    400: "#fb6a55",
+    500: "#f74b3b",
+    600: "#e2382a",
+    700: "#bb2e22",
+    800: "#92271f",
+    900: "#76251e",
+  },
+  // Slate — cool, blue-leaning neutrals
   slate: {
-    50: '#f8fafc',
-    100: '#f1f5f9',
-    200: '#e2e8f0',
-    300: '#cbd5e1',
-    400: '#94a3b8',
-    500: '#64748b',
-    600: '#475569',
-    700: '#334155',
-    800: '#1e293b',
-    900: '#0f172a',
-    950: '#020617',
+    0: "#ffffff",
+    25: "#f7f9fc",
+    50: "#f1f4fa",
+    100: "#e7ecf5",
+    200: "#d6deec",
+    300: "#b9c4da",
+    400: "#8a98b5",
+    500: "#647193",
+    600: "#4a5573",
+    700: "#353e57",
+    800: "#222a3d",
+    900: "#151b2b",
+    950: "#0b0f1a",
   },
-  gray: {
-    50: '#f9fafb',
-    100: '#f3f4f6',
-    200: '#e5e7eb',
-    300: '#d1d5db',
-    400: '#9ca3af',
-    500: '#6b7280',
-    600: '#4b5563',
-    700: '#374151',
-    800: '#1f2937',
-    900: '#111827',
-    950: '#030712',
-  },
-  red: {
-    50: '#fef2f2',
-    100: '#fee2e2',
-    200: '#fecaca',
-    300: '#fca5a5',
-    400: '#f87171',
-    500: '#ef4444',
-    600: '#dc2626',
-    700: '#b91c1c',
-    800: '#991b1b',
-    900: '#7f1d1d',
-    950: '#450a0a',
-  },
-  white: '#ffffff',
-  black: '#000000',
+  white: "#ffffff",
+  black: "#000000",
 };
 
 export { Palette };
@@ -64,59 +58,59 @@ export const Colors = {
   light: {
     // Text
     textPrimary: Palette.slate[900],
-    textSecondary: Palette.slate[500],
+    textSecondary: Palette.slate[600],
     textMuted: Palette.slate[400],
 
     // Backgrounds
-    backgroundPrimary: Palette.slate[100],
-    backgroundSecondary: Palette.white,
-    backgroundTertiary: Palette.slate[50],
+    backgroundPrimary: Palette.slate[25],
+    backgroundSecondary: Palette.slate[0],
+    backgroundTertiary: Palette.slate[25],
 
     // Borders
     border: Palette.slate[200],
     borderStrong: Palette.slate[300],
 
-    // Accent / tint
-    tint: Palette.blue[600],
+    // Accent / tint (brand)
+    tint: Palette.blue[500],
     accentBackground: Palette.blue[50],
     accentBackgroundStrong: Palette.blue[100],
     accentBorder: Palette.blue[500],
     accentText: Palette.blue[600],
 
     // Tab bar
-    tabIconDefault: Palette.slate[400],
-    tabIconSelected: Palette.blue[600],
+    tabIconDefault: Palette.slate[500],
+    tabIconSelected: Palette.blue[500],
 
-    // Overlay
-    overlay: 'rgba(0, 0, 0, 0.4)',
+    // Overlay (scrim)
+    overlay: "rgba(11, 15, 26, 0.45)",
   },
   dark: {
     // Text
-    textPrimary: Palette.slate[100],
-    textSecondary: Palette.slate[400],
-    textMuted: Palette.slate[500],
+    textPrimary: "#eef3fc",
+    textSecondary: "#a9b6d1",
+    textMuted: "#6b7a99",
 
     // Backgrounds
-    backgroundPrimary: Palette.gray[950],
-    backgroundSecondary: Palette.gray[900],
-    backgroundTertiary: Palette.gray[800],
+    backgroundPrimary: "#090d16",
+    backgroundSecondary: "#121a2b",
+    backgroundTertiary: "#0f1626",
 
     // Borders
-    border: Palette.gray[800],
-    borderStrong: Palette.gray[700],
+    border: "#273350",
+    borderStrong: "#36456a",
 
-    // Accent / tint
+    // Accent / tint (brand)
     tint: Palette.blue[400],
-    accentBackground: Palette.blue[950],
-    accentBackgroundStrong: Palette.blue[900],
+    accentBackground: "rgba(44, 107, 255, 0.16)",
+    accentBackgroundStrong: "rgba(44, 107, 255, 0.26)",
     accentBorder: Palette.blue[400],
-    accentText: Palette.blue[400],
+    accentText: Palette.blue[300],
 
     // Tab bar
-    tabIconDefault: Palette.slate[400],
+    tabIconDefault: "#7787a6",
     tabIconSelected: Palette.blue[400],
 
-    // Overlay
-    overlay: 'rgba(0, 0, 0, 0.6)',
+    // Overlay (scrim)
+    overlay: "rgba(3, 6, 14, 0.6)",
   },
 };

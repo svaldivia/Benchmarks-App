@@ -1,14 +1,14 @@
-import { ThemedText } from '@/components/ThemedText';
-import { Palette } from '@/constants/Colors';
-import { IconSymbol } from '@/components/ui/IconSymbol';
+import { ThemedText } from "@/components/ThemedText";
+import { IconSymbol } from "@/components/ui/IconSymbol";
+import { Palette } from "@/constants/Colors";
 import {
   addExercise,
   ExerciseWithId,
   getExercises,
-} from '@/data/firebase/exercises';
-import { commonExerciseTags } from '@/data/firebase/types';
-import { useAppColors } from '@/hooks/useAppColors';
-import React, { useEffect, useState } from 'react';
+} from "@/data/firebase/exercises";
+import { commonExerciseTags } from "@/data/firebase/types";
+import { useAppColors } from "@/hooks/useAppColors";
+import React, { useEffect, useState } from "react";
 import {
   Animated,
   Easing,
@@ -16,10 +16,9 @@ import {
   Modal,
   Pressable,
   ScrollView,
-  StyleSheet,
   TextInput,
   View,
-} from 'react-native';
+} from "react-native";
 
 export default function ExercisesScreen() {
   const colors = useAppColors();
@@ -28,9 +27,9 @@ export default function ExercisesScreen() {
   const [isLoading, setIsLoading] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
 
-  const [newExerciseName, setNewExerciseName] = useState('');
-  const [newExerciseDescription, setNewExerciseDescription] = useState('');
-  const [newExerciseLink, setNewExerciseLink] = useState('');
+  const [newExerciseName, setNewExerciseName] = useState("");
+  const [newExerciseDescription, setNewExerciseDescription] = useState("");
+  const [newExerciseLink, setNewExerciseLink] = useState("");
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
 
   const successOpacity = new Animated.Value(0);
@@ -80,36 +79,42 @@ export default function ExercisesScreen() {
     try {
       setIsLoading(true);
       const newId = await addExercise(newExercise);
-      console.log('New exercise created with ID:', newId);
+      console.log("New exercise created with ID:", newId);
       setIsAddModalVisible(false);
       setIsLoading(false);
       setShowSuccess(true);
-      setNewExerciseName('');
-      setNewExerciseDescription('');
-      setNewExerciseLink('');
+      setNewExerciseName("");
+      setNewExerciseDescription("");
+      setNewExerciseLink("");
       setSelectedTags([]);
     } catch (error) {
-      console.error('Error adding exercise:', error);
+      console.error("Error adding exercise:", error);
       setIsLoading(false);
     }
   };
 
   const renderExerciseItem = ({ item }: { item: ExerciseWithId }) => (
-    <View style={[styles.exerciseCard, { backgroundColor: colors.backgroundSecondary, borderColor: colors.border }]}>
-      <ThemedText type="defaultSemiBold" style={styles.exerciseName}>
+    <View className="mb-3 rounded-md border border-border bg-surface p-4 shadow-sm">
+      <ThemedText type="defaultSemiBold" className="mb-2 text-body-lg">
         {item.name}
       </ThemedText>
 
-      <View style={styles.tagRow}>
+      <View className="mb-1 flex-row flex-wrap gap-1.5">
         {item.tags.map((tag, index) => (
-          <View key={index} style={[styles.tagBadge, { backgroundColor: colors.accentBackground, borderColor: colors.border }]}>
-            <ThemedText style={[styles.tagBadgeText, { color: colors.accentText }]}>{tag}</ThemedText>
+          <View
+            key={index}
+            className="rounded-md border border-border bg-brand-subtle px-2.5 py-1"
+          >
+            <ThemedText className="text-xs text-brand">{tag}</ThemedText>
           </View>
         ))}
       </View>
 
       {item.description ? (
-        <ThemedText style={[styles.description, { color: colors.textSecondary }]} numberOfLines={2}>
+        <ThemedText
+          className="mt-2 text-sm leading-snug text-text-2"
+          numberOfLines={2}
+        >
           {item.description}
         </ThemedText>
       ) : null}
@@ -117,11 +122,11 @@ export default function ExercisesScreen() {
   );
 
   return (
-    <View style={[styles.container, { backgroundColor: colors.backgroundPrimary }]}>
-      <View style={styles.header}>
+    <View className="flex-1 bg-bg">
+      <View className="flex-row items-center justify-between px-5 pb-4 pt-[60px]">
         <ThemedText type="title">Exercises</ThemedText>
         <Pressable
-          style={[styles.addButton, { backgroundColor: colors.tint }]}
+          className="h-10 w-10 items-center justify-center rounded-full bg-brand shadow-sm"
           onPress={() => setIsAddModalVisible(true)}
         >
           <IconSymbol size={22} name="plus" color={Palette.white} />
@@ -132,25 +137,27 @@ export default function ExercisesScreen() {
         data={exerciseList}
         keyExtractor={(item) => item.id}
         renderItem={renderExerciseItem}
-        contentContainerStyle={styles.list}
+        contentContainerClassName="px-5 pb-5"
         showsVerticalScrollIndicator={false}
       />
 
       <Modal visible={isAddModalVisible} transparent animationType="slide" onRequestClose={() => setIsAddModalVisible(false)}>
-        <View style={[styles.modalOverlay, { backgroundColor: colors.overlay }]}>
-          <View style={[styles.modalContent, { backgroundColor: colors.backgroundSecondary }]}>
-            <View style={styles.modalHeader}>
+        <View className="flex-1 justify-end bg-scrim">
+          <View className="max-h-[80%] rounded-t-[20px] bg-surface pt-5">
+            <View className="mb-3 flex-row items-center justify-between px-5">
               <ThemedText type="subtitle">Add New Exercise</ThemedText>
               <Pressable onPress={() => setIsAddModalVisible(false)}>
                 <IconSymbol size={22} name="xmark" color={colors.textSecondary} />
               </Pressable>
             </View>
 
-            <ScrollView style={styles.formContainer}>
-              <View style={styles.formField}>
-                <ThemedText style={[styles.inputLabel, { color: colors.textSecondary }]}>Exercise Name *</ThemedText>
+            <ScrollView className="px-5">
+              <View className="mb-5">
+                <ThemedText className="mb-2 text-base text-text-2">
+                  Exercise Name *
+                </ThemedText>
                 <TextInput
-                  style={[styles.input, { backgroundColor: colors.backgroundSecondary, borderColor: colors.border, color: colors.textPrimary }]}
+                  className="h-12 rounded-md border border-border bg-surface px-3.5 text-base text-text shadow-xs"
                   value={newExerciseName}
                   onChangeText={setNewExerciseName}
                   placeholder="Name of the exercise"
@@ -159,25 +166,29 @@ export default function ExercisesScreen() {
                 />
               </View>
 
-              <View style={styles.formField}>
-                <ThemedText style={[styles.inputLabel, { color: colors.textSecondary }]}>Description</ThemedText>
+              <View className="mb-5">
+                <ThemedText className="mb-2 text-base text-text-2">
+                  Description
+                </ThemedText>
                 <TextInput
-                  style={[styles.input, styles.textArea, { backgroundColor: colors.backgroundSecondary, borderColor: colors.border, color: colors.textPrimary }]}
+                  className="min-h-[100px] rounded-md border border-border bg-surface px-3.5 pt-3 text-base text-text shadow-xs"
+                  style={{ textAlignVertical: "top" }}
                   value={newExerciseDescription}
                   onChangeText={setNewExerciseDescription}
                   placeholder="Describe the exercise and technique"
                   placeholderTextColor={colors.textMuted}
                   multiline
                   numberOfLines={4}
-                  textAlignVertical="top"
                   selectionColor={colors.tint}
                 />
               </View>
 
-              <View style={styles.formField}>
-                <ThemedText style={[styles.inputLabel, { color: colors.textSecondary }]}>Link (Optional)</ThemedText>
+              <View className="mb-5">
+                <ThemedText className="mb-2 text-base text-text-2">
+                  Link (Optional)
+                </ThemedText>
                 <TextInput
-                  style={[styles.input, { backgroundColor: colors.backgroundSecondary, borderColor: colors.border, color: colors.textPrimary }]}
+                  className="h-12 rounded-md border border-border bg-surface px-3.5 text-base text-text shadow-xs"
                   value={newExerciseLink}
                   onChangeText={setNewExerciseLink}
                   placeholder="URL to video or guide"
@@ -187,29 +198,25 @@ export default function ExercisesScreen() {
                 />
               </View>
 
-              <View style={styles.formField}>
-                <ThemedText style={[styles.inputLabel, { color: colors.textSecondary }]}>Tags</ThemedText>
-                <View style={styles.tagsContainer}>
+              <View className="mb-5">
+                <ThemedText className="mb-2 text-base text-text-2">Tags</ThemedText>
+                <View className="flex-row flex-wrap gap-2">
                   {commonExerciseTags.map((tag) => {
                     const isSelected = selectedTags.includes(tag);
                     return (
                       <Pressable
                         key={tag}
-                        style={[
-                          styles.tag,
-                          {
-                            backgroundColor: isSelected ? colors.accentBackgroundStrong : colors.accentBackground,
-                            borderColor: isSelected ? colors.accentBorder : colors.border,
-                          },
-                        ]}
+                        className={`rounded-pill border px-4 py-2 ${
+                          isSelected
+                            ? "border-brand bg-brand-subtle-2"
+                            : "border-border bg-brand-subtle"
+                        }`}
                         onPress={() => toggleTag(tag)}
                       >
                         <ThemedText
-                          style={[
-                            styles.tagText,
-                            { color: isSelected ? colors.accentText : colors.textSecondary },
-                            isSelected && { fontWeight: '600' },
-                          ]}
+                          className={`text-sm ${
+                            isSelected ? "font-semibold text-brand" : "text-text-2"
+                          }`}
                         >
                           {tag}
                         </ThemedText>
@@ -220,14 +227,18 @@ export default function ExercisesScreen() {
               </View>
 
               <Pressable
-                style={[styles.saveButton, { backgroundColor: colors.tint }, (!newExerciseName.trim() || isLoading) && styles.disabledButton]}
+                className={`mb-10 mt-2.5 flex-row items-center justify-center gap-2 rounded-md bg-brand p-4 shadow-sm ${
+                  !newExerciseName.trim() || isLoading ? "opacity-40" : ""
+                }`}
                 onPress={handleAddExercise}
                 disabled={!newExerciseName.trim() || isLoading}
               >
-                <ThemedText style={styles.saveButtonText}>
-                  {isLoading ? 'Saving...' : 'Save Exercise'}
+                <ThemedText className="text-lg font-semibold text-on-brand">
+                  {isLoading ? "Saving..." : "Save Exercise"}
                 </ThemedText>
-                {!isLoading && <IconSymbol size={18} name="checkmark" color={Palette.white} />}
+                {!isLoading && (
+                  <IconSymbol size={18} name="checkmark" color={Palette.white} />
+                )}
               </Pressable>
             </ScrollView>
           </View>
@@ -235,117 +246,23 @@ export default function ExercisesScreen() {
       </Modal>
 
       {showSuccess && (
-        <Animated.View style={[styles.overlayContainer, { backgroundColor: colors.overlay, opacity: successOpacity }]}>
-          <View style={styles.successContainer}>
-            <Animated.View style={[styles.checkmarkCircle, { backgroundColor: colors.tint, transform: [{ scale: checkmarkScale }] }]}>
+        <Animated.View
+          style={{ opacity: successOpacity }}
+          className="absolute inset-0 z-10 items-center justify-center bg-scrim"
+        >
+          <View className="items-center justify-center">
+            <Animated.View
+              style={{ transform: [{ scale: checkmarkScale }] }}
+              className="mb-4 h-20 w-20 items-center justify-center rounded-full bg-brand"
+            >
               <IconSymbol size={40} name="checkmark" color={Palette.white} />
             </Animated.View>
-            <ThemedText style={styles.successText}>Exercise Added!</ThemedText>
+            <ThemedText className="text-xl font-bold text-on-brand">
+              Exercise Added!
+            </ThemedText>
           </View>
         </Animated.View>
       )}
     </View>
   );
 }
-
-const styles = StyleSheet.create({
-  container: { flex: 1 },
-  header: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingTop: 60,
-    paddingHorizontal: 20,
-    paddingBottom: 16,
-  },
-  addButton: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    alignItems: 'center',
-    justifyContent: 'center',
-    shadowColor: Palette.black,
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.15,
-    shadowRadius: 6,
-    elevation: 3,
-  },
-  list: { paddingHorizontal: 20, paddingBottom: 20 },
-  exerciseCard: {
-    padding: 16,
-    borderRadius: 14,
-    marginBottom: 12,
-    borderWidth: 1,
-    shadowColor: Palette.black,
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.06,
-    shadowRadius: 8,
-    elevation: 2,
-  },
-  exerciseName: { fontSize: 17, marginBottom: 8 },
-  tagRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 6, marginBottom: 4 },
-  tagBadge: { paddingHorizontal: 10, paddingVertical: 4, borderRadius: 12, borderWidth: 1 },
-  tagBadgeText: { fontSize: 12 },
-  description: { fontSize: 14, marginTop: 8, lineHeight: 20 },
-  modalOverlay: { flex: 1, justifyContent: 'flex-end' },
-  modalContent: { maxHeight: '80%', borderTopLeftRadius: 20, borderTopRightRadius: 20, paddingTop: 20 },
-  modalHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingHorizontal: 20,
-    marginBottom: 12,
-  },
-  formContainer: { paddingHorizontal: 20 },
-  formField: { marginBottom: 20 },
-  inputLabel: { fontSize: 15, marginBottom: 8 },
-  input: {
-    height: 48,
-    borderWidth: 1,
-    borderRadius: 12,
-    paddingHorizontal: 14,
-    fontSize: 16,
-    shadowColor: Palette.black,
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.06,
-    shadowRadius: 4,
-    elevation: 1,
-  },
-  textArea: { height: 100, paddingTop: 12, textAlignVertical: 'top' },
-  tagsContainer: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
-  tag: { paddingHorizontal: 16, paddingVertical: 8, borderRadius: 20, borderWidth: 1 },
-  tagText: { fontSize: 14 },
-  saveButton: {
-    flexDirection: 'row',
-    borderRadius: 14,
-    padding: 16,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginBottom: 40,
-    marginTop: 10,
-    gap: 8,
-    shadowColor: Palette.black,
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.15,
-    shadowRadius: 6,
-    elevation: 3,
-  },
-  saveButtonText: { color: Palette.white, fontSize: 18, fontWeight: '600' },
-  disabledButton: { opacity: 0.4 },
-  overlayContainer: {
-    ...StyleSheet.absoluteFillObject,
-    justifyContent: 'center',
-    alignItems: 'center',
-    zIndex: 10,
-  },
-  successContainer: { alignItems: 'center', justifyContent: 'center' },
-  checkmarkCircle: {
-    width: 80,
-    height: 80,
-    borderRadius: 40,
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginBottom: 16,
-  },
-  successText: { fontSize: 20, fontWeight: 'bold', color: Palette.white },
-});

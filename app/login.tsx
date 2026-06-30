@@ -1,43 +1,41 @@
-import { ThemedText } from '@/components/ThemedText';
-import { Palette } from '@/constants/Colors';
-import { auth } from '@/data/firebase/firebaseConfig';
-import { useAppColors } from '@/hooks/useAppColors';
-import { useRouter } from 'expo-router';
+import { ThemedText } from "@/components/ThemedText";
+import { auth } from "@/data/firebase/firebaseConfig";
+import { useAppColors } from "@/hooks/useAppColors";
+import { useRouter } from "expo-router";
 import {
   createUserWithEmailAndPassword,
   signInWithEmailAndPassword,
-} from 'firebase/auth';
-import React, { useState } from 'react';
+} from "firebase/auth";
+import React, { useState } from "react";
 import {
   Alert,
   KeyboardAvoidingView,
   Platform,
-  StyleSheet,
   TextInput,
   TouchableOpacity,
   View,
-} from 'react-native';
+} from "react-native";
 
 export default function LoginScreen() {
   const router = useRouter();
   const colors = useAppColors();
   const [isSignUpMode, setIsSignUpMode] = useState(false);
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
 
   const handleLogin = async () => {
     if (!email || !password) {
-      Alert.alert('Error', 'Please fill in all fields');
+      Alert.alert("Error", "Please fill in all fields");
       return;
     }
     setIsLoading(true);
     try {
       await signInWithEmailAndPassword(auth, email, password);
-      router.replace('/');
+      router.replace("/");
     } catch (error) {
-      console.error('Login failed', error);
-      Alert.alert('Error', 'Login failed');
+      console.error("Login failed", error);
+      Alert.alert("Error", "Login failed");
     } finally {
       setIsLoading(false);
     }
@@ -45,15 +43,15 @@ export default function LoginScreen() {
 
   const handleSignUp = async () => {
     if (!email || !password) {
-      Alert.alert('Error', 'Please fill in all fields');
+      Alert.alert("Error", "Please fill in all fields");
       return;
     }
     setIsLoading(true);
     try {
       await createUserWithEmailAndPassword(auth, email, password);
-      router.replace('/');
+      router.replace("/");
     } catch (error) {
-      Alert.alert('Error', 'Sign up failed');
+      Alert.alert("Error", "Sign up failed");
     } finally {
       setIsLoading(false);
     }
@@ -61,25 +59,27 @@ export default function LoginScreen() {
 
   const toggleMode = () => {
     setIsSignUpMode(!isSignUpMode);
-    setEmail('');
-    setPassword('');
+    setEmail("");
+    setPassword("");
   };
 
   return (
-    <View style={[styles.container, { backgroundColor: colors.backgroundPrimary }]}>
+    <View className="flex-1 bg-bg">
       <KeyboardAvoidingView
-        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-        style={styles.keyboardAvoidingView}
+        behavior={Platform.OS === "ios" ? "padding" : "height"}
+        className="flex-1 justify-center"
       >
-        <View style={styles.formContainer}>
-          <ThemedText type="title" style={styles.title}>
-            {isSignUpMode ? 'Sign Up' : 'Log In'}
+        <View className="px-8 py-6">
+          <ThemedText type="title" className="mb-8 text-center">
+            {isSignUpMode ? "Sign Up" : "Log In"}
           </ThemedText>
 
-          <View style={styles.inputContainer}>
-            <ThemedText type="defaultSemiBold" style={styles.label}>Email</ThemedText>
+          <View className="mb-5">
+            <ThemedText type="defaultSemiBold" className="mb-2 text-base">
+              Email
+            </ThemedText>
             <TextInput
-              style={[styles.input, { borderColor: colors.border, color: colors.textPrimary, backgroundColor: colors.backgroundSecondary }]}
+              className="min-h-12 rounded-md border border-border bg-surface px-4 py-3 text-base text-text shadow-xs"
               placeholder="Enter your email"
               placeholderTextColor={colors.textMuted}
               value={email}
@@ -91,10 +91,12 @@ export default function LoginScreen() {
             />
           </View>
 
-          <View style={styles.inputContainer}>
-            <ThemedText type="defaultSemiBold" style={styles.label}>Password</ThemedText>
+          <View className="mb-5">
+            <ThemedText type="defaultSemiBold" className="mb-2 text-base">
+              Password
+            </ThemedText>
             <TextInput
-              style={[styles.input, { borderColor: colors.border, color: colors.textPrimary, backgroundColor: colors.backgroundSecondary }]}
+              className="min-h-12 rounded-md border border-border bg-surface px-4 py-3 text-base text-text shadow-xs"
               placeholder="Enter your password"
               placeholderTextColor={colors.textMuted}
               value={password}
@@ -107,19 +109,19 @@ export default function LoginScreen() {
           </View>
 
           <TouchableOpacity
-            style={[styles.submitButton, { backgroundColor: colors.tint }]}
+            className="mb-6 mt-4 min-h-[52px] items-center justify-center rounded-md bg-brand px-6 py-4 shadow-sm"
             onPress={isSignUpMode ? handleSignUp : handleLogin}
             disabled={isLoading}
           >
-            <ThemedText style={styles.submitButtonText} type="defaultSemiBold">
-              {isLoading ? 'Please wait...' : isSignUpMode ? 'Sign Up' : 'Log In'}
+            <ThemedText type="defaultSemiBold" className="text-base text-on-brand">
+              {isLoading ? "Please wait..." : isSignUpMode ? "Sign Up" : "Log In"}
             </ThemedText>
           </TouchableOpacity>
 
-          <TouchableOpacity onPress={toggleMode} style={styles.toggleContainer}>
-            <ThemedText style={[styles.toggleText, { color: colors.tint }]}>
+          <TouchableOpacity onPress={toggleMode} className="items-center py-2">
+            <ThemedText className="text-sm text-brand underline">
               {isSignUpMode
-                ? 'Already have an account? Log in'
+                ? "Already have an account? Log in"
                 : "Don't have an account? Sign up"}
             </ThemedText>
           </TouchableOpacity>
@@ -128,43 +130,3 @@ export default function LoginScreen() {
     </View>
   );
 }
-
-const styles = StyleSheet.create({
-  container: { flex: 1 },
-  keyboardAvoidingView: { flex: 1, justifyContent: 'center' },
-  formContainer: { paddingHorizontal: 32, paddingVertical: 24 },
-  title: { textAlign: 'center', marginBottom: 32, fontSize: 28 },
-  inputContainer: { marginBottom: 20 },
-  label: { marginBottom: 8, fontSize: 16 },
-  input: {
-    borderWidth: 1,
-    borderRadius: 12,
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    fontSize: 16,
-    minHeight: 48,
-    shadowColor: Palette.black,
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.06,
-    shadowRadius: 4,
-    elevation: 1,
-  },
-  submitButton: {
-    borderRadius: 14,
-    paddingVertical: 16,
-    paddingHorizontal: 24,
-    marginTop: 16,
-    marginBottom: 24,
-    alignItems: 'center',
-    justifyContent: 'center',
-    minHeight: 52,
-    shadowColor: Palette.black,
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.15,
-    shadowRadius: 6,
-    elevation: 3,
-  },
-  submitButtonText: { fontSize: 16, color: Palette.white },
-  toggleContainer: { alignItems: 'center', paddingVertical: 8 },
-  toggleText: { fontSize: 14, textDecorationLine: 'underline' },
-});

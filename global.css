@@ -3,3 +3,258 @@
 @import "tailwindcss/utilities.css";
 
 @import "nativewind/theme";
+
+/* ============================================================
+   Benchmark Design System tokens (from the DS handoff bundle).
+   Light values live in @theme (so utilities like bg-brand,
+   rounded-lg, shadow-md, text-display-2xl are generated).
+   Dark values override the same custom properties under
+   @media (prefers-color-scheme: dark) — NativeWind maps this to
+   the OS color scheme on native + web, so theme-colored
+   utilities auto-switch with no per-component dark: needed.
+   Spacing is intentionally left to the Tailwind default 4px grid
+   (the DS --space-* scale already matches it).
+   ============================================================ */
+
+@theme {
+  /* ---- Color primitives -------------------------------------------- */
+  /* Blue — primary, "athletic azure" */
+  --color-blue-50: #eaf1ff;
+  --color-blue-100: #d6e4ff;
+  --color-blue-200: #aecbff;
+  --color-blue-300: #82a9ff;
+  --color-blue-400: #4f84ff;
+  --color-blue-500: #2c6bff;
+  --color-blue-600: #1a52e6;
+  --color-blue-700: #1542b4;
+  --color-blue-800: #163a8f;
+  --color-blue-900: #16336f;
+  --color-blue-950: #101f44;
+
+  /* Coral — warm accent (not destructive) */
+  --color-coral-50: #fff1ee;
+  --color-coral-100: #ffe0da;
+  --color-coral-200: #ffc0b4;
+  --color-coral-300: #ff9786;
+  --color-coral-400: #fb6a55;
+  --color-coral-500: #f74b3b;
+  --color-coral-600: #e2382a;
+  --color-coral-700: #bb2e22;
+  --color-coral-800: #92271f;
+  --color-coral-900: #76251e;
+
+  /* Slate — cool, blue-leaning neutrals */
+  --color-slate-0: #ffffff;
+  --color-slate-25: #f7f9fc;
+  --color-slate-50: #f1f4fa;
+  --color-slate-100: #e7ecf5;
+  --color-slate-200: #d6deec;
+  --color-slate-300: #b9c4da;
+  --color-slate-400: #8a98b5;
+  --color-slate-500: #647193;
+  --color-slate-600: #4a5573;
+  --color-slate-700: #353e57;
+  --color-slate-800: #222a3d;
+  --color-slate-900: #151b2b;
+  --color-slate-950: #0b0f1a;
+
+  /* Functional hues */
+  --color-green-400: #34d199;
+  --color-green-500: #15b881;
+  --color-green-600: #0e9468;
+  --color-amber-400: #ffc14d;
+  --color-amber-500: #f5a524;
+  --color-amber-600: #d4860d;
+  --color-rose-400: #ff5d7a;
+  --color-rose-500: #e11d48;
+  --color-rose-600: #c2123a;
+
+  /* Charts */
+  --color-chart-1: #2c6bff;
+  --color-chart-2: #f74b3b;
+  --color-chart-3: #15b881;
+  --color-chart-4: #9b6dff;
+  --color-chart-5: #f5a524;
+  --color-chart-6: #38c6e8;
+
+  /* ---- Semantic colors (light) ------------------------------------- */
+  --color-brand: var(--color-blue-500);
+  --color-brand-hover: var(--color-blue-600);
+  --color-brand-press: var(--color-blue-700);
+  --color-brand-subtle: var(--color-blue-50);
+  --color-brand-subtle-2: var(--color-blue-100);
+  --color-on-brand: #ffffff;
+
+  --color-accent: var(--color-coral-500);
+  --color-accent-hover: var(--color-coral-600);
+  --color-accent-press: var(--color-coral-700);
+  --color-accent-subtle: var(--color-coral-50);
+  --color-on-accent: #ffffff;
+
+  --color-bg: var(--color-slate-25);
+  --color-bg-2: var(--color-slate-50);
+  --color-surface: var(--color-slate-0);
+  --color-surface-2: var(--color-slate-25);
+  --color-surface-raised: var(--color-slate-0);
+  --color-surface-inset: var(--color-slate-100);
+  --color-scrim: rgba(11, 15, 26, 0.45);
+
+  --color-text: var(--color-slate-900);
+  --color-text-2: var(--color-slate-600);
+  --color-text-3: var(--color-slate-500);
+  --color-text-disabled: var(--color-slate-400);
+  --color-text-on-fill: #ffffff;
+  --color-text-link: var(--color-blue-600);
+
+  --color-border: var(--color-slate-200);
+  --color-border-strong: var(--color-slate-300);
+  --color-border-subtle: var(--color-slate-100);
+
+  --color-success: var(--color-green-500);
+  --color-success-subtle: #e4f8f0;
+  --color-on-success: #ffffff;
+  --color-warning: var(--color-amber-500);
+  --color-warning-subtle: #fff3dc;
+  --color-on-warning: #3d2a00;
+  --color-danger: #e11d48;
+  --color-danger-hover: #c2123a;
+  --color-danger-subtle: #ffe4ea;
+  --color-on-danger: #ffffff;
+  --color-info: var(--color-blue-500);
+  --color-info-subtle: var(--color-blue-50);
+
+  --color-field-bg: var(--color-slate-0);
+  --color-field-border: var(--color-slate-300);
+  --color-field-placeholder: var(--color-slate-400);
+
+  /* ---- Radii (override Tailwind defaults) -------------------------- */
+  --radius-xs: 6px;
+  --radius-sm: 10px;
+  --radius-md: 14px;
+  --radius-lg: 18px;
+  --radius-xl: 24px;
+  --radius-2xl: 32px;
+  --radius-pill: 999px;
+
+  /* ---- Typography -------------------------------------------------- */
+  --font-display: "Saira", system-ui, sans-serif;
+  --font-sans: "Hanken Grotesk", system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, "SFMono-Regular", monospace;
+
+  --text-display-2xl: 4.5rem;
+  --text-display-xl: 3.5rem;
+  --text-display-lg: 2.75rem;
+  --text-display-md: 2.25rem;
+  --text-h1: 2rem;
+  --text-h2: 1.625rem;
+  --text-h3: 1.375rem;
+  --text-h4: 1.125rem;
+  --text-body-lg: 1.0625rem;
+  --text-body: 0.9375rem;
+  --text-sm: 0.8125rem;
+  --text-xs: 0.6875rem;
+
+  --font-weight-regular: 400;
+  --font-weight-medium: 500;
+  --font-weight-semibold: 600;
+  --font-weight-bold: 700;
+  --font-weight-black: 800;
+
+  --leading-tight: 1.04;
+  --leading-snug: 1.18;
+  --leading-normal: 1.45;
+  --leading-relaxed: 1.6;
+
+  --tracking-tight: -0.02em;
+  --tracking-snug: -0.01em;
+  --tracking-normal: 0em;
+  --tracking-wide: 0.04em;
+  --tracking-caps: 0.12em;
+
+  /* ---- Elevation (light; dark overridden below) -------------------- */
+  --shadow-xs: 0 1px 2px rgba(16, 31, 68, 0.06);
+  --shadow-sm: 0 1px 2px rgba(16, 31, 68, 0.06), 0 2px 6px rgba(16, 31, 68, 0.06);
+  --shadow-md: 0 2px 4px rgba(16, 31, 68, 0.05), 0 8px 20px rgba(16, 31, 68, 0.08);
+  --shadow-lg: 0 4px 8px rgba(16, 31, 68, 0.06), 0 18px 40px rgba(16, 31, 68, 0.12);
+  --shadow-xl: 0 8px 16px rgba(16, 31, 68, 0.08), 0 30px 60px rgba(16, 31, 68, 0.16);
+  --shadow-inset: inset 0 1px 2px rgba(16, 31, 68, 0.08);
+
+  /* ---- Motion easings ---------------------------------------------- */
+  --ease-out: cubic-bezier(0.22, 0.61, 0.36, 1);
+  --ease-in-out: cubic-bezier(0.65, 0.05, 0.36, 1);
+  --ease-spring: cubic-bezier(0.34, 1.4, 0.5, 1);
+  --ease-emph: cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* ---- Non-utility raw vars (kept, no Tailwind utility namespace) ---- */
+:root {
+  --glow-brand: 0 6px 20px rgba(44, 107, 255, 0.35);
+  --glow-accent: 0 6px 20px rgba(247, 75, 59, 0.34);
+  --ring-focus: var(--color-blue-400);
+  --focus-ring: 0 0 0 3px var(--color-brand-subtle-2);
+
+  --app-max: 430px;
+  --tap-min: 44px;
+  --gutter: 1rem;
+  --container-max: 1200px;
+
+  --transition-base: all 220ms var(--ease-out);
+  --transition-fast: all 140ms var(--ease-out);
+}
+
+/* ---- Dark mode: override semantic colors, shadows, glows ---------- */
+@media (prefers-color-scheme: dark) {
+  :root {
+    --color-brand: var(--color-blue-400);
+    --color-brand-hover: var(--color-blue-300);
+    --color-brand-press: var(--color-blue-200);
+    --color-brand-subtle: rgba(44, 107, 255, 0.16);
+    --color-brand-subtle-2: rgba(44, 107, 255, 0.26);
+    --color-on-brand: #08122b;
+
+    --color-accent-hover: var(--color-coral-400);
+    --color-accent-press: var(--color-coral-300);
+    --color-accent-subtle: rgba(247, 75, 59, 0.16);
+    --color-on-accent: #2a0d05;
+
+    --color-bg: #090d16;
+    --color-bg-2: #0c1120;
+    --color-surface: #121a2b;
+    --color-surface-2: #0f1626;
+    --color-surface-raised: #18223a;
+    --color-surface-inset: #0b0f1c;
+    --color-scrim: rgba(3, 6, 14, 0.6);
+
+    --color-text: #eef3fc;
+    --color-text-2: #a9b6d1;
+    --color-text-3: #7787a6;
+    --color-text-disabled: #566482;
+    --color-text-link: var(--color-blue-300);
+
+    --color-border: #273350;
+    --color-border-strong: #36456a;
+    --color-border-subtle: #1b2540;
+
+    --color-success-subtle: rgba(21, 184, 129, 0.16);
+    --color-warning-subtle: rgba(245, 165, 36, 0.16);
+    --color-danger: #ff5d7a;
+    --color-danger-hover: #ff7a90;
+    --color-danger-subtle: rgba(255, 93, 122, 0.16);
+    --color-info-subtle: rgba(44, 107, 255, 0.16);
+
+    --color-field-bg: #0f1626;
+    --color-field-border: #36456a;
+    --color-field-placeholder: #6b7a99;
+
+    --shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.4);
+    --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.4), 0 2px 6px rgba(0, 0, 0, 0.4);
+    --shadow-md: 0 2px 6px rgba(0, 0, 0, 0.45), 0 10px 24px rgba(0, 0, 0, 0.5);
+    --shadow-lg: 0 6px 14px rgba(0, 0, 0, 0.5), 0 22px 48px rgba(0, 0, 0, 0.6);
+    --shadow-xl: 0 10px 24px rgba(0, 0, 0, 0.55), 0 36px 70px rgba(0, 0, 0, 0.7);
+    --shadow-inset: inset 0 1px 2px rgba(0, 0, 0, 0.5);
+
+    --ring-focus: var(--color-blue-400);
+    --glow-brand: 0 6px 24px rgba(44, 107, 255, 0.5);
+    --glow-accent: 0 6px 24px rgba(247, 75, 59, 0.45);
+  }
+}
