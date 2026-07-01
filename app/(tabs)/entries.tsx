@@ -4,7 +4,6 @@ import { Badge, Card } from "@/components/ds";
 import { EntryWithId, getEntries } from "@/data/firebase/entries";
 import { ExerciseWithId, getExercises } from "@/data/firebase/exercises";
 import { timestampToDate } from "@/data/firebase/helpers";
-import { usePromise } from "@/hooks/usePromise";
 import { router } from "expo-router";
 import React, { Suspense, use } from "react";
 import { ActivityIndicator, FlatList, View } from "react-native";

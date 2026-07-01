@@ -4,7 +4,7 @@ import { Button, Input } from "@/components/ds";
 import { IconSymbol } from "@/components/ui/IconSymbol";
 import { Palette } from "@/constants/Colors";
 import { addEntry } from "@/data/firebase/entries";
-import { ExerciseWithId, getExercises } from "@/data/firebase/exercises";
+import { getExercises } from "@/data/firebase/exercises";
 import { dateToTimestamp } from "@/data/firebase/helpers";
 import { commonEntryTags, EntryTag } from "@/data/firebase/types";
 import { useAppColors } from "@/hooks/useAppColors";
@@ -138,6 +138,26 @@ function NewEntryScreenContent({
         <ThemedText type="title">New Entry</ThemedText>
 
         {/* Select Exercise */}
+        <View className="mb-6 px-5">
+          <ThemedText type="subtitle">Select Exercise</ThemedText>
+          <Pressable
+            className="mt-3 h-12 flex-row items-center justify-between rounded-xs border-[1.5px] border-field-border bg-field-bg px-4"
+            onPress={() => setIsDropdownOpen(true)}
+          >
+            <ThemedText
+              className={`font-sans text-body-lg ${selectedExercise ? "" : "text-text-3"}`}
+            >
+              {selectedExercise
+                ? exerciseOptions.find((ex) => ex.id === selectedExercise)
+                    ?.name || "Select an exercise"
+                : "Select an exercise"}
+            </ThemedText>
+            <IconSymbol
+              size={18}
+              name="chevron.down"
+              color={colors.textSecondary}
+            />
+          </Pressable>
         <ThemedText type="subtitle">Select Exercise</ThemedText>
         <Pressable
           className="mt-3 h-12 flex-row items-center justify-between rounded-xs border-[1.5px] border-field-border bg-field-bg px-4"
@@ -158,6 +178,64 @@ function NewEntryScreenContent({
           />
         </Pressable>
 
+          <Modal
+            visible={isDropdownOpen}
+            transparent
+            animationType="slide"
+            onRequestClose={() => setIsDropdownOpen(false)}
+          >
+            <Pressable
+              className="flex-1 justify-end bg-scrim"
+              onPress={() => setIsDropdownOpen(false)}
+            >
+              <View className="max-h-[70%] rounded-t-[20px] bg-surface pb-[30px] pt-5">
+                <View className="mb-3 flex-row items-center justify-between px-5">
+                  <ThemedText type="subtitle">Select Exercise</ThemedText>
+                  <Pressable onPress={() => setIsDropdownOpen(false)}>
+                    <IconSymbol
+                      size={22}
+                      name="xmark"
+                      color={colors.textSecondary}
+                    />
+                  </Pressable>
+                </View>
+                <FlatList
+                  data={exerciseOptions}
+                  keyExtractor={(item) => item.id}
+                  renderItem={({ item }) => (
+                    <TouchableOpacity
+                      className={`mx-1 my-px flex-row items-center justify-between rounded-sm border-b border-border px-3.5 py-3.5 ${
+                        selectedExercise === item.id ? "bg-brand-subtle" : ""
+                      }`}
+                      onPress={() => {
+                        setSelectedExercise(item.id);
+                        setIsDropdownOpen(false);
+                      }}
+                    >
+                      <ThemedText
+                        className={`text-base ${
+                          selectedExercise === item.id
+                            ? "font-semibold text-brand"
+                            : ""
+                        }`}
+                      >
+                        {item.name}
+                      </ThemedText>
+                      {selectedExercise === item.id && (
+                        <IconSymbol
+                          size={18}
+                          name="checkmark"
+                          color={colors.accentText}
+                        />
+                      )}
+                    </TouchableOpacity>
+                  )}
+                  className="px-2.5"
+                />
+              </View>
+            </Pressable>
+          </Modal>
+        </View>
         <Modal
           visible={isDropdownOpen}
           transparent
@@ -217,6 +295,40 @@ function NewEntryScreenContent({
         </Modal>
 
         {/* Performance */}
+        <View className="mb-6 px-5">
+          <ThemedText type="subtitle">Performance</ThemedText>
+          <View className="mt-3 flex-row gap-3">
+            <View className="flex-1">
+              <Input
+                label="Weight"
+                numeric
+                suffix="lbs"
+                value={weight}
+                onChangeText={handleWeightChange}
+                placeholder="0"
+                keyboardType="decimal-pad"
+              />
+            </View>
+            <View className="flex-1 gap-1.5">
+              <ThemedText className="font-sans-semibold text-sm text-text-2">
+                Rep Max
+              </ThemedText>
+              <Pressable
+                className="h-12 flex-row items-center justify-between rounded-xs border-[1.5px] border-field-border bg-field-bg px-4"
+                onPress={() => setIsRepMaxDropdownOpen(true)}
+              >
+                <ThemedText
+                  className={`font-sans text-body-lg ${repMax ? "" : "text-text-3"}`}
+                >
+                  {repMax ? `${repMax} RM` : "Select"}
+                </ThemedText>
+                <IconSymbol
+                  size={16}
+                  name="chevron.down"
+                  color={colors.textSecondary}
+                />
+              </Pressable>
+            </View>
         <ThemedText type="subtitle">Performance</ThemedText>
         <View className="mt-3 flex-row gap-3">
           <Input

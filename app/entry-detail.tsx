@@ -1,7 +1,6 @@
 import { DataErrorBoundary } from "@/components/DataErrorBoundary";
 import { ThemedText } from "@/components/ThemedText";
 import { Badge, Card, StatTile } from "@/components/ds";
-import { useAppColors } from "@/hooks/useAppColors";
 import { getEntryById } from "@/data/firebase/entries";
 import { getExerciseById } from "@/data/firebase/exercises";
 import { timestampToDate } from "@/data/firebase/helpers";
@@ -45,7 +44,7 @@ function EntryDetail({
       year: "numeric",
       month: "long",
       day: "numeric",
-    }
+    },
   );
 
   return (
@@ -75,10 +74,20 @@ function EntryDetail({
 
         <View className="flex-row gap-3">
           <Card className="flex-1">
-            <StatTile size="sm" label="Weight" value={entry.value} unit={entry.unit} />
+            <StatTile
+              size="sm"
+              label="Weight"
+              value={entry.value}
+              unit={entry.unit}
+            />
           </Card>
           <Card className="flex-1">
-            <StatTile size="sm" label="Rep Max" value={entry.repMax} unit="RM" />
+            <StatTile
+              size="sm"
+              label="Rep Max"
+              value={entry.repMax}
+              unit="RM"
+            />
           </Card>
         </View>
 
@@ -119,7 +128,7 @@ export default function EntryDetailScreen() {
   const { entryId } = useLocalSearchParams<{ entryId: string }>();
   const colors = useAppColors();
   const [entryPromise, refreshEntry] = usePromise<EntryDetailData>(() =>
-    entryId ? fetchEntryDetail(entryId) : Promise.resolve(null)
+    entryId ? fetchEntryDetail(entryId) : Promise.resolve(null),
   );
 
   if (!entryId) {

@@ -10,7 +10,6 @@ import {
 } from "@/data/firebase/exercises";
 import { commonExerciseTags, ExerciseTag } from "@/data/firebase/types";
 import { useAppColors } from "@/hooks/useAppColors";
-import { usePromise } from "@/hooks/usePromise";
 import React, { Suspense, use, useEffect, useState } from "react";
 import {
   ActivityIndicator,
@@ -50,6 +49,17 @@ function ExercisesScreenContent({
     successOpacity.setValue(0);
     checkmarkScale.setValue(0);
     Animated.sequence([
+      Animated.timing(successOpacity, {
+        toValue: 1,
+        duration: 300,
+        useNativeDriver: true,
+      }),
+      Animated.timing(checkmarkScale, {
+        toValue: 1,
+        duration: 500,
+        easing: Easing.elastic(1),
+        useNativeDriver: true,
+      }),
       Animated.timing(successOpacity, {
         toValue: 1,
         duration: 300,
@@ -297,8 +307,26 @@ function ExercisesScreenContent({
 
 export default function ExercisesScreen() {
   const colors = useAppColors();
-  const [exercisesPromise, refreshExercises] =
-    usePromise<ExerciseWithId[]>(getExercises);
+  const [exercisesPromise, setExercisesPromise] = useState(() =>
+    getExercises(),
+  );
+  const isFirstFocus = useRef(true);
+
+  // Re-fetch on every focus except the first. Kept above the Suspense boundary
+  // so this effect isn't torn down and re-run each time the child suspends.
+  useFocusEffect(
+    useCallback(() => {
+      if (isFirstFocus.current) {
+        isFirstFocus.current = false;
+        return;
+      }
+      setExercisesPromise(getExercises());
+    }, []),
+  );
+
+  const refreshExercises = useCallback(() => {
+    startTransition(() => setExercisesPromise(getExercises()));
+  }, []);
 
   return (
     <DataErrorBoundary promise={exercisesPromise} onRetry={refreshExercises}>
