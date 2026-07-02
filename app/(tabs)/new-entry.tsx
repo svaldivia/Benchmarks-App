@@ -4,7 +4,7 @@ import { Button, Input } from "@/components/ds";
 import { IconSymbol } from "@/components/ui/IconSymbol";
 import { Palette } from "@/constants/Colors";
 import { addEntry } from "@/data/firebase/entries";
-import { getExercises } from "@/data/firebase/exercises";
+import { ExerciseWithId, getExercises } from "@/data/firebase/exercises";
 import { dateToTimestamp } from "@/data/firebase/helpers";
 import { commonEntryTags, EntryTag } from "@/data/firebase/types";
 import { useAppColors } from "@/hooks/useAppColors";
