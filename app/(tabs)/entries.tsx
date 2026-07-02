@@ -1,10 +1,17 @@
 import { ThemedText } from "@/components/ThemedText";
+import { useAppColors } from "@/hooks/useAppColors";
 import { EntryWithId, getEntries } from "@/data/firebase/entries";
 import { ExerciseWithId, getExercises } from "@/data/firebase/exercises";
 import { timestampToDate } from "@/data/firebase/helpers";
-import { router } from "expo-router";
-import React, { useEffect, useState } from "react";
-import { FlatList, Pressable, View } from "react-native";
+import { router, useFocusEffect } from "expo-router";
+import React, { Suspense, use, useCallback, useRef, useState } from "react";
+import { ActivityIndicator, FlatList, Pressable, View } from "react-native";
+
+type EntriesData = [EntryWithId[], ExerciseWithId[]];
+
+function fetchEntriesData() {
+  return Promise.all([getEntries(), getExercises()]);
+}
 
 function EntryListItem({
   item,
@@ -40,36 +47,54 @@ function EntryListItem({
   );
 }
 
-export default function EntriesScreen() {
-  const [entries, setEntries] = useState<EntryWithId[]>([]);
-  const [exercises, setExercises] = useState<ExerciseWithId[]>([]);
+function EntriesList({ dataPromise }: { dataPromise: Promise<EntriesData> }) {
+  const [entries, exercises] = use(dataPromise);
 
-  useEffect(() => {
-    const fetchData = async () => {
-      const [entriesData, exercisesData] = await Promise.all([
-        getEntries(),
-        getExercises(),
-      ]);
-      setEntries(entriesData);
-      setExercises(exercisesData);
-    };
-    fetchData();
-  }, []);
+  return (
+    <FlatList
+      data={entries}
+      keyExtractor={(item) => item.id}
+      renderItem={({ item }) => (
+        <EntryListItem item={item} exercises={exercises} />
+      )}
+      contentContainerClassName="px-5 pb-5"
+      showsVerticalScrollIndicator={false}
+    />
+  );
+}
+
+export default function EntriesScreen() {
+  const colors = useAppColors();
+  const [dataPromise, setDataPromise] = useState(() => fetchEntriesData());
+  const isFirstFocus = useRef(true);
+
+  // Re-fetch on every focus except the first (the initial promise above is
+  // already fresh). Kept above the Suspense boundary so this effect isn't
+  // torn down and re-run each time the child suspends.
+  useFocusEffect(
+    useCallback(() => {
+      if (isFirstFocus.current) {
+        isFirstFocus.current = false;
+        return;
+      }
+      setDataPromise(fetchEntriesData());
+    }, [])
+  );
 
   return (
     <View className="flex-1 bg-bg pt-[60px]">
       <View className="px-5 pb-4">
         <ThemedText type="title">Entries</ThemedText>
       </View>
-      <FlatList
-        data={entries}
-        keyExtractor={(item) => item.id}
-        renderItem={({ item }) => (
-          <EntryListItem item={item} exercises={exercises} />
-        )}
-        contentContainerClassName="px-5 pb-5"
-        showsVerticalScrollIndicator={false}
-      />
+      <Suspense
+        fallback={
+          <View className="flex-1 items-center justify-center">
+            <ActivityIndicator size="large" color={colors.tint} />
+          </View>
+        }
+      >
+        <EntriesList dataPromise={dataPromise} />
+      </Suspense>
     </View>
   );
 }

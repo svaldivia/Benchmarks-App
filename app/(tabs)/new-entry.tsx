@@ -5,7 +5,15 @@ import { addEntry } from "@/data/firebase/entries";
 import { ExerciseWithId, getExercises } from "@/data/firebase/exercises";
 import { dateToTimestamp } from "@/data/firebase/helpers";
 import { useAppColors } from "@/hooks/useAppColors";
-import React, { useEffect, useState } from "react";
+import { useFocusEffect } from "expo-router";
+import React, {
+  Suspense,
+  use,
+  useCallback,
+  useEffect,
+  useRef,
+  useState,
+} from "react";
 import {
   ActivityIndicator,
   Animated,
@@ -21,7 +29,11 @@ import {
   View,
 } from "react-native";
 
-export default function NewEntryScreen() {
+function NewEntryScreenContent({
+  exercisesPromise,
+}: {
+  exercisesPromise: Promise<ExerciseWithId[]>;
+}) {
   const colors = useAppColors();
   const [selectedExercise, setSelectedExercise] = useState("");
   const [weight, setWeight] = useState("");
@@ -32,7 +44,8 @@ export default function NewEntryScreen() {
   const [isRepMaxDropdownOpen, setIsRepMaxDropdownOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
-  const [exerciseOptions, setExerciseOptions] = useState<ExerciseWithId[]>([]);
+
+  const exerciseOptions = use(exercisesPromise);
 
   const successOpacity = new Animated.Value(0);
   const checkmarkScale = new Animated.Value(0);
@@ -103,14 +116,6 @@ export default function NewEntryScreen() {
       setIsLoading(false);
     }
   };
-
-  useEffect(() => {
-    const fetchExercises = async () => {
-      const exercises = await getExercises();
-      setExerciseOptions(exercises);
-    };
-    fetchExercises();
-  }, []);
 
   return (
     <KeyboardAvoidingView
@@ -346,5 +351,37 @@ export default function NewEntryScreen() {
         </Animated.View>
       )}
     </KeyboardAvoidingView>
+  );
+}
+
+export default function NewEntryScreen() {
+  const colors = useAppColors();
+  const [exercisesPromise, setExercisesPromise] = useState(() =>
+    getExercises()
+  );
+  const isFirstFocus = useRef(true);
+
+  // Re-fetch on every focus except the first. Kept above the Suspense boundary
+  // so this effect isn't torn down and re-run each time the child suspends.
+  useFocusEffect(
+    useCallback(() => {
+      if (isFirstFocus.current) {
+        isFirstFocus.current = false;
+        return;
+      }
+      setExercisesPromise(getExercises());
+    }, [])
+  );
+
+  return (
+    <Suspense
+      fallback={
+        <View className="flex-1 items-center justify-center bg-bg">
+          <ActivityIndicator size="large" color={colors.tint} />
+        </View>
+      }
+    >
+      <NewEntryScreenContent exercisesPromise={exercisesPromise} />
+    </Suspense>
   );
 }

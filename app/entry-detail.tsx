@@ -1,35 +1,34 @@
 import { ThemedText } from "@/components/ThemedText";
+import { useAppColors } from "@/hooks/useAppColors";
 import { getEntryById } from "@/data/firebase/entries";
 import { getExerciseById } from "@/data/firebase/exercises";
 import { timestampToDate } from "@/data/firebase/helpers";
 import { Entry, Exercise } from "@/data/firebase/types";
-import { useLocalSearchParams } from "expo-router";
-import React, { useEffect, useState } from "react";
-import { ScrollView, View } from "react-native";
+import { useLocalSearchParams, useFocusEffect } from "expo-router";
+import React, { Suspense, use, useCallback, useRef, useState } from "react";
+import { ActivityIndicator, ScrollView, View } from "react-native";
+
+type EntryDetailData = (Entry & { exercise: Exercise }) | null;
 
 const CARD = "mb-3 rounded-md border border-border bg-surface p-4 shadow-sm";
 const LABEL = "mb-1.5 text-sm font-medium uppercase tracking-wide text-text-2";
 
-export default function EntryDetailScreen() {
-  const { entryId } = useLocalSearchParams<{ entryId: string }>();
-  const [entry, setEntry] = useState<(Entry & { exercise: Exercise }) | null>(
-    null
-  );
+function fetchEntryDetail(entryId: string): Promise<EntryDetailData> {
+  return getEntryById(entryId).then(async (entry) => {
+    if (!entry) return null;
+    const exercise = await getExerciseById(entry.exerciseId);
+    return exercise ? { ...entry, exercise } : null;
+  });
+}
 
-  useEffect(() => {
-    const fetchEntry = async () => {
-      const entry = await getEntryById(entryId);
-      if (entry) {
-        const exercise = await getExerciseById(entry.exerciseId);
-        if (exercise) {
-          setEntry({ ...entry, exercise });
-        }
-      }
-    };
-    if (entryId) fetchEntry();
-  }, [entryId]);
+function EntryDetail({
+  entryPromise,
+}: {
+  entryPromise: Promise<EntryDetailData>;
+}) {
+  const entry = use(entryPromise);
 
-  if (!entryId || !entry) {
+  if (!entry) {
     return (
       <View className="flex-1 bg-bg">
         <ThemedText>Entry not found</ThemedText>
@@ -116,5 +115,46 @@ export default function EntryDetailScreen() {
         <View className="h-10" />
       </ScrollView>
     </View>
+  );
+}
+
+export default function EntryDetailScreen() {
+  const { entryId } = useLocalSearchParams<{ entryId: string }>();
+  const colors = useAppColors();
+  const [entryPromise, setEntryPromise] = useState(() =>
+    entryId ? fetchEntryDetail(entryId) : Promise.resolve(null)
+  );
+  const isFirstFocus = useRef(true);
+
+  // Re-fetch on every focus except the first. Kept above the Suspense boundary
+  // so this effect isn't torn down and re-run each time the child suspends.
+  useFocusEffect(
+    useCallback(() => {
+      if (isFirstFocus.current) {
+        isFirstFocus.current = false;
+        return;
+      }
+      if (entryId) setEntryPromise(fetchEntryDetail(entryId));
+    }, [entryId])
+  );
+
+  if (!entryId) {
+    return (
+      <View className="flex-1 bg-bg">
+        <ThemedText>Entry not found</ThemedText>
+      </View>
+    );
+  }
+
+  return (
+    <Suspense
+      fallback={
+        <View className="flex-1 items-center justify-center bg-bg">
+          <ActivityIndicator size="large" color={colors.tint} />
+        </View>
+      }
+    >
+      <EntryDetail entryPromise={entryPromise} />
+    </Suspense>
   );
 }

@@ -8,8 +8,18 @@ import {
 } from "@/data/firebase/exercises";
 import { commonExerciseTags } from "@/data/firebase/types";
 import { useAppColors } from "@/hooks/useAppColors";
-import React, { useEffect, useState } from "react";
+import { useFocusEffect } from "expo-router";
+import React, {
+  startTransition,
+  Suspense,
+  use,
+  useCallback,
+  useEffect,
+  useRef,
+  useState,
+} from "react";
 import {
+  ActivityIndicator,
   Animated,
   Easing,
   FlatList,
@@ -20,12 +30,19 @@ import {
   View,
 } from "react-native";
 
-export default function ExercisesScreen() {
+function ExercisesScreenContent({
+  exercisesPromise,
+  refreshExercises,
+}: {
+  exercisesPromise: Promise<ExerciseWithId[]>;
+  refreshExercises: () => void;
+}) {
   const colors = useAppColors();
   const [isAddModalVisible, setIsAddModalVisible] = useState(false);
-  const [exerciseList, setExerciseList] = useState<ExerciseWithId[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
+
+  const exerciseList = use(exercisesPromise);
 
   const [newExerciseName, setNewExerciseName] = useState("");
   const [newExerciseDescription, setNewExerciseDescription] = useState("");
@@ -34,14 +51,6 @@ export default function ExercisesScreen() {
 
   const successOpacity = new Animated.Value(0);
   const checkmarkScale = new Animated.Value(0);
-
-  useEffect(() => {
-    const fetchExercises = async () => {
-      const exercises = await getExercises();
-      setExerciseList(exercises);
-    };
-    fetchExercises();
-  }, []);
 
   const animateSuccess = () => {
     successOpacity.setValue(0);
@@ -80,6 +89,9 @@ export default function ExercisesScreen() {
       setIsLoading(true);
       const newId = await addExercise(newExercise);
       console.log("New exercise created with ID:", newId);
+      // Refresh in a transition so the list updates in place without
+      // suspending the whole screen (which would hide the success animation).
+      refreshExercises();
       setIsAddModalVisible(false);
       setIsLoading(false);
       setShowSuccess(true);
@@ -264,5 +276,44 @@ export default function ExercisesScreen() {
         </Animated.View>
       )}
     </View>
+  );
+}
+
+export default function ExercisesScreen() {
+  const colors = useAppColors();
+  const [exercisesPromise, setExercisesPromise] = useState(() =>
+    getExercises()
+  );
+  const isFirstFocus = useRef(true);
+
+  // Re-fetch on every focus except the first. Kept above the Suspense boundary
+  // so this effect isn't torn down and re-run each time the child suspends.
+  useFocusEffect(
+    useCallback(() => {
+      if (isFirstFocus.current) {
+        isFirstFocus.current = false;
+        return;
+      }
+      setExercisesPromise(getExercises());
+    }, [])
+  );
+
+  const refreshExercises = useCallback(() => {
+    startTransition(() => setExercisesPromise(getExercises()));
+  }, []);
+
+  return (
+    <Suspense
+      fallback={
+        <View className="flex-1 items-center justify-center bg-bg">
+          <ActivityIndicator size="large" color={colors.tint} />
+        </View>
+      }
+    >
+      <ExercisesScreenContent
+        exercisesPromise={exercisesPromise}
+        refreshExercises={refreshExercises}
+      />
+    </Suspense>
   );
 }
