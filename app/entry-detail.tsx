@@ -5,15 +5,15 @@ import { getExerciseById } from "@/data/firebase/exercises";
 import { timestampToDate } from "@/data/firebase/helpers";
 import { Entry, Exercise } from "@/data/firebase/types";
 import { useLocalSearchParams, useFocusEffect } from "expo-router";
-import React, { Suspense, use, useCallback, useState } from "react";
+import React, { Suspense, use, useCallback, useRef, useState } from "react";
 import { ActivityIndicator, ScrollView, View } from "react-native";
+
+type EntryDetailData = (Entry & { exercise: Exercise }) | null;
 
 const CARD = "mb-3 rounded-md border border-border bg-surface p-4 shadow-sm";
 const LABEL = "mb-1.5 text-sm font-medium uppercase tracking-wide text-text-2";
 
-function fetchEntryDetail(
-  entryId: string
-): Promise<(Entry & { exercise: Exercise }) | null> {
+function fetchEntryDetail(entryId: string): Promise<EntryDetailData> {
   return getEntryById(entryId).then(async (entry) => {
     if (!entry) return null;
     const exercise = await getExerciseById(entry.exerciseId);
@@ -21,17 +21,11 @@ function fetchEntryDetail(
   });
 }
 
-function EntryDetail({ entryId }: { entryId: string }) {
-  const [entryPromise, setEntryPromise] = useState(() =>
-    fetchEntryDetail(entryId)
-  );
-
-  useFocusEffect(
-    useCallback(() => {
-      setEntryPromise(fetchEntryDetail(entryId));
-    }, [entryId])
-  );
-
+function EntryDetail({
+  entryPromise,
+}: {
+  entryPromise: Promise<EntryDetailData>;
+}) {
   const entry = use(entryPromise);
 
   if (!entry) {
@@ -127,6 +121,22 @@ function EntryDetail({ entryId }: { entryId: string }) {
 export default function EntryDetailScreen() {
   const { entryId } = useLocalSearchParams<{ entryId: string }>();
   const colors = useAppColors();
+  const [entryPromise, setEntryPromise] = useState(() =>
+    entryId ? fetchEntryDetail(entryId) : Promise.resolve(null)
+  );
+  const isFirstFocus = useRef(true);
+
+  // Re-fetch on every focus except the first. Kept above the Suspense boundary
+  // so this effect isn't torn down and re-run each time the child suspends.
+  useFocusEffect(
+    useCallback(() => {
+      if (isFirstFocus.current) {
+        isFirstFocus.current = false;
+        return;
+      }
+      if (entryId) setEntryPromise(fetchEntryDetail(entryId));
+    }, [entryId])
+  );
 
   if (!entryId) {
     return (
@@ -144,7 +154,7 @@ export default function EntryDetailScreen() {
         </View>
       }
     >
-      <EntryDetail entryId={entryId} />
+      <EntryDetail entryPromise={entryPromise} />
     </Suspense>
   );
 }

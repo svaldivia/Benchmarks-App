@@ -15,6 +15,7 @@ import React, {
   use,
   useCallback,
   useEffect,
+  useRef,
   useState,
 } from "react";
 import {
@@ -29,20 +30,17 @@ import {
   View,
 } from "react-native";
 
-function ExercisesScreenContent() {
+function ExercisesScreenContent({
+  exercisesPromise,
+  refreshExercises,
+}: {
+  exercisesPromise: Promise<ExerciseWithId[]>;
+  refreshExercises: () => void;
+}) {
   const colors = useAppColors();
   const [isAddModalVisible, setIsAddModalVisible] = useState(false);
-  const [exercisesPromise, setExercisesPromise] = useState(() =>
-    getExercises()
-  );
   const [isLoading, setIsLoading] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
-
-  useFocusEffect(
-    useCallback(() => {
-      setExercisesPromise(getExercises());
-    }, [])
-  );
 
   const exerciseList = use(exercisesPromise);
 
@@ -93,7 +91,7 @@ function ExercisesScreenContent() {
       console.log("New exercise created with ID:", newId);
       // Refresh in a transition so the list updates in place without
       // suspending the whole screen (which would hide the success animation).
-      startTransition(() => setExercisesPromise(getExercises()));
+      refreshExercises();
       setIsAddModalVisible(false);
       setIsLoading(false);
       setShowSuccess(true);
@@ -283,6 +281,26 @@ function ExercisesScreenContent() {
 
 export default function ExercisesScreen() {
   const colors = useAppColors();
+  const [exercisesPromise, setExercisesPromise] = useState(() =>
+    getExercises()
+  );
+  const isFirstFocus = useRef(true);
+
+  // Re-fetch on every focus except the first. Kept above the Suspense boundary
+  // so this effect isn't torn down and re-run each time the child suspends.
+  useFocusEffect(
+    useCallback(() => {
+      if (isFirstFocus.current) {
+        isFirstFocus.current = false;
+        return;
+      }
+      setExercisesPromise(getExercises());
+    }, [])
+  );
+
+  const refreshExercises = useCallback(() => {
+    startTransition(() => setExercisesPromise(getExercises()));
+  }, []);
 
   return (
     <Suspense
@@ -292,7 +310,10 @@ export default function ExercisesScreen() {
         </View>
       }
     >
-      <ExercisesScreenContent />
+      <ExercisesScreenContent
+        exercisesPromise={exercisesPromise}
+        refreshExercises={refreshExercises}
+      />
     </Suspense>
   );
 }

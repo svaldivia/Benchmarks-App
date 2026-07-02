@@ -4,8 +4,10 @@ import { EntryWithId, getEntries } from "@/data/firebase/entries";
 import { ExerciseWithId, getExercises } from "@/data/firebase/exercises";
 import { timestampToDate } from "@/data/firebase/helpers";
 import { router, useFocusEffect } from "expo-router";
-import React, { Suspense, use, useCallback, useState } from "react";
+import React, { Suspense, use, useCallback, useRef, useState } from "react";
 import { ActivityIndicator, FlatList, Pressable, View } from "react-native";
+
+type EntriesData = [EntryWithId[], ExerciseWithId[]];
 
 function fetchEntriesData() {
   return Promise.all([getEntries(), getExercises()]);
@@ -45,15 +47,7 @@ function EntryListItem({
   );
 }
 
-function EntriesList() {
-  const [dataPromise, setDataPromise] = useState(() => fetchEntriesData());
-
-  useFocusEffect(
-    useCallback(() => {
-      setDataPromise(fetchEntriesData());
-    }, [])
-  );
-
+function EntriesList({ dataPromise }: { dataPromise: Promise<EntriesData> }) {
   const [entries, exercises] = use(dataPromise);
 
   return (
@@ -71,6 +65,21 @@ function EntriesList() {
 
 export default function EntriesScreen() {
   const colors = useAppColors();
+  const [dataPromise, setDataPromise] = useState(() => fetchEntriesData());
+  const isFirstFocus = useRef(true);
+
+  // Re-fetch on every focus except the first (the initial promise above is
+  // already fresh). Kept above the Suspense boundary so this effect isn't
+  // torn down and re-run each time the child suspends.
+  useFocusEffect(
+    useCallback(() => {
+      if (isFirstFocus.current) {
+        isFirstFocus.current = false;
+        return;
+      }
+      setDataPromise(fetchEntriesData());
+    }, [])
+  );
 
   return (
     <View className="flex-1 bg-bg pt-[60px]">
@@ -84,7 +93,7 @@ export default function EntriesScreen() {
           </View>
         }
       >
-        <EntriesList />
+        <EntriesList dataPromise={dataPromise} />
       </Suspense>
     </View>
   );
