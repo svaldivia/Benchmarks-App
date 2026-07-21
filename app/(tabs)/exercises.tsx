@@ -7,7 +7,7 @@ import {
   ExerciseWithId,
   getExercises,
 } from "@/data/firebase/exercises";
-import { commonExerciseTags } from "@/data/firebase/types";
+import { commonExerciseTags, ExerciseTag } from "@/data/firebase/types";
 import { useAppColors } from "@/hooks/useAppColors";
 import { useFocusEffect } from "expo-router";
 import React, {
@@ -48,7 +48,7 @@ function ExercisesScreenContent({
   const [newExerciseName, setNewExerciseName] = useState("");
   const [newExerciseDescription, setNewExerciseDescription] = useState("");
   const [newExerciseLink, setNewExerciseLink] = useState("");
-  const [selectedTags, setSelectedTags] = useState<string[]>([]);
+  const [selectedTags, setSelectedTags] = useState<ExerciseTag[]>([]);
 
   const successOpacity = new Animated.Value(0);
   const checkmarkScale = new Animated.Value(0);
@@ -68,7 +68,7 @@ function ExercisesScreenContent({
     if (showSuccess) animateSuccess();
   }, [showSuccess]);
 
-  const toggleTag = (tag: string) => {
+  const toggleTag = (tag: ExerciseTag) => {
     if (selectedTags.includes(tag)) {
       setSelectedTags(selectedTags.filter((t) => t !== tag));
     } else {

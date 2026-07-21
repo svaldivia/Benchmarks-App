@@ -5,6 +5,7 @@ import { Palette } from "@/constants/Colors";
 import { addEntry } from "@/data/firebase/entries";
 import { ExerciseWithId, getExercises } from "@/data/firebase/exercises";
 import { dateToTimestamp } from "@/data/firebase/helpers";
+import { commonEntryTags, EntryTag } from "@/data/firebase/types";
 import { useAppColors } from "@/hooks/useAppColors";
 import { useFocusEffect } from "expo-router";
 import React, {
@@ -40,7 +41,7 @@ function NewEntryScreenContent({
   const [weight, setWeight] = useState("");
   const [repMax, setRepMax] = useState("");
   const [notes, setNotes] = useState("");
-  const [selectedTags, setSelectedTags] = useState<string[]>([]);
+  const [selectedTags, setSelectedTags] = useState<EntryTag[]>([]);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [isRepMaxDropdownOpen, setIsRepMaxDropdownOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -51,7 +52,6 @@ function NewEntryScreenContent({
   const successOpacity = new Animated.Value(0);
   const checkmarkScale = new Animated.Value(0);
 
-  const availableTags = ["pr", "strength", "technique", "explosive", "test", "1rm"];
   const repMaxOptions = Array.from({ length: 10 }, (_, i) => i + 1);
 
   const isFormValid = selectedExercise && weight && repMax;
@@ -63,7 +63,7 @@ function NewEntryScreenContent({
     setWeight(numericValue);
   };
 
-  const toggleTag = (tag: string) => {
+  const toggleTag = (tag: EntryTag) => {
     if (selectedTags.includes(tag)) {
       setSelectedTags(selectedTags.filter((t) => t !== tag));
     } else {
@@ -265,7 +265,7 @@ function NewEntryScreenContent({
         <View className="mb-6 px-5">
           <ThemedText type="subtitle">Tags</ThemedText>
           <View className="mt-3 flex-row flex-wrap gap-2">
-            {availableTags.map((tag) => {
+            {commonEntryTags.map((tag) => {
               const isSelected = selectedTags.includes(tag);
               return (
                 <Pressable
