@@ -137,9 +137,18 @@
   --radius-pill: 999px;
 
   /* ---- Typography -------------------------------------------------- */
-  --font-display: "Saira", system-ui, sans-serif;
-  --font-sans: "Hanken Grotesk", system-ui, sans-serif;
-  --font-mono: "JetBrains Mono", ui-monospace, "SFMono-Regular", monospace;
+  /* Font families. These ship as static per-weight TTFs (see app/_layout.tsx),
+     so on native each weight is its own family and must be named explicitly —
+     font-weight utilities do NOT cross-select the physical file. Each DS role +
+     weight is exposed as its own `font-*` utility (e.g. font-sans-semibold). */
+  --font-display: "Saira_700Bold";
+  --font-display-black: "Saira_800ExtraBold";
+  --font-sans: "HankenGrotesk_400Regular";
+  --font-sans-medium: "HankenGrotesk_500Medium";
+  --font-sans-semibold: "HankenGrotesk_600SemiBold";
+  --font-sans-bold: "HankenGrotesk_700Bold";
+  --font-mono: "JetBrainsMono_400Regular";
+  --font-mono-medium: "JetBrainsMono_500Medium";
 
   --text-display-2xl: 4.5rem;
   --text-display-xl: 3.5rem;

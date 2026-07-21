@@ -1,4 +1,5 @@
 import { ThemedText } from "@/components/ThemedText";
+import { Badge, Button, Card, IconButton } from "@/components/ds";
 import { IconSymbol } from "@/components/ui/IconSymbol";
 import { Palette } from "@/constants/Colors";
 import {
@@ -106,21 +107,20 @@ function ExercisesScreenContent({
   };
 
   const renderExerciseItem = ({ item }: { item: ExerciseWithId }) => (
-    <View className="mb-3 rounded-md border border-border bg-surface p-4 shadow-sm">
+    <Card className="mb-3">
       <ThemedText type="defaultSemiBold" className="mb-2 text-body-lg">
         {item.name}
       </ThemedText>
 
-      <View className="mb-1 flex-row flex-wrap gap-1.5">
-        {item.tags.map((tag, index) => (
-          <View
-            key={index}
-            className="rounded-md border border-border bg-brand-subtle px-2.5 py-1"
-          >
-            <ThemedText className="text-xs text-brand">{tag}</ThemedText>
-          </View>
-        ))}
-      </View>
+      {item.tags.length > 0 ? (
+        <View className="mb-1 flex-row flex-wrap gap-1.5">
+          {item.tags.map((tag, index) => (
+            <Badge key={index} tone="brand">
+              {tag}
+            </Badge>
+          ))}
+        </View>
+      ) : null}
 
       {item.description ? (
         <ThemedText
@@ -130,19 +130,20 @@ function ExercisesScreenContent({
           {item.description}
         </ThemedText>
       ) : null}
-    </View>
+    </Card>
   );
 
   return (
     <View className="flex-1 bg-bg">
       <View className="flex-row items-center justify-between px-5 pb-4 pt-[60px]">
         <ThemedText type="title">Exercises</ThemedText>
-        <Pressable
-          className="h-10 w-10 items-center justify-center rounded-full bg-brand shadow-sm"
+        <IconButton
+          variant="solid"
+          round
           onPress={() => setIsAddModalVisible(true)}
         >
           <IconSymbol size={22} name="plus" color={Palette.white} />
-        </Pressable>
+        </IconButton>
       </View>
 
       <FlatList
@@ -165,11 +166,11 @@ function ExercisesScreenContent({
 
             <ScrollView className="px-5">
               <View className="mb-5">
-                <ThemedText className="mb-2 text-base text-text-2">
+                <ThemedText className="mb-2 font-sans-semibold text-sm text-text-2">
                   Exercise Name *
                 </ThemedText>
                 <TextInput
-                  className="h-12 rounded-md border border-border bg-surface px-3.5 text-base text-text shadow-xs"
+                  className="h-12 rounded-xs border-[1.5px] border-field-border bg-field-bg px-4 font-sans text-body-lg text-text"
                   value={newExerciseName}
                   onChangeText={setNewExerciseName}
                   placeholder="Name of the exercise"
@@ -179,11 +180,11 @@ function ExercisesScreenContent({
               </View>
 
               <View className="mb-5">
-                <ThemedText className="mb-2 text-base text-text-2">
+                <ThemedText className="mb-2 font-sans-semibold text-sm text-text-2">
                   Description
                 </ThemedText>
                 <TextInput
-                  className="min-h-[100px] rounded-md border border-border bg-surface px-3.5 pt-3 text-base text-text shadow-xs"
+                  className="min-h-[100px] rounded-xs border-[1.5px] border-field-border bg-field-bg px-4 pt-3 font-sans text-body-lg text-text"
                   style={{ textAlignVertical: "top" }}
                   value={newExerciseDescription}
                   onChangeText={setNewExerciseDescription}
@@ -196,11 +197,11 @@ function ExercisesScreenContent({
               </View>
 
               <View className="mb-5">
-                <ThemedText className="mb-2 text-base text-text-2">
+                <ThemedText className="mb-2 font-sans-semibold text-sm text-text-2">
                   Link (Optional)
                 </ThemedText>
                 <TextInput
-                  className="h-12 rounded-md border border-border bg-surface px-3.5 text-base text-text shadow-xs"
+                  className="h-12 rounded-xs border-[1.5px] border-field-border bg-field-bg px-4 font-sans text-body-lg text-text"
                   value={newExerciseLink}
                   onChangeText={setNewExerciseLink}
                   placeholder="URL to video or guide"
@@ -211,7 +212,7 @@ function ExercisesScreenContent({
               </View>
 
               <View className="mb-5">
-                <ThemedText className="mb-2 text-base text-text-2">Tags</ThemedText>
+                <ThemedText className="mb-2 font-sans-semibold text-sm text-text-2">Tags</ThemedText>
                 <View className="flex-row flex-wrap gap-2">
                   {commonExerciseTags.map((tag) => {
                     const isSelected = selectedTags.includes(tag);
@@ -238,20 +239,16 @@ function ExercisesScreenContent({
                 </View>
               </View>
 
-              <Pressable
-                className={`mb-10 mt-2.5 flex-row items-center justify-center gap-2 rounded-md bg-brand p-4 shadow-sm ${
-                  !newExerciseName.trim() || isLoading ? "opacity-40" : ""
-                }`}
+              <Button
+                variant="primary"
+                size="lg"
+                full
+                className="mb-10 mt-2.5"
                 onPress={handleAddExercise}
                 disabled={!newExerciseName.trim() || isLoading}
               >
-                <ThemedText className="text-lg font-semibold text-on-brand">
-                  {isLoading ? "Saving..." : "Save Exercise"}
-                </ThemedText>
-                {!isLoading && (
-                  <IconSymbol size={18} name="checkmark" color={Palette.white} />
-                )}
-              </Pressable>
+                {isLoading ? "Saving…" : "Save Exercise"}
+              </Button>
             </ScrollView>
           </View>
         </View>

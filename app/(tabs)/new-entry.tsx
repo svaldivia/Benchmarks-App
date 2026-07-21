@@ -1,4 +1,5 @@
 import { ThemedText } from "@/components/ThemedText";
+import { Button, Input } from "@/components/ds";
 import { IconSymbol } from "@/components/ui/IconSymbol";
 import { Palette } from "@/constants/Colors";
 import { addEntry } from "@/data/firebase/entries";
@@ -131,11 +132,11 @@ function NewEntryScreenContent({
         <View className="mb-6 px-5">
           <ThemedText type="subtitle">Select Exercise</ThemedText>
           <Pressable
-            className="mt-3 flex-row items-center justify-between rounded-md border border-border bg-surface p-3.5 shadow-xs"
+            className="mt-3 h-12 flex-row items-center justify-between rounded-xs border-[1.5px] border-field-border bg-field-bg px-4"
             onPress={() => setIsDropdownOpen(true)}
           >
             <ThemedText
-              className={`text-base ${selectedExercise ? "" : "text-text-3"}`}
+              className={`font-sans text-body-lg ${selectedExercise ? "" : "text-text-3"}`}
             >
               {selectedExercise
                 ? exerciseOptions.find((ex) => ex.id === selectedExercise)?.name ||
@@ -191,24 +192,27 @@ function NewEntryScreenContent({
           <ThemedText type="subtitle">Performance</ThemedText>
           <View className="mt-3 flex-row gap-3">
             <View className="flex-1">
-              <ThemedText className="mb-1.5 text-sm text-text-2">Weight (lbs)</ThemedText>
-              <TextInput
-                className="h-12 rounded-md border border-border bg-surface px-3.5 text-base text-text shadow-xs"
+              <Input
+                label="Weight"
+                numeric
+                suffix="lbs"
                 value={weight}
                 onChangeText={handleWeightChange}
                 placeholder="0"
                 keyboardType="decimal-pad"
-                placeholderTextColor={colors.textMuted}
-                selectionColor={colors.tint}
               />
             </View>
-            <View className="flex-1">
-              <ThemedText className="mb-1.5 text-sm text-text-2">Rep Max</ThemedText>
+            <View className="flex-1 gap-1.5">
+              <ThemedText className="font-sans-semibold text-sm text-text-2">
+                Rep Max
+              </ThemedText>
               <Pressable
-                className="h-12 flex-row items-center justify-between rounded-md border border-border bg-surface p-3 shadow-xs"
+                className="h-12 flex-row items-center justify-between rounded-xs border-[1.5px] border-field-border bg-field-bg px-4"
                 onPress={() => setIsRepMaxDropdownOpen(true)}
               >
-                <ThemedText className={`text-base ${repMax ? "" : "text-text-3"}`}>
+                <ThemedText
+                  className={`font-sans text-body-lg ${repMax ? "" : "text-text-3"}`}
+                >
                   {repMax ? `${repMax} RM` : "Select"}
                 </ThemedText>
                 <IconSymbol size={16} name="chevron.down" color={colors.textSecondary} />
@@ -290,7 +294,7 @@ function NewEntryScreenContent({
         <View className="mb-6 px-5">
           <ThemedText type="subtitle">Notes (Optional)</ThemedText>
           <TextInput
-            className="mt-3 min-h-[100px] rounded-md border border-border bg-surface p-3.5 text-base text-text shadow-xs"
+            className="mt-3 min-h-[100px] rounded-xs border-[1.5px] border-field-border bg-field-bg p-4 font-sans text-body-lg text-text"
             style={{ textAlignVertical: "top" }}
             multiline
             numberOfLines={4}
@@ -303,18 +307,16 @@ function NewEntryScreenContent({
         </View>
 
         {/* Save Button */}
-        <Pressable
-          className={`mx-5 flex-row items-center justify-center gap-2 rounded-md bg-brand p-4 shadow-sm ${
-            isLoading || !isFormValid ? "opacity-40" : ""
-          }`}
+        <Button
+          variant="primary"
+          size="lg"
+          full
+          className="mx-5"
           onPress={saveEntry}
           disabled={isLoading || !isFormValid}
         >
-          <ThemedText className="text-lg font-semibold text-on-brand">
-            Save Entry
-          </ThemedText>
-          <IconSymbol size={18} name="checkmark" color={Palette.white} />
-        </Pressable>
+          Save Entry
+        </Button>
 
         <View className="h-10" />
       </ScrollView>
