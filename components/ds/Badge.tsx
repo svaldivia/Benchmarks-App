@@ -2,6 +2,8 @@
 import { ReactNode } from "react";
 import { Text, View, type ViewProps } from "react-native";
 
+import { cx } from "./cn";
+
 export type BadgeTone =
   | "neutral"
   | "brand"
@@ -29,9 +31,6 @@ const SOLID: Record<BadgeTone, { container: string; text: string; dot: string }>
     warning: { container: "bg-warning", text: "text-on-warning", dot: "bg-on-warning" },
     danger: { container: "bg-danger", text: "text-on-danger", dot: "bg-on-danger" },
   };
-
-const cx = (...c: (string | false | undefined)[]) =>
-  c.filter(Boolean).join(" ");
 
 export type BadgeProps = ViewProps & {
   children: ReactNode;

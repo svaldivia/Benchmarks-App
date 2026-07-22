@@ -3,6 +3,7 @@
 import { Text, View, type ViewProps } from "react-native";
 import Svg, { Path } from "react-native-svg";
 
+import { cx } from "./cn";
 import { useDsPalette } from "./tokens";
 
 export type StatTileSize = "sm" | "md" | "lg";
@@ -18,9 +19,6 @@ const UNIT_SIZE: Record<StatTileSize, string> = {
   md: "text-body-lg",
   lg: "text-display-md",
 };
-
-const cx = (...c: (string | false | undefined)[]) =>
-  c.filter(Boolean).join(" ");
 
 const ARROW_D: Record<Trend, string> = {
   up: "M12 19V5M5 12l7-7 7 7",

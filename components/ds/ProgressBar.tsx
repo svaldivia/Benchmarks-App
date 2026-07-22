@@ -2,6 +2,7 @@
 // RN mirror of the DS ProgressBar spec.
 import { Text, View } from "react-native";
 
+import { cx } from "./cn";
 import { DsColorName } from "./tokens";
 
 export type ProgressBarSize = "sm" | "md" | "lg";
@@ -19,9 +20,6 @@ const FILL: Record<DsColorName, string> = {
   warning: "bg-warning",
   danger: "bg-danger",
 };
-
-const cx = (...c: (string | false | undefined)[]) =>
-  c.filter(Boolean).join(" ");
 
 export type ProgressBarProps = {
   value?: number;

@@ -3,6 +3,8 @@
 import { ReactNode } from "react";
 import { Pressable, View, type ViewProps } from "react-native";
 
+import { cx } from "./cn";
+
 export type CardVariant =
   | "default"
   | "flat"
@@ -27,9 +29,6 @@ const PAD: Record<CardPad, string> = {
   md: "p-5",
   lg: "p-6",
 };
-
-const cx = (...c: (string | false | undefined)[]) =>
-  c.filter(Boolean).join(" ");
 
 export type CardProps = ViewProps & {
   children: ReactNode;

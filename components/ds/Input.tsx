@@ -4,10 +4,8 @@
 import { ReactNode, useState } from "react";
 import { Text, TextInput, View, type TextInputProps } from "react-native";
 
+import { cx } from "./cn";
 import { useAppColors } from "@/hooks/useAppColors";
-
-const cx = (...c: (string | false | undefined)[]) =>
-  c.filter(Boolean).join(" ");
 
 export type InputProps = TextInputProps & {
   label?: string;

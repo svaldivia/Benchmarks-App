@@ -3,6 +3,8 @@
 import { ReactNode } from "react";
 import { Pressable, Text, type PressableProps } from "react-native";
 
+import { cx } from "./cn";
+
 export type ButtonVariant =
   | "primary"
   | "accent"
@@ -27,9 +29,6 @@ const VARIANT: Record<ButtonVariant, { container: string; label: string }> = {
   ghost: { container: "bg-transparent", label: "text-text-2" },
   danger: { container: "bg-danger", label: "text-on-danger" },
 };
-
-const cx = (...c: (string | false | null | undefined)[]) =>
-  c.filter(Boolean).join(" ");
 
 export type ButtonProps = Omit<PressableProps, "children" | "style"> & {
   children: ReactNode;

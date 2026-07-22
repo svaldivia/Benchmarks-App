@@ -3,11 +3,10 @@
 import { useState } from "react";
 import { Pressable, Text, View } from "react-native";
 
+import { cx } from "./cn";
+
 export type SegmentOption = { value: string; label: string };
 export type SegmentedTone = "surface" | "brand";
-
-const cx = (...c: (string | false | undefined)[]) =>
-  c.filter(Boolean).join(" ");
 
 export type SegmentedControlProps = {
   options: (SegmentOption | string)[];

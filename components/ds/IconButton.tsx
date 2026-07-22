@@ -3,6 +3,8 @@
 import { ReactNode } from "react";
 import { Pressable, type PressableProps } from "react-native";
 
+import { cx } from "./cn";
+
 export type IconButtonVariant = "ghost" | "solid" | "accent" | "outline";
 export type IconButtonSize = "sm" | "md" | "lg";
 
@@ -18,9 +20,6 @@ const VARIANT: Record<IconButtonVariant, string> = {
   accent: "bg-accent shadow-md",
   outline: "bg-surface border border-border-strong",
 };
-
-const cx = (...c: (string | false | null | undefined)[]) =>
-  c.filter(Boolean).join(" ");
 
 export type IconButtonProps = Omit<PressableProps, "children" | "style"> & {
   children: ReactNode;
