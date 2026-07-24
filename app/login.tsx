@@ -1,4 +1,7 @@
 import { ThemedText } from "@/components/ThemedText";
+// SegmentedControl unused while sign up is disabled.
+import { Button, Input, LogoLockup } from "@/components/ds";
+import { IconSymbol } from "@/components/ui/IconSymbol";
 import { auth } from "@/data/firebase/firebaseConfig";
 import { useAppColors } from "@/hooks/useAppColors";
 import { useRouter } from "expo-router";
@@ -11,121 +14,123 @@ import {
   Alert,
   KeyboardAvoidingView,
   Platform,
-  TextInput,
-  TouchableOpacity,
+  ScrollView,
   View,
 } from "react-native";
 
 export default function LoginScreen() {
   const router = useRouter();
   const colors = useAppColors();
-  const [isSignUpMode, setIsSignUpMode] = useState(false);
+  // Restore the setter alongside setMode when sign up is re-enabled.
+  const [isSignUpMode] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
 
-  const handleLogin = async () => {
+  const submit = async () => {
     if (!email || !password) {
       Alert.alert("Error", "Please fill in all fields");
       return;
     }
     setIsLoading(true);
     try {
-      await signInWithEmailAndPassword(auth, email, password);
+      if (isSignUpMode) {
+        await createUserWithEmailAndPassword(auth, email, password);
+      } else {
+        await signInWithEmailAndPassword(auth, email, password);
+      }
       router.replace("/");
     } catch (error) {
-      console.error("Login failed", error);
-      Alert.alert("Error", "Login failed");
+      console.error(isSignUpMode ? "Sign up failed" : "Login failed", error);
+      Alert.alert("Error", isSignUpMode ? "Sign up failed" : "Login failed");
     } finally {
       setIsLoading(false);
     }
   };
 
-  const handleSignUp = async () => {
-    if (!email || !password) {
-      Alert.alert("Error", "Please fill in all fields");
-      return;
-    }
-    setIsLoading(true);
-    try {
-      await createUserWithEmailAndPassword(auth, email, password);
-      router.replace("/");
-    } catch (error) {
-      Alert.alert("Error", "Sign up failed");
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const toggleMode = () => {
-    setIsSignUpMode(!isSignUpMode);
-    setEmail("");
-    setPassword("");
-  };
+  // const setMode = (mode: string) => {
+  //   setIsSignUpMode(mode === "signup");
+  //   setEmail("");
+  //   setPassword("");
+  // };
 
   return (
     <View className="flex-1 bg-bg">
       <KeyboardAvoidingView
         behavior={Platform.OS === "ios" ? "padding" : "height"}
-        className="flex-1 justify-center"
+        className="flex-1"
       >
-        <View className="px-8 py-6">
-          <ThemedText type="title" className="mb-8 text-center">
-            {isSignUpMode ? "Sign Up" : "Log In"}
-          </ThemedText>
-
-          <View className="mb-5">
-            <ThemedText type="defaultSemiBold" className="mb-2 text-base">
-              Email
+        <ScrollView
+          contentContainerClassName="flex-grow justify-center px-7 py-10"
+          keyboardShouldPersistTaps="handled"
+          showsVerticalScrollIndicator={false}
+        >
+          <View className="mb-10 items-center">
+            <LogoLockup size={72} />
+            <ThemedText className="mt-3 text-center text-body-lg text-text-2">
+              Track your training. Beat your benchmarks.
             </ThemedText>
-            <TextInput
-              className="min-h-12 rounded-md border border-border bg-surface px-4 py-3 text-base text-text shadow-xs"
-              placeholder="Enter your email"
-              placeholderTextColor={colors.textMuted}
+          </View>
+
+          {/* Sign up temporarily disabled — login only.
+          <SegmentedControl
+            full
+            value={isSignUpMode ? "signup" : "login"}
+            onChange={setMode}
+            options={[
+              { value: "login", label: "Log in" },
+              { value: "signup", label: "Sign up" },
+            ]}
+            className="mb-7"
+          />
+          */}
+
+          <View className="gap-5">
+            <Input
+              label="Email"
+              placeholder="you@example.com"
+              icon={
+                <IconSymbol
+                  name="envelope.fill"
+                  size={20}
+                  color={colors.textMuted}
+                />
+              }
               value={email}
               onChangeText={setEmail}
               keyboardType="email-address"
               autoCapitalize="none"
               autoCorrect={false}
-              selectionColor={colors.tint}
             />
-          </View>
-
-          <View className="mb-5">
-            <ThemedText type="defaultSemiBold" className="mb-2 text-base">
-              Password
-            </ThemedText>
-            <TextInput
-              className="min-h-12 rounded-md border border-border bg-surface px-4 py-3 text-base text-text shadow-xs"
+            <Input
+              label="Password"
               placeholder="Enter your password"
-              placeholderTextColor={colors.textMuted}
+              icon={
+                <IconSymbol
+                  name="lock.fill"
+                  size={20}
+                  color={colors.textMuted}
+                />
+              }
               value={password}
               onChangeText={setPassword}
               secureTextEntry
               autoCapitalize="none"
               autoCorrect={false}
-              selectionColor={colors.tint}
             />
           </View>
 
-          <TouchableOpacity
-            className="mb-6 mt-4 min-h-[52px] items-center justify-center rounded-md bg-brand px-6 py-4 shadow-sm"
-            onPress={isSignUpMode ? handleSignUp : handleLogin}
+          <Button
+            variant="primary"
+            size="lg"
+            full
+            onPress={submit}
             disabled={isLoading}
+            className="mt-8"
           >
-            <ThemedText type="defaultSemiBold" className="text-base text-on-brand">
-              {isLoading ? "Please wait..." : isSignUpMode ? "Sign Up" : "Log In"}
-            </ThemedText>
-          </TouchableOpacity>
-
-          <TouchableOpacity onPress={toggleMode} className="items-center py-2">
-            <ThemedText className="text-sm text-brand underline">
-              {isSignUpMode
-                ? "Already have an account? Log in"
-                : "Don't have an account? Sign up"}
-            </ThemedText>
-          </TouchableOpacity>
-        </View>
+            {isLoading ? "Please wait…" : isSignUpMode ? "Create account" : "Log in"}
+          </Button>
+        </ScrollView>
       </KeyboardAvoidingView>
     </View>
   );

@@ -1,9 +1,11 @@
 import { ThemedText } from "@/components/ThemedText";
+import { Button, Input } from "@/components/ds";
 import { IconSymbol } from "@/components/ui/IconSymbol";
 import { Palette } from "@/constants/Colors";
 import { addEntry } from "@/data/firebase/entries";
 import { ExerciseWithId, getExercises } from "@/data/firebase/exercises";
 import { dateToTimestamp } from "@/data/firebase/helpers";
+import { commonEntryTags, EntryTag } from "@/data/firebase/types";
 import { useAppColors } from "@/hooks/useAppColors";
 import { useFocusEffect } from "expo-router";
 import React, {
@@ -39,7 +41,7 @@ function NewEntryScreenContent({
   const [weight, setWeight] = useState("");
   const [repMax, setRepMax] = useState("");
   const [notes, setNotes] = useState("");
-  const [selectedTags, setSelectedTags] = useState<string[]>([]);
+  const [selectedTags, setSelectedTags] = useState<EntryTag[]>([]);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [isRepMaxDropdownOpen, setIsRepMaxDropdownOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -50,7 +52,6 @@ function NewEntryScreenContent({
   const successOpacity = new Animated.Value(0);
   const checkmarkScale = new Animated.Value(0);
 
-  const availableTags = ["pr", "strength", "technique", "explosive", "test", "1rm"];
   const repMaxOptions = Array.from({ length: 10 }, (_, i) => i + 1);
 
   const isFormValid = selectedExercise && weight && repMax;
@@ -62,7 +63,7 @@ function NewEntryScreenContent({
     setWeight(numericValue);
   };
 
-  const toggleTag = (tag: string) => {
+  const toggleTag = (tag: EntryTag) => {
     if (selectedTags.includes(tag)) {
       setSelectedTags(selectedTags.filter((t) => t !== tag));
     } else {
@@ -131,11 +132,11 @@ function NewEntryScreenContent({
         <View className="mb-6 px-5">
           <ThemedText type="subtitle">Select Exercise</ThemedText>
           <Pressable
-            className="mt-3 flex-row items-center justify-between rounded-md border border-border bg-surface p-3.5 shadow-xs"
+            className="mt-3 h-12 flex-row items-center justify-between rounded-xs border-[1.5px] border-field-border bg-field-bg px-4"
             onPress={() => setIsDropdownOpen(true)}
           >
             <ThemedText
-              className={`text-base ${selectedExercise ? "" : "text-text-3"}`}
+              className={`font-sans text-body-lg ${selectedExercise ? "" : "text-text-3"}`}
             >
               {selectedExercise
                 ? exerciseOptions.find((ex) => ex.id === selectedExercise)?.name ||
@@ -191,24 +192,27 @@ function NewEntryScreenContent({
           <ThemedText type="subtitle">Performance</ThemedText>
           <View className="mt-3 flex-row gap-3">
             <View className="flex-1">
-              <ThemedText className="mb-1.5 text-sm text-text-2">Weight (lbs)</ThemedText>
-              <TextInput
-                className="h-12 rounded-md border border-border bg-surface px-3.5 text-base text-text shadow-xs"
+              <Input
+                label="Weight"
+                numeric
+                suffix="lbs"
                 value={weight}
                 onChangeText={handleWeightChange}
                 placeholder="0"
                 keyboardType="decimal-pad"
-                placeholderTextColor={colors.textMuted}
-                selectionColor={colors.tint}
               />
             </View>
-            <View className="flex-1">
-              <ThemedText className="mb-1.5 text-sm text-text-2">Rep Max</ThemedText>
+            <View className="flex-1 gap-1.5">
+              <ThemedText className="font-sans-semibold text-sm text-text-2">
+                Rep Max
+              </ThemedText>
               <Pressable
-                className="h-12 flex-row items-center justify-between rounded-md border border-border bg-surface p-3 shadow-xs"
+                className="h-12 flex-row items-center justify-between rounded-xs border-[1.5px] border-field-border bg-field-bg px-4"
                 onPress={() => setIsRepMaxDropdownOpen(true)}
               >
-                <ThemedText className={`text-base ${repMax ? "" : "text-text-3"}`}>
+                <ThemedText
+                  className={`font-sans text-body-lg ${repMax ? "" : "text-text-3"}`}
+                >
                   {repMax ? `${repMax} RM` : "Select"}
                 </ThemedText>
                 <IconSymbol size={16} name="chevron.down" color={colors.textSecondary} />
@@ -261,7 +265,7 @@ function NewEntryScreenContent({
         <View className="mb-6 px-5">
           <ThemedText type="subtitle">Tags</ThemedText>
           <View className="mt-3 flex-row flex-wrap gap-2">
-            {availableTags.map((tag) => {
+            {commonEntryTags.map((tag) => {
               const isSelected = selectedTags.includes(tag);
               return (
                 <Pressable
@@ -290,7 +294,7 @@ function NewEntryScreenContent({
         <View className="mb-6 px-5">
           <ThemedText type="subtitle">Notes (Optional)</ThemedText>
           <TextInput
-            className="mt-3 min-h-[100px] rounded-md border border-border bg-surface p-3.5 text-base text-text shadow-xs"
+            className="mt-3 min-h-[100px] rounded-xs border-[1.5px] border-field-border bg-field-bg p-4 font-sans text-body-lg text-text"
             style={{ textAlignVertical: "top" }}
             multiline
             numberOfLines={4}
@@ -303,18 +307,16 @@ function NewEntryScreenContent({
         </View>
 
         {/* Save Button */}
-        <Pressable
-          className={`mx-5 flex-row items-center justify-center gap-2 rounded-md bg-brand p-4 shadow-sm ${
-            isLoading || !isFormValid ? "opacity-40" : ""
-          }`}
+        <Button
+          variant="primary"
+          size="lg"
+          full
+          className="mx-5"
           onPress={saveEntry}
           disabled={isLoading || !isFormValid}
         >
-          <ThemedText className="text-lg font-semibold text-on-brand">
-            Save Entry
-          </ThemedText>
-          <IconSymbol size={18} name="checkmark" color={Palette.white} />
-        </Pressable>
+          Save Entry
+        </Button>
 
         <View className="h-10" />
       </ScrollView>

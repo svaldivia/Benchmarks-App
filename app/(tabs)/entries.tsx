@@ -1,11 +1,12 @@
 import { ThemedText } from "@/components/ThemedText";
+import { Badge, Card } from "@/components/ds";
 import { useAppColors } from "@/hooks/useAppColors";
 import { EntryWithId, getEntries } from "@/data/firebase/entries";
 import { ExerciseWithId, getExercises } from "@/data/firebase/exercises";
 import { timestampToDate } from "@/data/firebase/helpers";
 import { router, useFocusEffect } from "expo-router";
 import React, { Suspense, use, useCallback, useRef, useState } from "react";
-import { ActivityIndicator, FlatList, Pressable, View } from "react-native";
+import { ActivityIndicator, FlatList, View } from "react-native";
 
 type EntriesData = [EntryWithId[], ExerciseWithId[]];
 
@@ -25,25 +26,26 @@ function EntryListItem({
   const formattedDate = timestampToDate(item.createdDate).toLocaleDateString();
 
   return (
-    <Pressable
-      className="mb-3 rounded-md border border-border bg-surface p-4 shadow-sm"
+    <Card
+      className="mb-3"
       onPress={() =>
         router.push({ pathname: "/entry-detail", params: { entryId: item.id } })
       }
     >
-      <View className="mb-2 flex-row items-center justify-between">
+      <View className="mb-3 flex-row items-center justify-between">
         <ThemedText type="defaultSemiBold" className="flex-1 text-body-lg">
           {exerciseName}
         </ThemedText>
-        <ThemedText className="text-sm text-text-2">{formattedDate}</ThemedText>
+        <ThemedText className="text-sm text-text-3">{formattedDate}</ThemedText>
       </View>
-      <View className="flex-row items-center justify-between">
-        <ThemedText className="text-base font-semibold">
-          {item.value} {item.unit}
+      <View className="flex-row items-end justify-between">
+        <ThemedText className="font-display text-h3 text-text">
+          {item.value}
+          <ThemedText className="text-body-lg text-text-3"> {item.unit}</ThemedText>
         </ThemedText>
-        <ThemedText className="text-sm text-text-2">{item.repMax} RM</ThemedText>
+        <Badge tone="brand">{item.repMax} RM</Badge>
       </View>
-    </Pressable>
+    </Card>
   );
 }
 

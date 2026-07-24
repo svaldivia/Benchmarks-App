@@ -2,15 +2,29 @@ import { Text, type TextProps } from "react-native";
 
 export type ThemedTextProps = TextProps & {
   className?: string;
-  type?: "default" | "title" | "defaultSemiBold" | "subtitle" | "link";
+  type?:
+    | "default"
+    | "title"
+    | "defaultSemiBold"
+    | "subtitle"
+    | "link"
+    | "display"
+    | "h2"
+    | "overline";
 };
 
+// DS type scale (Saira display / Hanken sans). Family carries the weight on
+// native, so each role names its exact font-* utility rather than font-bold etc.
 const TYPE_CLASSES: Record<NonNullable<ThemedTextProps["type"]>, string> = {
-  default: "text-body leading-normal",
-  defaultSemiBold: "text-body leading-normal font-semibold",
-  title: "font-display text-h1 font-bold leading-tight",
-  subtitle: "text-h3 font-bold",
-  link: "text-body-lg leading-relaxed text-text-link",
+  default: "font-sans text-body leading-normal",
+  defaultSemiBold: "font-sans-semibold text-body leading-normal",
+  title: "font-display text-h1 leading-tight tracking-tight",
+  h2: "font-display text-h2 leading-tight tracking-tight",
+  subtitle: "font-display text-h3 leading-snug",
+  display: "font-display-black text-display-md leading-tight tracking-tight",
+  link: "font-sans text-body-lg leading-relaxed text-text-link",
+  overline:
+    "font-sans-bold text-xs uppercase tracking-caps text-text-3 leading-normal",
 };
 
 // Matches an explicit DS text-color utility (not sizes like text-base / text-h1).

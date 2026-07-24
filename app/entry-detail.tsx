@@ -1,4 +1,5 @@
 import { ThemedText } from "@/components/ThemedText";
+import { Badge, Card, StatTile } from "@/components/ds";
 import { useAppColors } from "@/hooks/useAppColors";
 import { getEntryById } from "@/data/firebase/entries";
 import { getExerciseById } from "@/data/firebase/exercises";
@@ -10,8 +11,7 @@ import { ActivityIndicator, ScrollView, View } from "react-native";
 
 type EntryDetailData = (Entry & { exercise: Exercise }) | null;
 
-const CARD = "mb-3 rounded-md border border-border bg-surface p-4 shadow-sm";
-const LABEL = "mb-1.5 text-sm font-medium uppercase tracking-wide text-text-2";
+const LABEL = "mb-1.5 text-xs font-medium uppercase tracking-caps text-text-3";
 
 function fetchEntryDetail(entryId: string): Promise<EntryDetailData> {
   return getEntryById(entryId).then(async (entry) => {
@@ -54,10 +54,14 @@ function EntryDetail({
         </ThemedText>
       </View>
 
-      <ScrollView className="flex-1 px-5" showsVerticalScrollIndicator={false}>
-        <View className={CARD}>
+      <ScrollView
+        className="flex-1 px-5"
+        contentContainerClassName="gap-3"
+        showsVerticalScrollIndicator={false}
+      >
+        <Card>
           <ThemedText className={LABEL}>Exercise</ThemedText>
-          <ThemedText className="mb-1 text-h3 font-bold">
+          <ThemedText type="subtitle" className="mb-1">
             {exerciseName}
           </ThemedText>
           {entry.exercise?.description ? (
@@ -65,51 +69,42 @@ function EntryDetail({
               {entry.exercise.description}
             </ThemedText>
           ) : null}
+        </Card>
+
+        <View className="flex-row gap-3">
+          <Card className="flex-1">
+            <StatTile size="sm" label="Weight" value={entry.value} unit={entry.unit} />
+          </Card>
+          <Card className="flex-1">
+            <StatTile size="sm" label="Rep Max" value={entry.repMax} unit="RM" />
+          </Card>
         </View>
 
-        <View className="mb-3 flex-row gap-3">
-          <View className="flex-1 rounded-md border border-border bg-surface p-4 shadow-sm">
-            <ThemedText className={LABEL}>Weight</ThemedText>
-            <ThemedText className="text-xl font-bold">
-              {entry.value} {entry.unit}
-            </ThemedText>
-          </View>
-          <View className="flex-1 rounded-md border border-border bg-surface p-4 shadow-sm">
-            <ThemedText className={LABEL}>Rep Max</ThemedText>
-            <ThemedText className="text-xl font-bold">
-              {entry.repMax} RM
-            </ThemedText>
-          </View>
-        </View>
-
-        <View className={CARD}>
+        <Card>
           <ThemedText className={LABEL}>Date</ThemedText>
           <ThemedText className="text-body-lg">{formattedDate}</ThemedText>
-        </View>
+        </Card>
 
         {entry.tags && entry.tags.length > 0 ? (
-          <View className={CARD}>
+          <Card>
             <ThemedText className={LABEL}>Tags</ThemedText>
             <View className="mt-1 flex-row flex-wrap gap-2">
               {entry.tags.map((tag, index) => (
-                <View
-                  key={index}
-                  className="rounded-md border border-border bg-brand-subtle px-3 py-1.5"
-                >
-                  <ThemedText className="text-sm text-brand">{tag}</ThemedText>
-                </View>
+                <Badge key={index} tone="brand">
+                  {tag}
+                </Badge>
               ))}
             </View>
-          </View>
+          </Card>
         ) : null}
 
         {entry.notes ? (
-          <View className={CARD}>
+          <Card>
             <ThemedText className={LABEL}>Notes</ThemedText>
-            <ThemedText className="text-base leading-snug">
+            <ThemedText className="text-body leading-snug">
               {entry.notes}
             </ThemedText>
-          </View>
+          </Card>
         ) : null}
 
         <View className="h-10" />

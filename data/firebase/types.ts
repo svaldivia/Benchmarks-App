@@ -1,8 +1,28 @@
 import { Timestamp } from 'firebase/firestore';
 
+export const commonExerciseTags = [
+  'Main',
+  'Cardio',
+  'Olympic Lift',
+  'Workout',
+] as const;
+
+export type ExerciseTag = (typeof commonExerciseTags)[number];
+
+export const commonEntryTags = [
+  'pr',
+  'strength',
+  'technique',
+  'explosive',
+  'test',
+  '1rm',
+] as const;
+
+export type EntryTag = (typeof commonEntryTags)[number];
+
 export type Exercise = {
   name: string;
-  tags: string[];
+  tags: ExerciseTag[];
   link: string;
   description: string;
 };
@@ -15,21 +35,8 @@ export type Entry = {
   value: number;
   repMax: number;
   createdDate: Timestamp;
-  tags: string[];
+  tags: EntryTag[];
   notes: string;
 };
 
 export type EntryId = string;
-
-export const commonExerciseTags = [
-  'compound',
-  'isolation',
-  'upper body',
-  'lower body',
-  'full body',
-  'strength',
-  'explosive',
-  'cardio',
-  'mobility',
-  'core',
-];
