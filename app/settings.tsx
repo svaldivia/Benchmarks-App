@@ -21,7 +21,6 @@ export default function SettingsScreen() {
     setIsSigningOut(true);
     try {
       await signOut(auth);
-      router.replace("/login");
     } catch (error) {
       console.error("Logout failed", error);
       Alert.alert("Error", "Logout failed");
@@ -31,7 +30,7 @@ export default function SettingsScreen() {
 
   return (
     <View className="flex-1 bg-bg">
-      <View className="flex-row items-center gap-2 px-5 pb-4 pt-[60px]">
+      <View className="flex-row items-center gap-2 px-5 pb-4 pt-15">
         <IconButton
           accessibilityLabel="Go back"
           onPress={() => router.back()}
