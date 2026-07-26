@@ -1,12 +1,13 @@
 import { ThemedText } from "@/components/ThemedText";
 import { Avatar, Badge, Card, StatTile } from "@/components/ds";
+import { useAuth } from "@/contexts/AuthContext";
 import { EntryWithId, getEntries } from "@/data/firebase/entries";
-import { auth } from "@/data/firebase/firebaseConfig";
 import { ExerciseWithId, getExercises } from "@/data/firebase/exercises";
 import { timestampToDate } from "@/data/firebase/helpers";
 import { useAppColors } from "@/hooks/useAppColors";
-import { router, useFocusEffect } from "expo-router";
-import React, { Suspense, use, useCallback, useRef, useState } from "react";
+import { usePromise } from "@/hooks/usePromise";
+import { router } from "expo-router";
+import React, { Suspense, use } from "react";
 import { ActivityIndicator, Pressable, ScrollView, View } from "react-native";
 
 type HomeData = [EntryWithId[], ExerciseWithId[]];
@@ -30,7 +31,10 @@ function RecentRow({
       pad="sm"
       variant="flat"
       onPress={() =>
-        router.push({ pathname: "/entry-detail", params: { entryId: entry.id } })
+        router.push({
+          pathname: "/entry-detail",
+          params: { entryId: entry.id },
+        })
       }
     >
       <View className="flex-row items-center gap-3">
@@ -43,7 +47,10 @@ function RecentRow({
         <View className="items-end gap-1">
           <ThemedText className="font-display text-h4 text-text">
             {entry.value}
-            <ThemedText className="text-sm text-text-3"> {entry.unit}</ThemedText>
+            <ThemedText className="text-sm text-text-3">
+              {" "}
+              {entry.unit}
+            </ThemedText>
           </ThemedText>
           <Badge tone="brand">{entry.repMax} RM</Badge>
         </View>
@@ -53,16 +60,17 @@ function RecentRow({
 }
 
 function HomeContent({ dataPromise }: { dataPromise: Promise<HomeData> }) {
+  const { user } = useAuth();
   const [entries, exercises] = use(dataPromise);
 
   const nameById = new Map(exercises.map((ex) => [ex.id, ex.name]));
   const now = Date.now();
   const thisWeek = entries.filter(
-    (e) => now - timestampToDate(e.createdDate).getTime() < WEEK_MS
+    (e) => now - timestampToDate(e.createdDate).getTime() < WEEK_MS,
   ).length;
   const recent = entries.slice(0, 3);
 
-  const email = auth.currentUser?.email ?? "";
+  const email = user?.email ?? "";
   const name = email ? email.split("@")[0] : "athlete";
   const greeting = name.charAt(0).toUpperCase() + name.slice(1);
 
@@ -131,20 +139,7 @@ function HomeContent({ dataPromise }: { dataPromise: Promise<HomeData> }) {
 
 export default function Index() {
   const colors = useAppColors();
-  const [dataPromise, setDataPromise] = useState(() => fetchHomeData());
-  const isFirstFocus = useRef(true);
-
-  // Re-fetch on every focus except the first — kept above the Suspense boundary
-  // so this effect isn't torn down each time the child suspends.
-  useFocusEffect(
-    useCallback(() => {
-      if (isFirstFocus.current) {
-        isFirstFocus.current = false;
-        return;
-      }
-      setDataPromise(fetchHomeData());
-    }, [])
-  );
+  const [dataPromise] = usePromise<HomeData>(fetchHomeData);
 
   return (
     <Suspense

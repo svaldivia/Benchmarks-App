@@ -1,6 +1,7 @@
 import { Tabs } from "expo-router";
 import React from "react";
 import { Platform, View } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { HapticTab } from "@/components/HapticTab";
 import { IconSymbol } from "@/components/ui/IconSymbol";
@@ -11,6 +12,7 @@ import { useColorScheme } from "@/hooks/useColorScheme";
 export default function TabLayout() {
   const colorScheme = useColorScheme() ?? "light";
   const colors = Colors[colorScheme];
+  const insets = useSafeAreaInsets();
   return (
     <Tabs
       screenOptions={{
@@ -23,13 +25,21 @@ export default function TabLayout() {
         headerShown: false,
         tabBarButton: HapticTab,
         tabBarBackground: TabBarBackground,
+        // The default ~49px bar is too short for the 28px icons + labels, so
+        // labels get clipped at the bottom (worse on devices with a home
+        // indicator). Give it explicit height plus safe-area bottom padding.
         tabBarStyle: Platform.select({
           ios: {
             position: "absolute",
+            height: 60 + insets.bottom,
+            paddingTop: 8,
           },
           default: {
             backgroundColor: colors.backgroundSecondary,
             borderTopColor: colors.border,
+            height: 64 + insets.bottom,
+            paddingTop: 8,
+            paddingBottom: insets.bottom,
           },
         }),
       }}

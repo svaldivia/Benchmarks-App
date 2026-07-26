@@ -4,8 +4,15 @@ import { useAppColors } from "@/hooks/useAppColors";
 import { EntryWithId, getEntries } from "@/data/firebase/entries";
 import { ExerciseWithId, getExercises } from "@/data/firebase/exercises";
 import { timestampToDate } from "@/data/firebase/helpers";
+<<<<<<< Updated upstream
 import { router, useFocusEffect } from "expo-router";
 import React, { Suspense, use, useCallback, useRef, useState } from "react";
+=======
+import { useAppColors } from "@/hooks/useAppColors";
+import { usePromise } from "@/hooks/usePromise";
+import { router } from "expo-router";
+import React, { Suspense, use } from "react";
+>>>>>>> Stashed changes
 import { ActivityIndicator, FlatList, View } from "react-native";
 
 type EntriesData = [EntryWithId[], ExerciseWithId[]];
@@ -67,6 +74,7 @@ function EntriesList({ dataPromise }: { dataPromise: Promise<EntriesData> }) {
 
 export default function EntriesScreen() {
   const colors = useAppColors();
+<<<<<<< Updated upstream
   const [dataPromise, setDataPromise] = useState(() => fetchEntriesData());
   const isFirstFocus = useRef(true);
 
@@ -82,6 +90,9 @@ export default function EntriesScreen() {
       setDataPromise(fetchEntriesData());
     }, [])
   );
+=======
+  const [dataPromise] = usePromise(fetchEntriesData);
+>>>>>>> Stashed changes
 
   return (
     <View className="flex-1 bg-bg pt-[60px]">

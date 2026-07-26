@@ -7,15 +7,8 @@ import { ExerciseWithId, getExercises } from "@/data/firebase/exercises";
 import { dateToTimestamp } from "@/data/firebase/helpers";
 import { commonEntryTags, EntryTag } from "@/data/firebase/types";
 import { useAppColors } from "@/hooks/useAppColors";
-import { useFocusEffect } from "expo-router";
-import React, {
-  Suspense,
-  use,
-  useCallback,
-  useEffect,
-  useRef,
-  useState,
-} from "react";
+import { usePromise } from "@/hooks/usePromise";
+import React, { Suspense, use, useEffect, useState } from "react";
 import {
   ActivityIndicator,
   Animated,
@@ -123,18 +116,45 @@ function NewEntryScreenContent({
       className="flex-1 bg-bg"
       behavior={Platform.OS === "ios" ? "padding" : "height"}
     >
-      <ScrollView className="flex-1" showsVerticalScrollIndicator={false}>
-        <View className="px-5 pb-4 pt-[60px]">
-          <ThemedText type="title">New Entry</ThemedText>
-        </View>
+      <ScrollView
+        className="flex-1"
+        contentContainerClassName="gap-6 px-5 pb-10 pt-[60px]"
+        showsVerticalScrollIndicator={false}
+      >
+        <ThemedText type="title">New Entry</ThemedText>
 
         {/* Select Exercise */}
-        <View className="mb-6 px-5">
-          <ThemedText type="subtitle">Select Exercise</ThemedText>
-          <Pressable
-            className="mt-3 h-12 flex-row items-center justify-between rounded-xs border-[1.5px] border-field-border bg-field-bg px-4"
-            onPress={() => setIsDropdownOpen(true)}
+        <ThemedText type="subtitle">Select Exercise</ThemedText>
+        <Pressable
+          className="mt-3 h-12 flex-row items-center justify-between rounded-xs border-[1.5px] border-field-border bg-field-bg px-4"
+          onPress={() => setIsDropdownOpen(true)}
+        >
+          <ThemedText
+            className={`font-sans text-body-lg ${selectedExercise ? "" : "text-text-3"}`}
           >
+            {selectedExercise
+              ? exerciseOptions.find((ex) => ex.id === selectedExercise)
+                  ?.name || "Select an exercise"
+              : "Select an exercise"}
+          </ThemedText>
+          <IconSymbol
+            size={18}
+            name="chevron.down"
+            color={colors.textSecondary}
+          />
+        </Pressable>
+
+        <Modal
+          visible={isDropdownOpen}
+          transparent
+          animationType="slide"
+          onRequestClose={() => setIsDropdownOpen(false)}
+        >
+          <Pressable
+            className="flex-1 justify-end bg-scrim"
+            onPress={() => setIsDropdownOpen(false)}
+          >
+<<<<<<< Updated upstream
             <ThemedText
               className={`font-sans text-body-lg ${selectedExercise ? "" : "text-text-3"}`}
             >
@@ -182,34 +202,81 @@ function NewEntryScreenContent({
                   )}
                   className="px-2.5"
                 />
+=======
+            <View className="max-h-[70%] rounded-t-[20px] bg-surface pb-[30px] pt-5">
+              <View className="mb-3 flex-row items-center justify-between px-5">
+                <ThemedText type="subtitle">Select Exercise</ThemedText>
+                <Pressable onPress={() => setIsDropdownOpen(false)}>
+                  <IconSymbol
+                    size={22}
+                    name="xmark"
+                    color={colors.textSecondary}
+                  />
+                </Pressable>
+>>>>>>> Stashed changes
               </View>
-            </Pressable>
-          </Modal>
-        </View>
-
-        {/* Performance */}
-        <View className="mb-6 px-5">
-          <ThemedText type="subtitle">Performance</ThemedText>
-          <View className="mt-3 flex-row gap-3">
-            <View className="flex-1">
-              <Input
-                label="Weight"
-                numeric
-                suffix="lbs"
-                value={weight}
-                onChangeText={handleWeightChange}
-                placeholder="0"
-                keyboardType="decimal-pad"
+              <FlatList
+                data={exerciseOptions}
+                keyExtractor={(item) => item.id}
+                renderItem={({ item }) => (
+                  <TouchableOpacity
+                    className={`mx-1 my-px flex-row items-center justify-between rounded-sm border-b border-border px-3.5 py-3.5 ${
+                      selectedExercise === item.id ? "bg-brand-subtle" : ""
+                    }`}
+                    onPress={() => {
+                      setSelectedExercise(item.id);
+                      setIsDropdownOpen(false);
+                    }}
+                  >
+                    <ThemedText
+                      className={`text-base ${
+                        selectedExercise === item.id
+                          ? "font-semibold text-brand"
+                          : ""
+                      }`}
+                    >
+                      {item.name}
+                    </ThemedText>
+                    {selectedExercise === item.id && (
+                      <IconSymbol
+                        size={18}
+                        name="checkmark"
+                        color={colors.accentText}
+                      />
+                    )}
+                  </TouchableOpacity>
+                )}
+                className="px-2.5"
               />
             </View>
-            <View className="flex-1 gap-1.5">
-              <ThemedText className="font-sans-semibold text-sm text-text-2">
-                Rep Max
-              </ThemedText>
-              <Pressable
-                className="h-12 flex-row items-center justify-between rounded-xs border-[1.5px] border-field-border bg-field-bg px-4"
-                onPress={() => setIsRepMaxDropdownOpen(true)}
+          </Pressable>
+        </Modal>
+
+        {/* Performance */}
+        <ThemedText type="subtitle">Performance</ThemedText>
+        <View className="mt-3 flex-row gap-3">
+          <Input
+            containerClassName="flex-1"
+            label="Weight"
+            numeric
+            suffix="lbs"
+            value={weight}
+            onChangeText={handleWeightChange}
+            placeholder="0"
+            keyboardType="decimal-pad"
+          />
+          <View className="flex-1 gap-1.5">
+            <ThemedText className="font-sans-semibold text-sm text-text-2">
+              Rep Max
+            </ThemedText>
+            <Pressable
+              className="h-12 flex-row items-center justify-between rounded-xs border-[1.5px] border-field-border bg-field-bg px-4"
+              onPress={() => setIsRepMaxDropdownOpen(true)}
+            >
+              <ThemedText
+                className={`font-sans text-body-lg ${repMax ? "" : "text-text-3"}`}
               >
+<<<<<<< Updated upstream
                 <ThemedText
                   className={`font-sans text-body-lg ${repMax ? "" : "text-text-3"}`}
                 >
@@ -218,6 +285,16 @@ function NewEntryScreenContent({
                 <IconSymbol size={16} name="chevron.down" color={colors.textSecondary} />
               </Pressable>
             </View>
+=======
+                {repMax ? `${repMax} RM` : "Select"}
+              </ThemedText>
+              <IconSymbol
+                size={16}
+                name="chevron.down"
+                color={colors.textSecondary}
+              />
+            </Pressable>
+>>>>>>> Stashed changes
           </View>
 
           <Modal visible={isRepMaxDropdownOpen} transparent animationType="slide" onRequestClose={() => setIsRepMaxDropdownOpen(false)}>
@@ -262,63 +339,56 @@ function NewEntryScreenContent({
         </View>
 
         {/* Tags */}
-        <View className="mb-6 px-5">
-          <ThemedText type="subtitle">Tags</ThemedText>
-          <View className="mt-3 flex-row flex-wrap gap-2">
-            {commonEntryTags.map((tag) => {
-              const isSelected = selectedTags.includes(tag);
-              return (
-                <Pressable
-                  key={tag}
-                  className={`rounded-pill border px-4 py-2 ${
-                    isSelected
-                      ? "border-brand bg-brand-subtle-2"
-                      : "border-border bg-brand-subtle"
+        <ThemedText type="subtitle">Tags</ThemedText>
+        <View className="mt-3 flex-row flex-wrap gap-2">
+          {commonEntryTags.map((tag) => {
+            const isSelected = selectedTags.includes(tag);
+            return (
+              <Pressable
+                key={tag}
+                className={`rounded-pill border px-4 py-2 ${
+                  isSelected
+                    ? "border-brand bg-brand-subtle-2"
+                    : "border-border bg-brand-subtle"
+                }`}
+                onPress={() => toggleTag(tag)}
+              >
+                <ThemedText
+                  className={`text-sm ${
+                    isSelected ? "font-semibold text-brand" : "text-text-2"
                   }`}
-                  onPress={() => toggleTag(tag)}
                 >
-                  <ThemedText
-                    className={`text-sm ${
-                      isSelected ? "font-semibold text-brand" : "text-text-2"
-                    }`}
-                  >
-                    {tag}
-                  </ThemedText>
-                </Pressable>
-              );
-            })}
-          </View>
+                  {tag}
+                </ThemedText>
+              </Pressable>
+            );
+          })}
         </View>
 
         {/* Notes */}
-        <View className="mb-6 px-5">
-          <ThemedText type="subtitle">Notes (Optional)</ThemedText>
-          <TextInput
-            className="mt-3 min-h-[100px] rounded-xs border-[1.5px] border-field-border bg-field-bg p-4 font-sans text-body-lg text-text"
-            style={{ textAlignVertical: "top" }}
-            multiline
-            numberOfLines={4}
-            value={notes}
-            onChangeText={setNotes}
-            placeholder="Add any details about this workout..."
-            placeholderTextColor={colors.textMuted}
-            selectionColor={colors.tint}
-          />
-        </View>
+        <ThemedText type="subtitle">Notes (Optional)</ThemedText>
+        <TextInput
+          className="mt-3 min-h-[100px] rounded-xs border-[1.5px] border-field-border bg-field-bg p-4 font-sans text-body-lg text-text"
+          style={{ textAlignVertical: "top" }}
+          multiline
+          numberOfLines={4}
+          value={notes}
+          onChangeText={setNotes}
+          placeholder="Add any details about this workout..."
+          placeholderTextColor={colors.textMuted}
+          selectionColor={colors.tint}
+        />
 
         {/* Save Button */}
         <Button
           variant="primary"
           size="lg"
           full
-          className="mx-5"
           onPress={saveEntry}
           disabled={isLoading || !isFormValid}
         >
           Save Entry
         </Button>
-
-        <View className="h-10" />
       </ScrollView>
 
       {/* Loading Overlay */}
@@ -358,6 +428,7 @@ function NewEntryScreenContent({
 
 export default function NewEntryScreen() {
   const colors = useAppColors();
+<<<<<<< Updated upstream
   const [exercisesPromise, setExercisesPromise] = useState(() =>
     getExercises()
   );
@@ -374,6 +445,9 @@ export default function NewEntryScreen() {
       setExercisesPromise(getExercises());
     }, [])
   );
+=======
+  const [exercisesPromise] = usePromise<ExerciseWithId[]>(getExercises);
+>>>>>>> Stashed changes
 
   return (
     <Suspense

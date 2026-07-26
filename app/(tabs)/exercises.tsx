@@ -9,16 +9,8 @@ import {
 } from "@/data/firebase/exercises";
 import { commonExerciseTags, ExerciseTag } from "@/data/firebase/types";
 import { useAppColors } from "@/hooks/useAppColors";
-import { useFocusEffect } from "expo-router";
-import React, {
-  startTransition,
-  Suspense,
-  use,
-  useCallback,
-  useEffect,
-  useRef,
-  useState,
-} from "react";
+import { usePromise } from "@/hooks/usePromise";
+import React, { Suspense, use, useEffect, useState } from "react";
 import {
   ActivityIndicator,
   Animated,
@@ -278,6 +270,7 @@ function ExercisesScreenContent({
 
 export default function ExercisesScreen() {
   const colors = useAppColors();
+<<<<<<< Updated upstream
   const [exercisesPromise, setExercisesPromise] = useState(() =>
     getExercises()
   );
@@ -298,6 +291,10 @@ export default function ExercisesScreen() {
   const refreshExercises = useCallback(() => {
     startTransition(() => setExercisesPromise(getExercises()));
   }, []);
+=======
+  const [exercisesPromise, refreshExercises] =
+    usePromise<ExerciseWithId[]>(getExercises);
+>>>>>>> Stashed changes
 
   return (
     <Suspense
