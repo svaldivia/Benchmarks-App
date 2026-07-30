@@ -5,8 +5,9 @@ import { getEntryById } from "@/data/firebase/entries";
 import { getExerciseById } from "@/data/firebase/exercises";
 import { timestampToDate } from "@/data/firebase/helpers";
 import { Entry, Exercise } from "@/data/firebase/types";
-import { useLocalSearchParams, useFocusEffect } from "expo-router";
-import React, { Suspense, use, useCallback, useRef, useState } from "react";
+import { usePromise } from "@/hooks/usePromise";
+import { useLocalSearchParams } from "expo-router";
+import React, { Suspense, use } from "react";
 import { ActivityIndicator, ScrollView, View } from "react-native";
 
 type EntryDetailData = (Entry & { exercise: Exercise }) | null;
@@ -116,21 +117,8 @@ function EntryDetail({
 export default function EntryDetailScreen() {
   const { entryId } = useLocalSearchParams<{ entryId: string }>();
   const colors = useAppColors();
-  const [entryPromise, setEntryPromise] = useState(() =>
+  const [entryPromise] = usePromise<EntryDetailData>(() =>
     entryId ? fetchEntryDetail(entryId) : Promise.resolve(null)
-  );
-  const isFirstFocus = useRef(true);
-
-  // Re-fetch on every focus except the first. Kept above the Suspense boundary
-  // so this effect isn't torn down and re-run each time the child suspends.
-  useFocusEffect(
-    useCallback(() => {
-      if (isFirstFocus.current) {
-        isFirstFocus.current = false;
-        return;
-      }
-      if (entryId) setEntryPromise(fetchEntryDetail(entryId));
-    }, [entryId])
   );
 
   if (!entryId) {
