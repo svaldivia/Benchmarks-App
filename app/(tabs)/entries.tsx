@@ -1,3 +1,4 @@
+import { DataErrorBoundary } from "@/components/DataErrorBoundary";
 import { ThemedText } from "@/components/ThemedText";
 import { Badge, Card } from "@/components/ds";
 import { useAppColors } from "@/hooks/useAppColors";
@@ -71,22 +72,24 @@ function EntriesList({ dataPromise }: { dataPromise: Promise<EntriesData> }) {
 
 export default function EntriesScreen() {
   const colors = useAppColors();
-  const [dataPromise] = usePromise(fetchEntriesData);
+  const [dataPromise, refreshEntries] = usePromise(fetchEntriesData);
 
   return (
     <View className="flex-1 bg-bg pt-[60px]">
       <View className="px-5 pb-4">
         <ThemedText type="title">Entries</ThemedText>
       </View>
-      <Suspense
-        fallback={
-          <View className="flex-1 items-center justify-center">
-            <ActivityIndicator size="large" color={colors.tint} />
-          </View>
-        }
-      >
-        <EntriesList dataPromise={dataPromise} />
-      </Suspense>
+      <DataErrorBoundary promise={dataPromise} onRetry={refreshEntries}>
+        <Suspense
+          fallback={
+            <View className="flex-1 items-center justify-center">
+              <ActivityIndicator size="large" color={colors.tint} />
+            </View>
+          }
+        >
+          <EntriesList dataPromise={dataPromise} />
+        </Suspense>
+      </DataErrorBoundary>
     </View>
   );
 }

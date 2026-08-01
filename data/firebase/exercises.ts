@@ -9,6 +9,7 @@ import {
   updateDoc,
 } from 'firebase/firestore';
 import { Exercise, ExerciseId } from './types';
+import { FetchTimeoutError, withTimeout } from './withTimeout';
 
 const EXERCISES_COLLECTION = 'exercises';
 
@@ -16,7 +17,10 @@ export type ExerciseWithId = { id: ExerciseId } & Exercise;
 
 export const getExercises = async (): Promise<ExerciseWithId[]> => {
   try {
-    const querySnapshot = await getDocs(collection(db, EXERCISES_COLLECTION));
+    const querySnapshot = await withTimeout(
+      getDocs(collection(db, EXERCISES_COLLECTION)),
+      'Exercises'
+    );
 
     const exercises = querySnapshot.docs.map((doc) => ({
       id: doc.id,
@@ -26,6 +30,7 @@ export const getExercises = async (): Promise<ExerciseWithId[]> => {
     return exercises;
   } catch (error) {
     console.error('Error getting exercises:', error);
+    if (error instanceof FetchTimeoutError) throw error;
     throw new Error('Failed to fetch exercises');
   }
 };
@@ -35,7 +40,7 @@ export const getExerciseById = async (
 ): Promise<Exercise | null> => {
   try {
     const docRef = doc(db, EXERCISES_COLLECTION, exerciseId);
-    const docSnap = await getDoc(docRef);
+    const docSnap = await withTimeout(getDoc(docRef), 'Exercise');
 
     if (docSnap.exists()) {
       return docSnap.data() as Exercise;
@@ -44,6 +49,7 @@ export const getExerciseById = async (
     }
   } catch (error) {
     console.error('Error getting exercise:', error);
+    if (error instanceof FetchTimeoutError) throw error;
     throw new Error(`Failed to fetch exercise with ID: ${exerciseId}`);
   }
 };

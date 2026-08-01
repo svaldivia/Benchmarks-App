@@ -1,3 +1,4 @@
+import { DataErrorBoundary } from "@/components/DataErrorBoundary";
 import { ThemedText } from "@/components/ThemedText";
 import { Button, Input } from "@/components/ds";
 import { IconSymbol } from "@/components/ui/IconSymbol";
@@ -398,17 +399,20 @@ function NewEntryScreenContent({
 
 export default function NewEntryScreen() {
   const colors = useAppColors();
-  const [exercisesPromise] = usePromise<ExerciseWithId[]>(getExercises);
+  const [exercisesPromise, refreshExercises] =
+    usePromise<ExerciseWithId[]>(getExercises);
 
   return (
-    <Suspense
-      fallback={
-        <View className="flex-1 items-center justify-center bg-bg">
-          <ActivityIndicator size="large" color={colors.tint} />
-        </View>
-      }
-    >
-      <NewEntryScreenContent exercisesPromise={exercisesPromise} />
-    </Suspense>
+    <DataErrorBoundary promise={exercisesPromise} onRetry={refreshExercises}>
+      <Suspense
+        fallback={
+          <View className="flex-1 items-center justify-center bg-bg">
+            <ActivityIndicator size="large" color={colors.tint} />
+          </View>
+        }
+      >
+        <NewEntryScreenContent exercisesPromise={exercisesPromise} />
+      </Suspense>
+    </DataErrorBoundary>
   );
 }

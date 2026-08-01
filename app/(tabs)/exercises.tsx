@@ -1,3 +1,4 @@
+import { DataErrorBoundary } from "@/components/DataErrorBoundary";
 import { ThemedText } from "@/components/ThemedText";
 import { Badge, Button, Card, IconButton } from "@/components/ds";
 import { IconSymbol } from "@/components/ui/IconSymbol";
@@ -300,17 +301,19 @@ export default function ExercisesScreen() {
     usePromise<ExerciseWithId[]>(getExercises);
 
   return (
-    <Suspense
-      fallback={
-        <View className="flex-1 items-center justify-center bg-bg">
-          <ActivityIndicator size="large" color={colors.tint} />
-        </View>
-      }
-    >
-      <ExercisesScreenContent
-        exercisesPromise={exercisesPromise}
-        refreshExercises={refreshExercises}
-      />
-    </Suspense>
+    <DataErrorBoundary promise={exercisesPromise} onRetry={refreshExercises}>
+      <Suspense
+        fallback={
+          <View className="flex-1 items-center justify-center bg-bg">
+            <ActivityIndicator size="large" color={colors.tint} />
+          </View>
+        }
+      >
+        <ExercisesScreenContent
+          exercisesPromise={exercisesPromise}
+          refreshExercises={refreshExercises}
+        />
+      </Suspense>
+    </DataErrorBoundary>
   );
 }

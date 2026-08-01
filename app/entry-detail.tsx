@@ -1,3 +1,4 @@
+import { DataErrorBoundary } from "@/components/DataErrorBoundary";
 import { ThemedText } from "@/components/ThemedText";
 import { Badge, Card, StatTile } from "@/components/ds";
 import { useAppColors } from "@/hooks/useAppColors";
@@ -117,7 +118,7 @@ function EntryDetail({
 export default function EntryDetailScreen() {
   const { entryId } = useLocalSearchParams<{ entryId: string }>();
   const colors = useAppColors();
-  const [entryPromise] = usePromise<EntryDetailData>(() =>
+  const [entryPromise, refreshEntry] = usePromise<EntryDetailData>(() =>
     entryId ? fetchEntryDetail(entryId) : Promise.resolve(null)
   );
 
@@ -130,14 +131,16 @@ export default function EntryDetailScreen() {
   }
 
   return (
-    <Suspense
-      fallback={
-        <View className="flex-1 items-center justify-center bg-bg">
-          <ActivityIndicator size="large" color={colors.tint} />
-        </View>
-      }
-    >
-      <EntryDetail entryPromise={entryPromise} />
-    </Suspense>
+    <DataErrorBoundary promise={entryPromise} onRetry={refreshEntry}>
+      <Suspense
+        fallback={
+          <View className="flex-1 items-center justify-center bg-bg">
+            <ActivityIndicator size="large" color={colors.tint} />
+          </View>
+        }
+      >
+        <EntryDetail entryPromise={entryPromise} />
+      </Suspense>
+    </DataErrorBoundary>
   );
 }
