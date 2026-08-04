@@ -49,10 +49,23 @@ function ExercisesScreenContent({
     successOpacity.setValue(0);
     checkmarkScale.setValue(0);
     Animated.sequence([
-      Animated.timing(successOpacity, { toValue: 1, duration: 300, useNativeDriver: true }),
-      Animated.timing(checkmarkScale, { toValue: 1, duration: 500, easing: Easing.elastic(1), useNativeDriver: true }),
+      Animated.timing(successOpacity, {
+        toValue: 1,
+        duration: 300,
+        useNativeDriver: true,
+      }),
+      Animated.timing(checkmarkScale, {
+        toValue: 1,
+        duration: 500,
+        easing: Easing.elastic(1),
+        useNativeDriver: true,
+      }),
       Animated.delay(1000),
-      Animated.timing(successOpacity, { toValue: 0, duration: 300, useNativeDriver: true }),
+      Animated.timing(successOpacity, {
+        toValue: 0,
+        duration: 300,
+        useNativeDriver: true,
+      }),
     ]).start(() => setShowSuccess(false));
   };
 
@@ -146,13 +159,22 @@ function ExercisesScreenContent({
         showsVerticalScrollIndicator={false}
       />
 
-      <Modal visible={isAddModalVisible} transparent animationType="slide" onRequestClose={() => setIsAddModalVisible(false)}>
+      <Modal
+        visible={isAddModalVisible}
+        transparent
+        animationType="slide"
+        onRequestClose={() => setIsAddModalVisible(false)}
+      >
         <View className="flex-1 justify-end bg-scrim">
           <View className="max-h-[80%] rounded-t-[20px] bg-surface pt-5">
             <View className="mb-3 flex-row items-center justify-between px-5">
               <ThemedText type="subtitle">Add New Exercise</ThemedText>
               <Pressable onPress={() => setIsAddModalVisible(false)}>
-                <IconSymbol size={22} name="xmark" color={colors.textSecondary} />
+                <IconSymbol
+                  size={22}
+                  name="xmark"
+                  color={colors.textSecondary}
+                />
               </Pressable>
             </View>
 
@@ -204,7 +226,9 @@ function ExercisesScreenContent({
               </View>
 
               <View className="mb-5">
-                <ThemedText className="mb-2 font-sans-semibold text-sm text-text-2">Tags</ThemedText>
+                <ThemedText className="mb-2 font-sans-semibold text-sm text-text-2">
+                  Tags
+                </ThemedText>
                 <View className="flex-row flex-wrap gap-2">
                   {commonExerciseTags.map((tag) => {
                     const isSelected = selectedTags.includes(tag);
@@ -220,7 +244,9 @@ function ExercisesScreenContent({
                       >
                         <ThemedText
                           className={`text-sm ${
-                            isSelected ? "font-semibold text-brand" : "text-text-2"
+                            isSelected
+                              ? "font-semibold text-brand"
+                              : "text-text-2"
                           }`}
                         >
                           {tag}
@@ -270,31 +296,8 @@ function ExercisesScreenContent({
 
 export default function ExercisesScreen() {
   const colors = useAppColors();
-<<<<<<< Updated upstream
-  const [exercisesPromise, setExercisesPromise] = useState(() =>
-    getExercises()
-  );
-  const isFirstFocus = useRef(true);
-
-  // Re-fetch on every focus except the first. Kept above the Suspense boundary
-  // so this effect isn't torn down and re-run each time the child suspends.
-  useFocusEffect(
-    useCallback(() => {
-      if (isFirstFocus.current) {
-        isFirstFocus.current = false;
-        return;
-      }
-      setExercisesPromise(getExercises());
-    }, [])
-  );
-
-  const refreshExercises = useCallback(() => {
-    startTransition(() => setExercisesPromise(getExercises()));
-  }, []);
-=======
   const [exercisesPromise, refreshExercises] =
     usePromise<ExerciseWithId[]>(getExercises);
->>>>>>> Stashed changes
 
   return (
     <Suspense

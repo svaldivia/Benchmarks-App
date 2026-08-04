@@ -68,10 +68,23 @@ function NewEntryScreenContent({
     successOpacity.setValue(0);
     checkmarkScale.setValue(0);
     Animated.sequence([
-      Animated.timing(successOpacity, { toValue: 1, duration: 300, useNativeDriver: true }),
-      Animated.timing(checkmarkScale, { toValue: 1, duration: 500, easing: Easing.elastic(1), useNativeDriver: true }),
+      Animated.timing(successOpacity, {
+        toValue: 1,
+        duration: 300,
+        useNativeDriver: true,
+      }),
+      Animated.timing(checkmarkScale, {
+        toValue: 1,
+        duration: 500,
+        easing: Easing.elastic(1),
+        useNativeDriver: true,
+      }),
       Animated.delay(1000),
-      Animated.timing(successOpacity, { toValue: 0, duration: 300, useNativeDriver: true }),
+      Animated.timing(successOpacity, {
+        toValue: 0,
+        duration: 300,
+        useNativeDriver: true,
+      }),
     ]).start(() => setShowSuccess(false));
   };
 
@@ -154,55 +167,6 @@ function NewEntryScreenContent({
             className="flex-1 justify-end bg-scrim"
             onPress={() => setIsDropdownOpen(false)}
           >
-<<<<<<< Updated upstream
-            <ThemedText
-              className={`font-sans text-body-lg ${selectedExercise ? "" : "text-text-3"}`}
-            >
-              {selectedExercise
-                ? exerciseOptions.find((ex) => ex.id === selectedExercise)?.name ||
-                  "Select an exercise"
-                : "Select an exercise"}
-            </ThemedText>
-            <IconSymbol size={18} name="chevron.down" color={colors.textSecondary} />
-          </Pressable>
-
-          <Modal visible={isDropdownOpen} transparent animationType="slide" onRequestClose={() => setIsDropdownOpen(false)}>
-            <Pressable className="flex-1 justify-end bg-scrim" onPress={() => setIsDropdownOpen(false)}>
-              <View className="max-h-[70%] rounded-t-[20px] bg-surface pb-[30px] pt-5">
-                <View className="mb-3 flex-row items-center justify-between px-5">
-                  <ThemedText type="subtitle">Select Exercise</ThemedText>
-                  <Pressable onPress={() => setIsDropdownOpen(false)}>
-                    <IconSymbol size={22} name="xmark" color={colors.textSecondary} />
-                  </Pressable>
-                </View>
-                <FlatList
-                  data={exerciseOptions}
-                  keyExtractor={(item) => item.id}
-                  renderItem={({ item }) => (
-                    <TouchableOpacity
-                      className={`mx-1 my-px flex-row items-center justify-between rounded-sm border-b border-border px-3.5 py-3.5 ${
-                        selectedExercise === item.id ? "bg-brand-subtle" : ""
-                      }`}
-                      onPress={() => {
-                        setSelectedExercise(item.id);
-                        setIsDropdownOpen(false);
-                      }}
-                    >
-                      <ThemedText
-                        className={`text-base ${
-                          selectedExercise === item.id ? "font-semibold text-brand" : ""
-                        }`}
-                      >
-                        {item.name}
-                      </ThemedText>
-                      {selectedExercise === item.id && (
-                        <IconSymbol size={18} name="checkmark" color={colors.accentText} />
-                      )}
-                    </TouchableOpacity>
-                  )}
-                  className="px-2.5"
-                />
-=======
             <View className="max-h-[70%] rounded-t-[20px] bg-surface pb-[30px] pt-5">
               <View className="mb-3 flex-row items-center justify-between px-5">
                 <ThemedText type="subtitle">Select Exercise</ThemedText>
@@ -213,7 +177,6 @@ function NewEntryScreenContent({
                     color={colors.textSecondary}
                   />
                 </Pressable>
->>>>>>> Stashed changes
               </View>
               <FlatList
                 data={exerciseOptions}
@@ -276,16 +239,6 @@ function NewEntryScreenContent({
               <ThemedText
                 className={`font-sans text-body-lg ${repMax ? "" : "text-text-3"}`}
               >
-<<<<<<< Updated upstream
-                <ThemedText
-                  className={`font-sans text-body-lg ${repMax ? "" : "text-text-3"}`}
-                >
-                  {repMax ? `${repMax} RM` : "Select"}
-                </ThemedText>
-                <IconSymbol size={16} name="chevron.down" color={colors.textSecondary} />
-              </Pressable>
-            </View>
-=======
                 {repMax ? `${repMax} RM` : "Select"}
               </ThemedText>
               <IconSymbol
@@ -294,16 +247,27 @@ function NewEntryScreenContent({
                 color={colors.textSecondary}
               />
             </Pressable>
->>>>>>> Stashed changes
           </View>
 
-          <Modal visible={isRepMaxDropdownOpen} transparent animationType="slide" onRequestClose={() => setIsRepMaxDropdownOpen(false)}>
-            <Pressable className="flex-1 justify-end bg-scrim" onPress={() => setIsRepMaxDropdownOpen(false)}>
+          <Modal
+            visible={isRepMaxDropdownOpen}
+            transparent
+            animationType="slide"
+            onRequestClose={() => setIsRepMaxDropdownOpen(false)}
+          >
+            <Pressable
+              className="flex-1 justify-end bg-scrim"
+              onPress={() => setIsRepMaxDropdownOpen(false)}
+            >
               <View className="max-h-[70%] rounded-t-[20px] bg-surface pb-[30px] pt-5">
                 <View className="mb-3 flex-row items-center justify-between px-5">
                   <ThemedText type="subtitle">Select Rep Max</ThemedText>
                   <Pressable onPress={() => setIsRepMaxDropdownOpen(false)}>
-                    <IconSymbol size={22} name="xmark" color={colors.textSecondary} />
+                    <IconSymbol
+                      size={22}
+                      name="xmark"
+                      color={colors.textSecondary}
+                    />
                   </Pressable>
                 </View>
                 <FlatList
@@ -321,13 +285,19 @@ function NewEntryScreenContent({
                     >
                       <ThemedText
                         className={`text-base ${
-                          repMax === item.toString() ? "font-semibold text-brand" : ""
+                          repMax === item.toString()
+                            ? "font-semibold text-brand"
+                            : ""
                         }`}
                       >
                         {item} Rep Max
                       </ThemedText>
                       {repMax === item.toString() && (
-                        <IconSymbol size={18} name="checkmark" color={colors.accentText} />
+                        <IconSymbol
+                          size={18}
+                          name="checkmark"
+                          color={colors.accentText}
+                        />
                       )}
                     </TouchableOpacity>
                   )}
@@ -428,26 +398,7 @@ function NewEntryScreenContent({
 
 export default function NewEntryScreen() {
   const colors = useAppColors();
-<<<<<<< Updated upstream
-  const [exercisesPromise, setExercisesPromise] = useState(() =>
-    getExercises()
-  );
-  const isFirstFocus = useRef(true);
-
-  // Re-fetch on every focus except the first. Kept above the Suspense boundary
-  // so this effect isn't torn down and re-run each time the child suspends.
-  useFocusEffect(
-    useCallback(() => {
-      if (isFirstFocus.current) {
-        isFirstFocus.current = false;
-        return;
-      }
-      setExercisesPromise(getExercises());
-    }, [])
-  );
-=======
   const [exercisesPromise] = usePromise<ExerciseWithId[]>(getExercises);
->>>>>>> Stashed changes
 
   return (
     <Suspense

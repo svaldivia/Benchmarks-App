@@ -4,15 +4,9 @@ import { useAppColors } from "@/hooks/useAppColors";
 import { EntryWithId, getEntries } from "@/data/firebase/entries";
 import { ExerciseWithId, getExercises } from "@/data/firebase/exercises";
 import { timestampToDate } from "@/data/firebase/helpers";
-<<<<<<< Updated upstream
-import { router, useFocusEffect } from "expo-router";
-import React, { Suspense, use, useCallback, useRef, useState } from "react";
-=======
-import { useAppColors } from "@/hooks/useAppColors";
 import { usePromise } from "@/hooks/usePromise";
 import { router } from "expo-router";
 import React, { Suspense, use } from "react";
->>>>>>> Stashed changes
 import { ActivityIndicator, FlatList, View } from "react-native";
 
 type EntriesData = [EntryWithId[], ExerciseWithId[]];
@@ -48,7 +42,10 @@ function EntryListItem({
       <View className="flex-row items-end justify-between">
         <ThemedText className="font-display text-h3 text-text">
           {item.value}
-          <ThemedText className="text-body-lg text-text-3"> {item.unit}</ThemedText>
+          <ThemedText className="text-body-lg text-text-3">
+            {" "}
+            {item.unit}
+          </ThemedText>
         </ThemedText>
         <Badge tone="brand">{item.repMax} RM</Badge>
       </View>
@@ -74,25 +71,7 @@ function EntriesList({ dataPromise }: { dataPromise: Promise<EntriesData> }) {
 
 export default function EntriesScreen() {
   const colors = useAppColors();
-<<<<<<< Updated upstream
-  const [dataPromise, setDataPromise] = useState(() => fetchEntriesData());
-  const isFirstFocus = useRef(true);
-
-  // Re-fetch on every focus except the first (the initial promise above is
-  // already fresh). Kept above the Suspense boundary so this effect isn't
-  // torn down and re-run each time the child suspends.
-  useFocusEffect(
-    useCallback(() => {
-      if (isFirstFocus.current) {
-        isFirstFocus.current = false;
-        return;
-      }
-      setDataPromise(fetchEntriesData());
-    }, [])
-  );
-=======
   const [dataPromise] = usePromise(fetchEntriesData);
->>>>>>> Stashed changes
 
   return (
     <View className="flex-1 bg-bg pt-[60px]">
