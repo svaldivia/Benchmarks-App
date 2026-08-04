@@ -1,7 +1,6 @@
 import { DataErrorBoundary } from "@/components/DataErrorBoundary";
 import { ThemedText } from "@/components/ThemedText";
 import { Badge, Card } from "@/components/ds";
-import { useAppColors } from "@/hooks/useAppColors";
 import { EntryWithId, getEntries } from "@/data/firebase/entries";
 import { ExerciseWithId, getExercises } from "@/data/firebase/exercises";
 import { timestampToDate } from "@/data/firebase/helpers";
