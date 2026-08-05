@@ -7,7 +7,7 @@ import { timestampToDate } from "@/data/firebase/helpers";
 import { useAppColors } from "@/hooks/useAppColors";
 import { usePromise } from "@/hooks/usePromise";
 import { router } from "expo-router";
-import React, { Suspense, use } from "react";
+import React, { Suspense, use, useState } from "react";
 import { ActivityIndicator, Pressable, ScrollView, View } from "react-native";
 
 type HomeData = [EntryWithId[], ExerciseWithId[]];
@@ -64,7 +64,9 @@ function HomeContent({ dataPromise }: { dataPromise: Promise<HomeData> }) {
   const [entries, exercises] = use(dataPromise);
 
   const nameById = new Map(exercises.map((ex) => [ex.id, ex.name]));
-  const now = Date.now();
+  // Pin the window's end to first render so the count can't shift underneath a
+  // re-render (reading the clock during render is impure).
+  const [now] = useState(() => Date.now());
   const thisWeek = entries.filter(
     (e) => now - timestampToDate(e.createdDate).getTime() < WEEK_MS,
   ).length;
