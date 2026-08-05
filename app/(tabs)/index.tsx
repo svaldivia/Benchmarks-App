@@ -7,7 +7,7 @@ import { timestampToDate } from "@/data/firebase/helpers";
 import { entriesQuery, exercisesQuery } from "@/data/firebase/queries";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { router } from "expo-router";
-import React from "react";
+import React, { useState } from "react";
 import { Pressable, ScrollView, View } from "react-native";
 
 const WEEK_MS = 7 * 24 * 60 * 60 * 1000;
@@ -59,7 +59,9 @@ function HomeContent() {
   const { data: exercises } = useSuspenseQuery(exercisesQuery());
 
   const nameById = new Map(exercises.map((ex) => [ex.id, ex.name]));
-  const now = Date.now();
+  // Pin the window's end to first render so the count can't shift underneath a
+  // re-render (reading the clock during render is impure).
+  const [now] = useState(() => Date.now());
   const thisWeek = entries.filter(
     (e) => now - timestampToDate(e.createdDate).getTime() < WEEK_MS,
   ).length;

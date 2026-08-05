@@ -10,7 +10,13 @@ import {
 } from "@expo-google-fonts/jetbrains-mono";
 import { Saira_700Bold, Saira_800ExtraBold } from "@expo-google-fonts/saira";
 import { useFonts } from "expo-font";
-import { Stack, type ErrorBoundaryProps } from "expo-router";
+import {
+  DarkTheme,
+  DefaultTheme,
+  Stack,
+  ThemeProvider,
+  type ErrorBoundaryProps,
+} from "expo-router";
 import { useEffect } from "react";
 import { AppState, Platform, View } from "react-native";
 import "react-native-reanimated";
@@ -20,11 +26,6 @@ import { Button } from "@/components/ds";
 import { AuthProvider, useAuth } from "@/contexts/AuthContext";
 import { QUERY_STALE_TIME } from "@/data/firebase/queries";
 import { useColorScheme } from "@/hooks/useColorScheme";
-import {
-  DarkTheme,
-  DefaultTheme,
-  ThemeProvider,
-} from "@react-navigation/native";
 import {
   focusManager,
   QueryClient,

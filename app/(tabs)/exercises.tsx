@@ -12,7 +12,7 @@ import {
   useQueryClient,
   useSuspenseQuery,
 } from "@tanstack/react-query";
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   Animated,
   Easing,
@@ -37,11 +37,11 @@ function ExercisesScreenContent() {
   const [newExerciseLink, setNewExerciseLink] = useState("");
   const [selectedTags, setSelectedTags] = useState<ExerciseTag[]>([]);
 
-  // Refs, not fresh instances each render: a re-render mid-animation (the list
-  // refreshing after a save, for one) would otherwise swap in new values and
-  // strand the success overlay part-way through.
-  const successOpacity = useRef(new Animated.Value(0)).current;
-  const checkmarkScale = useRef(new Animated.Value(0)).current;
+  // Created once per mount, not fresh instances each render: a re-render
+  // mid-animation (the list refreshing after a save, for one) would otherwise
+  // swap in new values and strand the success overlay part-way through.
+  const [successOpacity] = useState(() => new Animated.Value(0));
+  const [checkmarkScale] = useState(() => new Animated.Value(0));
 
   const animateSuccess = () => {
     successOpacity.setValue(0);
