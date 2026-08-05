@@ -1,10 +1,10 @@
-import { DataErrorBoundary } from "@/components/DataErrorBoundary";
 import { ThemedText } from "@/components/ThemedText";
 import { Badge, Card, StatTile } from "@/components/ds";
 import { getEntryById } from "@/data/firebase/entries";
 import { getExerciseById } from "@/data/firebase/exercises";
 import { timestampToDate } from "@/data/firebase/helpers";
 import { Entry, Exercise } from "@/data/firebase/types";
+import { useAppColors } from "@/hooks/useAppColors";
 import { usePromise } from "@/hooks/usePromise";
 import { useLocalSearchParams } from "expo-router";
 import React, { Suspense, use } from "react";
@@ -49,7 +49,7 @@ function EntryDetail({
 
   return (
     <View className="flex-1 bg-bg">
-      <View className="px-5 pb-4 pt-[60px]">
+      <View className="px-5 pt-15 pb-4">
         <ThemedText type="title" className="text-center">
           Entry Details
         </ThemedText>
@@ -66,7 +66,7 @@ function EntryDetail({
             {exerciseName}
           </ThemedText>
           {entry.exercise?.description ? (
-            <ThemedText className="mt-1 text-body leading-snug text-text-2">
+            <ThemedText className="mt-1 text-body/snug text-text-2">
               {entry.exercise.description}
             </ThemedText>
           ) : null}
@@ -112,7 +112,7 @@ function EntryDetail({
         {entry.notes ? (
           <Card>
             <ThemedText className={LABEL}>Notes</ThemedText>
-            <ThemedText className="text-body leading-snug">
+            <ThemedText className="text-body/snug">
               {entry.notes}
             </ThemedText>
           </Card>
@@ -127,7 +127,7 @@ function EntryDetail({
 export default function EntryDetailScreen() {
   const { entryId } = useLocalSearchParams<{ entryId: string }>();
   const colors = useAppColors();
-  const [entryPromise, refreshEntry] = usePromise<EntryDetailData>(() =>
+  const [entryPromise] = usePromise<EntryDetailData>(() =>
     entryId ? fetchEntryDetail(entryId) : Promise.resolve(null),
   );
 
@@ -140,16 +140,14 @@ export default function EntryDetailScreen() {
   }
 
   return (
-    <DataErrorBoundary promise={entryPromise} onRetry={refreshEntry}>
-      <Suspense
-        fallback={
-          <View className="flex-1 items-center justify-center bg-bg">
-            <ActivityIndicator size="large" color={colors.tint} />
-          </View>
-        }
-      >
-        <EntryDetail entryPromise={entryPromise} />
-      </Suspense>
-    </DataErrorBoundary>
+    <Suspense
+      fallback={
+        <View className="flex-1 items-center justify-center bg-bg">
+          <ActivityIndicator size="large" color={colors.tint} />
+        </View>
+      }
+    >
+      <EntryDetail entryPromise={entryPromise} />
+    </Suspense>
   );
 }

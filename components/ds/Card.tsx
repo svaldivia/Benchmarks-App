@@ -47,7 +47,7 @@ export function Card({
   ...rest
 }: CardProps) {
   const classes = cx(
-    "rounded-lg overflow-hidden",
+    "overflow-hidden rounded-lg",
     VARIANT[variant],
     PAD[pad],
     className

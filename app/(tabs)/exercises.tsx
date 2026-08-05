@@ -1,4 +1,3 @@
-import { DataErrorBoundary } from "@/components/DataErrorBoundary";
 import { ThemedText } from "@/components/ThemedText";
 import { Badge, Button, Card, IconButton } from "@/components/ds";
 import { IconSymbol } from "@/components/ui/IconSymbol";
@@ -10,6 +9,7 @@ import {
 } from "@/data/firebase/exercises";
 import { commonExerciseTags, ExerciseTag } from "@/data/firebase/types";
 import { useAppColors } from "@/hooks/useAppColors";
+import { usePromise } from "@/hooks/usePromise";
 import React, { Suspense, use, useEffect, useState } from "react";
 import {
   ActivityIndicator,
@@ -139,10 +139,7 @@ function ExercisesScreenContent({
       ) : null}
 
       {item.description ? (
-        <ThemedText
-          className="mt-2 text-sm leading-snug text-text-2"
-          numberOfLines={2}
-        >
+        <ThemedText className="mt-2 text-sm/snug text-text-2" numberOfLines={2}>
           {item.description}
         </ThemedText>
       ) : null}
@@ -151,7 +148,7 @@ function ExercisesScreenContent({
 
   return (
     <View className="flex-1 bg-bg">
-      <View className="flex-row items-center justify-between px-5 pb-4 pt-[60px]">
+      <View className="flex-row items-center justify-between px-5 pt-15 pb-4">
         <ThemedText type="title">Exercises</ThemedText>
         <IconButton
           variant="solid"
@@ -195,7 +192,10 @@ function ExercisesScreenContent({
                   Exercise Name *
                 </ThemedText>
                 <TextInput
-                  className="h-12 rounded-xs border-[1.5px] border-field-border bg-field-bg px-4 font-sans text-body-lg text-text"
+                  className="
+                    h-12 rounded-xs border-[1.5px] border-field-border
+                    bg-field-bg px-4 font-sans text-body-lg text-text
+                  "
                   value={newExerciseName}
                   onChangeText={setNewExerciseName}
                   placeholder="Name of the exercise"
@@ -209,7 +209,10 @@ function ExercisesScreenContent({
                   Description
                 </ThemedText>
                 <TextInput
-                  className="min-h-[100px] rounded-xs border-[1.5px] border-field-border bg-field-bg px-4 pt-3 font-sans text-body-lg text-text"
+                  className="
+                    min-h-25 rounded-xs border-[1.5px] border-field-border
+                    bg-field-bg px-4 pt-3 font-sans text-body-lg text-text
+                  "
                   style={{ textAlignVertical: "top" }}
                   value={newExerciseDescription}
                   onChangeText={setNewExerciseDescription}
@@ -226,7 +229,10 @@ function ExercisesScreenContent({
                   Link (Optional)
                 </ThemedText>
                 <TextInput
-                  className="h-12 rounded-xs border-[1.5px] border-field-border bg-field-bg px-4 font-sans text-body-lg text-text"
+                  className="
+                    h-12 rounded-xs border-[1.5px] border-field-border
+                    bg-field-bg px-4 font-sans text-body-lg text-text
+                  "
                   value={newExerciseLink}
                   onChangeText={setNewExerciseLink}
                   placeholder="URL to video or guide"
@@ -246,19 +252,25 @@ function ExercisesScreenContent({
                     return (
                       <Pressable
                         key={tag}
-                        className={`rounded-pill border px-4 py-2 ${
-                          isSelected
-                            ? "border-brand bg-brand-subtle-2"
-                            : "border-border bg-brand-subtle"
-                        }`}
+                        className={`
+                          rounded-pill border px-4 py-2
+                          ${
+                            isSelected
+                              ? "border-brand bg-brand-subtle-2"
+                              : "border-border bg-brand-subtle"
+                          }
+                        `}
                         onPress={() => toggleTag(tag)}
                       >
                         <ThemedText
-                          className={`text-sm ${
-                            isSelected
-                              ? "font-semibold text-brand"
-                              : "text-text-2"
-                          }`}
+                          className={`
+                            text-sm
+                            ${
+                              isSelected
+                                ? "font-semibold text-brand"
+                                : "text-text-2"
+                            }
+                          `}
                         >
                           {tag}
                         </ThemedText>
@@ -272,7 +284,7 @@ function ExercisesScreenContent({
                 variant="primary"
                 size="lg"
                 full
-                className="mb-10 mt-2.5"
+                className="mt-2.5 mb-10"
                 onPress={handleAddExercise}
                 disabled={!newExerciseName.trim() || isLoading}
               >
@@ -291,7 +303,9 @@ function ExercisesScreenContent({
           <View className="items-center justify-center">
             <Animated.View
               style={{ transform: [{ scale: checkmarkScale }] }}
-              className="mb-4 h-20 w-20 items-center justify-center rounded-full bg-brand"
+              className="
+                mb-4 size-20 items-center justify-center rounded-full bg-brand
+              "
             >
               <IconSymbol size={40} name="checkmark" color={Palette.white} />
             </Animated.View>
@@ -307,41 +321,21 @@ function ExercisesScreenContent({
 
 export default function ExercisesScreen() {
   const colors = useAppColors();
-  const [exercisesPromise, setExercisesPromise] = useState(() =>
-    getExercises(),
-  );
-  const isFirstFocus = useRef(true);
-
-  // Re-fetch on every focus except the first. Kept above the Suspense boundary
-  // so this effect isn't torn down and re-run each time the child suspends.
-  useFocusEffect(
-    useCallback(() => {
-      if (isFirstFocus.current) {
-        isFirstFocus.current = false;
-        return;
-      }
-      setExercisesPromise(getExercises());
-    }, []),
-  );
-
-  const refreshExercises = useCallback(() => {
-    startTransition(() => setExercisesPromise(getExercises()));
-  }, []);
+  const [exercisesPromise, refreshExercises] =
+    usePromise<ExerciseWithId[]>(getExercises);
 
   return (
-    <DataErrorBoundary promise={exercisesPromise} onRetry={refreshExercises}>
-      <Suspense
-        fallback={
-          <View className="flex-1 items-center justify-center bg-bg">
-            <ActivityIndicator size="large" color={colors.tint} />
-          </View>
-        }
-      >
-        <ExercisesScreenContent
-          exercisesPromise={exercisesPromise}
-          refreshExercises={refreshExercises}
-        />
-      </Suspense>
-    </DataErrorBoundary>
+    <Suspense
+      fallback={
+        <View className="flex-1 items-center justify-center bg-bg">
+          <ActivityIndicator size="large" color={colors.tint} />
+        </View>
+      }
+    >
+      <ExercisesScreenContent
+        exercisesPromise={exercisesPromise}
+        refreshExercises={refreshExercises}
+      />
+    </Suspense>
   );
 }

@@ -1,4 +1,3 @@
-import { DataErrorBoundary } from "@/components/DataErrorBoundary";
 import { ThemedText } from "@/components/ThemedText";
 import { Button, Input } from "@/components/ds";
 import { IconSymbol } from "@/components/ui/IconSymbol";
@@ -132,32 +131,12 @@ function NewEntryScreenContent({
     >
       <ScrollView
         className="flex-1"
-        contentContainerClassName="gap-6 px-5 pb-10 pt-[60px]"
+        contentContainerClassName="gap-6 px-5 pt-15 pb-10"
         showsVerticalScrollIndicator={false}
       >
         <ThemedText type="title">New Entry</ThemedText>
 
         {/* Select Exercise */}
-        <View className="mb-6 px-5">
-          <ThemedText type="subtitle">Select Exercise</ThemedText>
-          <Pressable
-            className="mt-3 h-12 flex-row items-center justify-between rounded-xs border-[1.5px] border-field-border bg-field-bg px-4"
-            onPress={() => setIsDropdownOpen(true)}
-          >
-            <ThemedText
-              className={`font-sans text-body-lg ${selectedExercise ? "" : "text-text-3"}`}
-            >
-              {selectedExercise
-                ? exerciseOptions.find((ex) => ex.id === selectedExercise)
-                    ?.name || "Select an exercise"
-                : "Select an exercise"}
-            </ThemedText>
-            <IconSymbol
-              size={18}
-              name="chevron.down"
-              color={colors.textSecondary}
-            />
-          </Pressable>
         <ThemedText type="subtitle">Select Exercise</ThemedText>
         <Pressable
           className="mt-3 h-12 flex-row items-center justify-between rounded-xs border-[1.5px] border-field-border bg-field-bg px-4"
@@ -178,64 +157,6 @@ function NewEntryScreenContent({
           />
         </Pressable>
 
-          <Modal
-            visible={isDropdownOpen}
-            transparent
-            animationType="slide"
-            onRequestClose={() => setIsDropdownOpen(false)}
-          >
-            <Pressable
-              className="flex-1 justify-end bg-scrim"
-              onPress={() => setIsDropdownOpen(false)}
-            >
-              <View className="max-h-[70%] rounded-t-[20px] bg-surface pb-[30px] pt-5">
-                <View className="mb-3 flex-row items-center justify-between px-5">
-                  <ThemedText type="subtitle">Select Exercise</ThemedText>
-                  <Pressable onPress={() => setIsDropdownOpen(false)}>
-                    <IconSymbol
-                      size={22}
-                      name="xmark"
-                      color={colors.textSecondary}
-                    />
-                  </Pressable>
-                </View>
-                <FlatList
-                  data={exerciseOptions}
-                  keyExtractor={(item) => item.id}
-                  renderItem={({ item }) => (
-                    <TouchableOpacity
-                      className={`mx-1 my-px flex-row items-center justify-between rounded-sm border-b border-border px-3.5 py-3.5 ${
-                        selectedExercise === item.id ? "bg-brand-subtle" : ""
-                      }`}
-                      onPress={() => {
-                        setSelectedExercise(item.id);
-                        setIsDropdownOpen(false);
-                      }}
-                    >
-                      <ThemedText
-                        className={`text-base ${
-                          selectedExercise === item.id
-                            ? "font-semibold text-brand"
-                            : ""
-                        }`}
-                      >
-                        {item.name}
-                      </ThemedText>
-                      {selectedExercise === item.id && (
-                        <IconSymbol
-                          size={18}
-                          name="checkmark"
-                          color={colors.accentText}
-                        />
-                      )}
-                    </TouchableOpacity>
-                  )}
-                  className="px-2.5"
-                />
-              </View>
-            </Pressable>
-          </Modal>
-        </View>
         <Modal
           visible={isDropdownOpen}
           transparent
@@ -246,7 +167,7 @@ function NewEntryScreenContent({
             className="flex-1 justify-end bg-scrim"
             onPress={() => setIsDropdownOpen(false)}
           >
-            <View className="max-h-[70%] rounded-t-[20px] bg-surface pb-[30px] pt-5">
+            <View className="max-h-[70%] rounded-t-[20px] bg-surface pt-5 pb-7.5">
               <View className="mb-3 flex-row items-center justify-between px-5">
                 <ThemedText type="subtitle">Select Exercise</ThemedText>
                 <Pressable onPress={() => setIsDropdownOpen(false)}>
@@ -262,7 +183,7 @@ function NewEntryScreenContent({
                 keyExtractor={(item) => item.id}
                 renderItem={({ item }) => (
                   <TouchableOpacity
-                    className={`mx-1 my-px flex-row items-center justify-between rounded-sm border-b border-border px-3.5 py-3.5 ${
+                    className={`mx-1 my-px flex-row items-center justify-between rounded-sm border-b border-border p-3.5 ${
                       selectedExercise === item.id ? "bg-brand-subtle" : ""
                     }`}
                     onPress={() => {
@@ -295,40 +216,6 @@ function NewEntryScreenContent({
         </Modal>
 
         {/* Performance */}
-        <View className="mb-6 px-5">
-          <ThemedText type="subtitle">Performance</ThemedText>
-          <View className="mt-3 flex-row gap-3">
-            <View className="flex-1">
-              <Input
-                label="Weight"
-                numeric
-                suffix="lbs"
-                value={weight}
-                onChangeText={handleWeightChange}
-                placeholder="0"
-                keyboardType="decimal-pad"
-              />
-            </View>
-            <View className="flex-1 gap-1.5">
-              <ThemedText className="font-sans-semibold text-sm text-text-2">
-                Rep Max
-              </ThemedText>
-              <Pressable
-                className="h-12 flex-row items-center justify-between rounded-xs border-[1.5px] border-field-border bg-field-bg px-4"
-                onPress={() => setIsRepMaxDropdownOpen(true)}
-              >
-                <ThemedText
-                  className={`font-sans text-body-lg ${repMax ? "" : "text-text-3"}`}
-                >
-                  {repMax ? `${repMax} RM` : "Select"}
-                </ThemedText>
-                <IconSymbol
-                  size={16}
-                  name="chevron.down"
-                  color={colors.textSecondary}
-                />
-              </Pressable>
-            </View>
         <ThemedText type="subtitle">Performance</ThemedText>
         <View className="mt-3 flex-row gap-3">
           <Input
@@ -361,65 +248,65 @@ function NewEntryScreenContent({
               />
             </Pressable>
           </View>
-
-          <Modal
-            visible={isRepMaxDropdownOpen}
-            transparent
-            animationType="slide"
-            onRequestClose={() => setIsRepMaxDropdownOpen(false)}
-          >
-            <Pressable
-              className="flex-1 justify-end bg-scrim"
-              onPress={() => setIsRepMaxDropdownOpen(false)}
-            >
-              <View className="max-h-[70%] rounded-t-[20px] bg-surface pb-[30px] pt-5">
-                <View className="mb-3 flex-row items-center justify-between px-5">
-                  <ThemedText type="subtitle">Select Rep Max</ThemedText>
-                  <Pressable onPress={() => setIsRepMaxDropdownOpen(false)}>
-                    <IconSymbol
-                      size={22}
-                      name="xmark"
-                      color={colors.textSecondary}
-                    />
-                  </Pressable>
-                </View>
-                <FlatList
-                  data={repMaxOptions}
-                  keyExtractor={(item) => item.toString()}
-                  renderItem={({ item }) => (
-                    <TouchableOpacity
-                      className={`mx-1 my-px flex-row items-center justify-between rounded-sm border-b border-border px-3.5 py-3.5 ${
-                        repMax === item.toString() ? "bg-brand-subtle" : ""
-                      }`}
-                      onPress={() => {
-                        setRepMax(item.toString());
-                        setIsRepMaxDropdownOpen(false);
-                      }}
-                    >
-                      <ThemedText
-                        className={`text-base ${
-                          repMax === item.toString()
-                            ? "font-semibold text-brand"
-                            : ""
-                        }`}
-                      >
-                        {item} Rep Max
-                      </ThemedText>
-                      {repMax === item.toString() && (
-                        <IconSymbol
-                          size={18}
-                          name="checkmark"
-                          color={colors.accentText}
-                        />
-                      )}
-                    </TouchableOpacity>
-                  )}
-                  className="px-2.5"
-                />
-              </View>
-            </Pressable>
-          </Modal>
         </View>
+
+        <Modal
+          visible={isRepMaxDropdownOpen}
+          transparent
+          animationType="slide"
+          onRequestClose={() => setIsRepMaxDropdownOpen(false)}
+        >
+          <Pressable
+            className="flex-1 justify-end bg-scrim"
+            onPress={() => setIsRepMaxDropdownOpen(false)}
+          >
+            <View className="max-h-[70%] rounded-t-[20px] bg-surface pt-5 pb-7.5">
+              <View className="mb-3 flex-row items-center justify-between px-5">
+                <ThemedText type="subtitle">Select Rep Max</ThemedText>
+                <Pressable onPress={() => setIsRepMaxDropdownOpen(false)}>
+                  <IconSymbol
+                    size={22}
+                    name="xmark"
+                    color={colors.textSecondary}
+                  />
+                </Pressable>
+              </View>
+              <FlatList
+                data={repMaxOptions}
+                keyExtractor={(item) => item.toString()}
+                renderItem={({ item }) => (
+                  <TouchableOpacity
+                    className={`mx-1 my-px flex-row items-center justify-between rounded-sm border-b border-border p-3.5 ${
+                      repMax === item.toString() ? "bg-brand-subtle" : ""
+                    }`}
+                    onPress={() => {
+                      setRepMax(item.toString());
+                      setIsRepMaxDropdownOpen(false);
+                    }}
+                  >
+                    <ThemedText
+                      className={`text-base ${
+                        repMax === item.toString()
+                          ? "font-semibold text-brand"
+                          : ""
+                      }`}
+                    >
+                      {item} Rep Max
+                    </ThemedText>
+                    {repMax === item.toString() && (
+                      <IconSymbol
+                        size={18}
+                        name="checkmark"
+                        color={colors.accentText}
+                      />
+                    )}
+                  </TouchableOpacity>
+                )}
+                className="px-2.5"
+              />
+            </View>
+          </Pressable>
+        </Modal>
 
         {/* Tags */}
         <ThemedText type="subtitle">Tags</ThemedText>
@@ -451,7 +338,7 @@ function NewEntryScreenContent({
         {/* Notes */}
         <ThemedText type="subtitle">Notes (Optional)</ThemedText>
         <TextInput
-          className="mt-3 min-h-[100px] rounded-xs border-[1.5px] border-field-border bg-field-bg p-4 font-sans text-body-lg text-text"
+          className="mt-3 min-h-25 rounded-xs border-[1.5px] border-field-border bg-field-bg p-4 font-sans text-body-lg text-text"
           style={{ textAlignVertical: "top" }}
           multiline
           numberOfLines={4}
@@ -477,7 +364,7 @@ function NewEntryScreenContent({
       {/* Loading Overlay */}
       {isLoading && (
         <View className="absolute inset-0 z-10 items-center justify-center bg-scrim">
-          <View className="w-4/5 max-w-[280px] items-center rounded-lg bg-surface p-6 shadow-lg">
+          <View className="w-4/5 max-w-70 items-center rounded-lg bg-surface p-6 shadow-lg">
             <ActivityIndicator size="large" color={colors.tint} />
             <ThemedText className="mt-4 text-base font-medium">
               Saving entry...
@@ -495,7 +382,7 @@ function NewEntryScreenContent({
           <View className="items-center justify-center">
             <Animated.View
               style={{ transform: [{ scale: checkmarkScale }] }}
-              className="mb-4 h-20 w-20 items-center justify-center rounded-full bg-brand"
+              className="mb-4 size-20 items-center justify-center rounded-full bg-brand"
             >
               <IconSymbol size={40} name="checkmark" color={Palette.white} />
             </Animated.View>
@@ -511,20 +398,17 @@ function NewEntryScreenContent({
 
 export default function NewEntryScreen() {
   const colors = useAppColors();
-  const [exercisesPromise, refreshExercises] =
-    usePromise<ExerciseWithId[]>(getExercises);
+  const [exercisesPromise] = usePromise<ExerciseWithId[]>(getExercises);
 
   return (
-    <DataErrorBoundary promise={exercisesPromise} onRetry={refreshExercises}>
-      <Suspense
-        fallback={
-          <View className="flex-1 items-center justify-center bg-bg">
-            <ActivityIndicator size="large" color={colors.tint} />
-          </View>
-        }
-      >
-        <NewEntryScreenContent exercisesPromise={exercisesPromise} />
-      </Suspense>
-    </DataErrorBoundary>
+    <Suspense
+      fallback={
+        <View className="flex-1 items-center justify-center bg-bg">
+          <ActivityIndicator size="large" color={colors.tint} />
+        </View>
+      }
+    >
+      <NewEntryScreenContent exercisesPromise={exercisesPromise} />
+    </Suspense>
   );
 }

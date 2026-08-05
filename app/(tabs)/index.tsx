@@ -77,7 +77,7 @@ function HomeContent({ dataPromise }: { dataPromise: Promise<HomeData> }) {
   return (
     <ScrollView
       className="flex-1 bg-bg"
-      contentContainerClassName="px-5 pt-[60px] pb-10"
+      contentContainerClassName="px-5 pt-15 pb-10"
       showsVerticalScrollIndicator={false}
     >
       {/* Header */}
@@ -107,7 +107,7 @@ function HomeContent({ dataPromise }: { dataPromise: Promise<HomeData> }) {
       </Card>
 
       {/* Recent entries */}
-      <View className="mb-3 mt-7 flex-row items-center justify-between">
+      <View className="mt-7 mb-3 flex-row items-center justify-between">
         <ThemedText type="subtitle">Recent entries</ThemedText>
         <Pressable onPress={() => router.push("/entries")}>
           <ThemedText className="font-sans-semibold text-sm text-text-link">

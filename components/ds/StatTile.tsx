@@ -85,7 +85,7 @@ export function StatTile({
       {label && (
         <Text
           className={cx(
-            "font-sans-bold text-xs uppercase tracking-caps",
+            "font-sans-bold text-xs tracking-caps uppercase",
             onBrand ? "text-white/70" : "text-text-3"
           )}
         >

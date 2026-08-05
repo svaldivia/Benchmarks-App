@@ -1,13 +1,45 @@
-import { Tabs } from "expo-router";
+import { Tabs, type ErrorBoundaryProps } from "expo-router";
 import React from "react";
 import { Platform, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { HapticTab } from "@/components/HapticTab";
+import { ThemedText } from "@/components/ThemedText";
+import { Button } from "@/components/ds";
 import { IconSymbol } from "@/components/ui/IconSymbol";
 import TabBarBackground from "@/components/ui/TabBarBackground";
 import { Colors, Palette } from "@/constants/Colors";
 import { useColorScheme } from "@/hooks/useColorScheme";
+
+/**
+ * Expo Router picks up this named export and wraps the tab group in it, so it
+ * catches anything thrown while rendering a tab screen — including a rejected
+ * read inside a screen's `use()` — without taking down the rest of the app.
+ *
+ * It renders in place of the navigator, so the tab bar is gone while it shows
+ * and the screens below it are unmounted. It also sits under the root layout,
+ * so theme/auth context and loaded fonts are still available here.
+ *
+ * https://docs.expo.dev/router/error-handling/
+ */
+export function ErrorBoundary({ error, retry }: ErrorBoundaryProps) {
+  return (
+    <View className="flex-1 items-center justify-center gap-3 bg-bg px-8">
+      <ThemedText type="defaultSemiBold">Something went wrong</ThemedText>
+      <ThemedText className="text-center text-sm text-text-2">
+        {error.message}
+      </ThemedText>
+      <Button
+        variant="secondary"
+        size="sm"
+        className="self-center"
+        onPress={() => retry()}
+      >
+        Try again
+      </Button>
+    </View>
+  );
+}
 
 export default function TabLayout() {
   const colorScheme = useColorScheme() ?? "light";
@@ -58,7 +90,7 @@ export default function TabLayout() {
         options={{
           title: "",
           tabBarIcon: () => (
-            <View className="mb-5 h-14 w-14 items-center justify-center rounded-full bg-brand shadow-md">
+            <View className="mb-5 size-14 items-center justify-center rounded-full bg-brand shadow-md">
               <IconSymbol size={28} name="plus" color={Palette.white} />
             </View>
           ),

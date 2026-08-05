@@ -52,14 +52,14 @@ export function Badge({
   return (
     <View
       className={cx(
-        "h-[22px] flex-row items-center gap-[5px] self-start rounded-pill px-[9px]",
+        "h-5.5 flex-row items-center gap-1.25 self-start rounded-pill px-2.25",
         t.container,
         className
       )}
       {...rest}
     >
-      {dot && <View className={cx("h-1.5 w-1.5 rounded-full", t.dot)} />}
-      <Text className={cx("font-sans-bold text-xs uppercase tracking-wide", t.text)}>
+      {dot && <View className={cx("size-1.5 rounded-full", t.dot)} />}
+      <Text className={cx("font-sans-bold text-xs tracking-wide uppercase", t.text)}>
         {children}
       </Text>
     </View>
