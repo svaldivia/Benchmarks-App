@@ -14,7 +14,6 @@ import {
   where,
 } from "firebase/firestore";
 import { Entry, EntryId, ExerciseId } from "./types";
-import { FetchTimeoutError, withTimeout } from "./withTimeout";
 
 const ENTRIES_COLLECTION = "entries";
 
@@ -26,7 +25,7 @@ export const getEntries = async (): Promise<EntryWithId[]> => {
       collection(db, ENTRIES_COLLECTION),
       orderBy("createdDate", "desc"),
     );
-    const querySnapshot = await withTimeout(getDocs(q), "Entries");
+    const querySnapshot = await getDocs(q);
     const entries = querySnapshot.docs.map((doc) => ({
       id: doc.id,
       ...(doc.data() as Entry),
@@ -35,7 +34,6 @@ export const getEntries = async (): Promise<EntryWithId[]> => {
     return entries;
   } catch (error) {
     console.error("Error getting entries:", error);
-    if (error instanceof FetchTimeoutError) throw error;
     throw new Error("Failed to fetch entries");
   }
 };
@@ -68,7 +66,7 @@ export const getEntriesForExercise = async (
 export const getEntryById = async (entryId: EntryId): Promise<Entry | null> => {
   try {
     const docRef = doc(db, ENTRIES_COLLECTION, entryId);
-    const docSnap = await withTimeout(getDoc(docRef), "Entry");
+    const docSnap = await getDoc(docRef);
 
     if (docSnap.exists()) {
       return docSnap.data() as Entry;
@@ -77,7 +75,6 @@ export const getEntryById = async (entryId: EntryId): Promise<Entry | null> => {
     }
   } catch (error) {
     console.error("Error getting entry:", error);
-    if (error instanceof FetchTimeoutError) throw error;
     throw new Error(`Failed to fetch entry with ID: ${entryId}`);
   }
 };
