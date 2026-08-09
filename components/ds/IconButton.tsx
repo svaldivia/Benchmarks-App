@@ -11,7 +11,7 @@ export type IconButtonSize = "sm" | "md" | "lg";
 const SIZE: Record<IconButtonSize, string> = {
   sm: "h-9 w-9",
   md: "h-11 w-11",
-  lg: "h-[52px] w-[52px]",
+  lg: "size-13",
 };
 
 const VARIANT: Record<IconButtonVariant, string> = {

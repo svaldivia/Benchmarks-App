@@ -58,7 +58,7 @@ export default function TabLayout() {
         options={{
           title: "",
           tabBarIcon: () => (
-            <View className="mb-5 h-14 w-14 items-center justify-center rounded-full bg-brand shadow-md">
+            <View className="mb-5 size-14 items-center justify-center rounded-full bg-brand shadow-md">
               <IconSymbol size={28} name="plus" color={Palette.white} />
             </View>
           ),

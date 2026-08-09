@@ -10,9 +10,12 @@ import {
 } from "@expo-google-fonts/jetbrains-mono";
 import { Saira_700Bold, Saira_800ExtraBold } from "@expo-google-fonts/saira";
 import { useFonts } from "expo-font";
-import { Stack } from "expo-router";
+import { Stack, type ErrorBoundaryProps } from "expo-router";
+import { View } from "react-native";
 import "react-native-reanimated";
 
+import { ThemedText } from "@/components/ThemedText";
+import { Button } from "@/components/ds";
 import { AuthProvider, useAuth } from "@/contexts/AuthContext";
 import { useColorScheme } from "@/hooks/useColorScheme";
 import {
@@ -22,6 +25,36 @@ import {
 } from "@react-navigation/native";
 import { StatusBar } from "expo-status-bar";
 import "../global.css";
+
+/**
+ * Expo Router picks up this named export and wraps the root route in it, so it
+ * is the last-resort catch for anything thrown while rendering the app —
+ * including rejected reads inside a screen's `use()`.
+ *
+ * It renders in place of the layout, so nothing below can be relied on here:
+ * no ThemeProvider, no AuthProvider, no loaded fonts. Keep the UI to
+ * components that only need React Native primitives and NativeWind classes.
+ *
+ * https://docs.expo.dev/router/error-handling/
+ */
+export function ErrorBoundary({ error, retry }: ErrorBoundaryProps) {
+  return (
+    <View className="flex-1 items-center justify-center gap-3 bg-bg px-8">
+      <ThemedText type="defaultSemiBold">Something went wrong</ThemedText>
+      <ThemedText className="text-center text-sm text-text-2">
+        {error.message}
+      </ThemedText>
+      <Button
+        variant="secondary"
+        size="sm"
+        className="self-center"
+        onPress={() => retry()}
+      >
+        Try again
+      </Button>
+    </View>
+  );
+}
 
 function RootNavigator() {
   const { user, initializing } = useAuth();

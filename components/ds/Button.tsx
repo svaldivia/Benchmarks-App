@@ -16,7 +16,7 @@ export type ButtonSize = "sm" | "md" | "lg";
 const SIZE: Record<ButtonSize, { container: string; label: string }> = {
   sm: { container: "h-9 px-4", label: "text-sm" },
   md: { container: "h-11 px-5", label: "text-body" },
-  lg: { container: "h-[52px] px-7", label: "text-body-lg" },
+  lg: { container: "h-13 px-7", label: "text-body-lg" },
 };
 
 const VARIANT: Record<ButtonVariant, { container: string; label: string }> = {

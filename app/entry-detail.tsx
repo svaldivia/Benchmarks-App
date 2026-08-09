@@ -1,12 +1,13 @@
 import { ThemedText } from "@/components/ThemedText";
 import { Badge, Card, StatTile } from "@/components/ds";
-import { useAppColors } from "@/hooks/useAppColors";
 import { getEntryById } from "@/data/firebase/entries";
 import { getExerciseById } from "@/data/firebase/exercises";
 import { timestampToDate } from "@/data/firebase/helpers";
 import { Entry, Exercise } from "@/data/firebase/types";
-import { useLocalSearchParams, useFocusEffect } from "expo-router";
-import React, { Suspense, use, useCallback, useRef, useState } from "react";
+import { useAppColors } from "@/hooks/useAppColors";
+import { usePromise } from "@/hooks/usePromise";
+import { useLocalSearchParams } from "expo-router";
+import React, { Suspense, use } from "react";
 import { ActivityIndicator, ScrollView, View } from "react-native";
 
 type EntryDetailData = (Entry & { exercise: Exercise }) | null;
@@ -43,12 +44,12 @@ function EntryDetail({
       year: "numeric",
       month: "long",
       day: "numeric",
-    }
+    },
   );
 
   return (
     <View className="flex-1 bg-bg">
-      <View className="px-5 pb-4 pt-[60px]">
+      <View className="px-5 pt-15 pb-4">
         <ThemedText type="title" className="text-center">
           Entry Details
         </ThemedText>
@@ -65,7 +66,7 @@ function EntryDetail({
             {exerciseName}
           </ThemedText>
           {entry.exercise?.description ? (
-            <ThemedText className="mt-1 text-body leading-snug text-text-2">
+            <ThemedText className="mt-1 text-body/snug text-text-2">
               {entry.exercise.description}
             </ThemedText>
           ) : null}
@@ -73,10 +74,20 @@ function EntryDetail({
 
         <View className="flex-row gap-3">
           <Card className="flex-1">
-            <StatTile size="sm" label="Weight" value={entry.value} unit={entry.unit} />
+            <StatTile
+              size="sm"
+              label="Weight"
+              value={entry.value}
+              unit={entry.unit}
+            />
           </Card>
           <Card className="flex-1">
-            <StatTile size="sm" label="Rep Max" value={entry.repMax} unit="RM" />
+            <StatTile
+              size="sm"
+              label="Rep Max"
+              value={entry.repMax}
+              unit="RM"
+            />
           </Card>
         </View>
 
@@ -101,7 +112,7 @@ function EntryDetail({
         {entry.notes ? (
           <Card>
             <ThemedText className={LABEL}>Notes</ThemedText>
-            <ThemedText className="text-body leading-snug">
+            <ThemedText className="text-body/snug">
               {entry.notes}
             </ThemedText>
           </Card>
@@ -116,21 +127,8 @@ function EntryDetail({
 export default function EntryDetailScreen() {
   const { entryId } = useLocalSearchParams<{ entryId: string }>();
   const colors = useAppColors();
-  const [entryPromise, setEntryPromise] = useState(() =>
-    entryId ? fetchEntryDetail(entryId) : Promise.resolve(null)
-  );
-  const isFirstFocus = useRef(true);
-
-  // Re-fetch on every focus except the first. Kept above the Suspense boundary
-  // so this effect isn't torn down and re-run each time the child suspends.
-  useFocusEffect(
-    useCallback(() => {
-      if (isFirstFocus.current) {
-        isFirstFocus.current = false;
-        return;
-      }
-      if (entryId) setEntryPromise(fetchEntryDetail(entryId));
-    }, [entryId])
+  const [entryPromise] = usePromise<EntryDetailData>(() =>
+    entryId ? fetchEntryDetail(entryId) : Promise.resolve(null),
   );
 
   if (!entryId) {

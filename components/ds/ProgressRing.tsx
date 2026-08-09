@@ -78,7 +78,7 @@ export function ProgressRing({
               </Text>
             )}
             {caption && (
-              <Text className="mt-0.5 font-sans-bold text-xs uppercase tracking-wide text-text-3">
+              <Text className="mt-0.5 font-sans-bold text-xs tracking-wide text-text-3 uppercase">
                 {caption}
               </Text>
             )}

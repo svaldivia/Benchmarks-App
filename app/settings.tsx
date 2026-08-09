@@ -30,7 +30,7 @@ export default function SettingsScreen() {
 
   return (
     <View className="flex-1 bg-bg">
-      <View className="flex-row items-center gap-2 px-5 pb-4 pt-15">
+      <View className="flex-row items-center gap-2 px-5 pt-15 pb-4">
         <IconButton
           accessibilityLabel="Go back"
           onPress={() => router.back()}

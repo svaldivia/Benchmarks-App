@@ -56,7 +56,7 @@ export default function ParallaxScrollView({
         contentContainerStyle={{ paddingBottom: bottom }}
       >
         <Animated.View
-          className="h-[250px] overflow-hidden"
+          className="h-62.5 overflow-hidden"
           style={[
             { backgroundColor: headerBackgroundColor[colorScheme] },
             headerAnimatedStyle,

@@ -61,7 +61,7 @@ export default function LoginScreen() {
         className="flex-1"
       >
         <ScrollView
-          contentContainerClassName="flex-grow justify-center px-7 py-10"
+          contentContainerClassName="grow justify-center px-7 py-10"
           keyboardShouldPersistTaps="handled"
           showsVerticalScrollIndicator={false}
         >

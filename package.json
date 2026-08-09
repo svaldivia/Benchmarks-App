@@ -55,6 +55,7 @@
     "@types/react": "~19.2.10",
     "eslint": "^9.25.0",
     "eslint-config-expo": "~9.2.0",
+    "eslint-plugin-better-tailwindcss": "^4.7.0",
     "oxfmt": "^0.53.0",
     "postcss": "^8.5.15",
     "tailwindcss": "^4.3.0",
