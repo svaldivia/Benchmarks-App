@@ -1,6 +1,6 @@
 // Sparkline — compact trend line with optional area fill + end dot.
 // RN mirror of the DS Sparkline spec, drawn with react-native-svg.
-import { useMemo } from "react";
+import { useId, useMemo } from "react";
 import Svg, { Circle, Defs, LinearGradient, Path, Stop } from "react-native-svg";
 
 import { DsColorName, useDsPalette } from "./tokens";
@@ -26,9 +26,12 @@ export function Sparkline({
 }: SparklineProps) {
   const pal = useDsPalette();
   const stroke = pal[color];
+  // useId gives a stable per-instance id; strip the ":" delimiters React adds
+  // so the value is usable inside an SVG url(#...) reference.
+  const rawId = useId();
   const gid = useMemo(
-    () => "spark-" + Math.random().toString(36).slice(2, 8),
-    []
+    () => "spark-" + rawId.replace(/[^a-zA-Z0-9]/g, ""),
+    [rawId]
   );
 
   if (data.length < 2) {
