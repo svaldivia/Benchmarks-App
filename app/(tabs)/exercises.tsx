@@ -1,18 +1,20 @@
+import { QueryBoundary } from "@/components/QueryBoundary";
 import { ThemedText } from "@/components/ThemedText";
 import { Badge, Button, Card, IconButton } from "@/components/ds";
 import { IconSymbol } from "@/components/ui/IconSymbol";
 import { Palette } from "@/constants/Colors";
-import {
-  addExercise,
-  ExerciseWithId,
-  getExercises,
-} from "@/data/firebase/exercises";
+import { addExercise, ExerciseWithId } from "@/data/firebase/exercises";
+import { exercisesQuery, queryKeys } from "@/data/firebase/queries";
 import { commonExerciseTags, ExerciseTag } from "@/data/firebase/types";
 import { useAppColors } from "@/hooks/useAppColors";
-import { usePromise } from "@/hooks/usePromise";
-import React, { Suspense, use, useEffect, useState } from "react";
+import { useRefreshOnFocus } from "@/hooks/useRefreshOnFocus";
 import {
-  ActivityIndicator,
+  useMutation,
+  useQueryClient,
+  useSuspenseQuery,
+} from "@tanstack/react-query";
+import React, { useEffect, useRef, useState } from "react";
+import {
   Animated,
   Easing,
   FlatList,
@@ -23,27 +25,24 @@ import {
   View,
 } from "react-native";
 
-function ExercisesScreenContent({
-  exercisesPromise,
-  refreshExercises,
-}: {
-  exercisesPromise: Promise<ExerciseWithId[]>;
-  refreshExercises: () => void;
-}) {
+function ExercisesScreenContent() {
   const colors = useAppColors();
+  const queryClient = useQueryClient();
   const [isAddModalVisible, setIsAddModalVisible] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
 
-  const exerciseList = use(exercisesPromise);
+  const { data: exerciseList } = useSuspenseQuery(exercisesQuery());
 
   const [newExerciseName, setNewExerciseName] = useState("");
   const [newExerciseDescription, setNewExerciseDescription] = useState("");
   const [newExerciseLink, setNewExerciseLink] = useState("");
   const [selectedTags, setSelectedTags] = useState<ExerciseTag[]>([]);
 
-  const successOpacity = new Animated.Value(0);
-  const checkmarkScale = new Animated.Value(0);
+  // Refs, not fresh instances each render: a re-render mid-animation (the list
+  // refreshing after a save, for one) would otherwise swap in new values and
+  // strand the success overlay part-way through.
+  const successOpacity = useRef(new Animated.Value(0)).current;
+  const checkmarkScale = useRef(new Animated.Value(0)).current;
 
   const animateSuccess = () => {
     successOpacity.setValue(0);
@@ -92,34 +91,34 @@ function ExercisesScreenContent({
     }
   };
 
-  const handleAddExercise = async () => {
-    if (!newExerciseName.trim()) return;
-
-    const newExercise = {
-      name: newExerciseName.trim(),
-      description: newExerciseDescription.trim(),
-      link: newExerciseLink.trim(),
-      tags: selectedTags,
-    };
-
-    try {
-      setIsLoading(true);
-      const newId = await addExercise(newExercise);
-      console.log("New exercise created with ID:", newId);
-      // Refresh in a transition so the list updates in place without
-      // suspending the whole screen (which would hide the success animation).
-      refreshExercises();
+  const { mutate: createExercise, isPending: isSaving } = useMutation({
+    mutationFn: addExercise,
+    onSuccess: () => {
+      // Marks the list stale and refetches it in the background. The screen
+      // already has data, so it updates in place rather than re-suspending and
+      // hiding the success animation behind a spinner.
+      void queryClient.invalidateQueries({ queryKey: queryKeys.exercises });
       setIsAddModalVisible(false);
-      setIsLoading(false);
       setShowSuccess(true);
       setNewExerciseName("");
       setNewExerciseDescription("");
       setNewExerciseLink("");
       setSelectedTags([]);
-    } catch (error) {
+    },
+    onError: (error) => {
       console.error("Error adding exercise:", error);
-      setIsLoading(false);
-    }
+    },
+  });
+
+  const handleAddExercise = () => {
+    if (!newExerciseName.trim()) return;
+
+    createExercise({
+      name: newExerciseName.trim(),
+      description: newExerciseDescription.trim(),
+      link: newExerciseLink.trim(),
+      tags: selectedTags,
+    });
   };
 
   const renderExerciseItem = ({ item }: { item: ExerciseWithId }) => (
@@ -286,9 +285,9 @@ function ExercisesScreenContent({
                 full
                 className="mt-2.5 mb-10"
                 onPress={handleAddExercise}
-                disabled={!newExerciseName.trim() || isLoading}
+                disabled={!newExerciseName.trim() || isSaving}
               >
-                {isLoading ? "Saving…" : "Save Exercise"}
+                {isSaving ? "Saving…" : "Save Exercise"}
               </Button>
             </ScrollView>
           </View>
@@ -320,22 +319,11 @@ function ExercisesScreenContent({
 }
 
 export default function ExercisesScreen() {
-  const colors = useAppColors();
-  const [exercisesPromise, refreshExercises] =
-    usePromise<ExerciseWithId[]>(getExercises);
+  useRefreshOnFocus(queryKeys.exercises);
 
   return (
-    <Suspense
-      fallback={
-        <View className="flex-1 items-center justify-center bg-bg">
-          <ActivityIndicator size="large" color={colors.tint} />
-        </View>
-      }
-    >
-      <ExercisesScreenContent
-        exercisesPromise={exercisesPromise}
-        refreshExercises={refreshExercises}
-      />
-    </Suspense>
+    <QueryBoundary>
+      <ExercisesScreenContent />
+    </QueryBoundary>
   );
 }

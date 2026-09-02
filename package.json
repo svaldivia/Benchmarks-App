@@ -19,6 +19,7 @@
     "@react-navigation/bottom-tabs": "^7.3.10",
     "@react-navigation/elements": "^2.3.8",
     "@react-navigation/native": "^7.1.6",
+    "@tanstack/react-query": "^5.102.8",
     "clsx": "^2.1.1",
     "expo": "^55",
     "expo-blur": "~55.0.14",

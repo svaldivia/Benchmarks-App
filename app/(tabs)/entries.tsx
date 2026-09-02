@@ -1,19 +1,19 @@
+import { QueryBoundary } from "@/components/QueryBoundary";
 import { ThemedText } from "@/components/ThemedText";
 import { Badge, Card } from "@/components/ds";
-import { EntryWithId, getEntries } from "@/data/firebase/entries";
-import { ExerciseWithId, getExercises } from "@/data/firebase/exercises";
+import { EntryWithId } from "@/data/firebase/entries";
+import { ExerciseWithId } from "@/data/firebase/exercises";
 import { timestampToDate } from "@/data/firebase/helpers";
-import { useAppColors } from "@/hooks/useAppColors";
-import { usePromise } from "@/hooks/usePromise";
+import {
+  entriesQuery,
+  exercisesQuery,
+  queryKeys,
+} from "@/data/firebase/queries";
+import { useRefreshOnFocus } from "@/hooks/useRefreshOnFocus";
+import { useSuspenseQuery } from "@tanstack/react-query";
 import { router } from "expo-router";
-import React, { Suspense, use } from "react";
-import { ActivityIndicator, FlatList, View } from "react-native";
-
-type EntriesData = [EntryWithId[], ExerciseWithId[]];
-
-function fetchEntriesData(): Promise<EntriesData> {
-  return Promise.all([getEntries(), getExercises()]);
-}
+import React from "react";
+import { FlatList, View } from "react-native";
 
 function EntryListItem({
   item,
@@ -53,8 +53,9 @@ function EntryListItem({
   );
 }
 
-function EntriesList({ dataPromise }: { dataPromise: Promise<EntriesData> }) {
-  const [entries, exercises] = use(dataPromise);
+function EntriesList() {
+  const { data: entries } = useSuspenseQuery(entriesQuery());
+  const { data: exercises } = useSuspenseQuery(exercisesQuery());
 
   return (
     <FlatList
@@ -70,23 +71,16 @@ function EntriesList({ dataPromise }: { dataPromise: Promise<EntriesData> }) {
 }
 
 export default function EntriesScreen() {
-  const colors = useAppColors();
-  const [dataPromise] = usePromise<EntriesData>(fetchEntriesData);
+  useRefreshOnFocus(queryKeys.entries, queryKeys.exercises);
 
   return (
     <View className="flex-1 bg-bg pt-15">
       <View className="px-5 pb-4">
         <ThemedText type="title">Entries</ThemedText>
       </View>
-      <Suspense
-        fallback={
-          <View className="flex-1 items-center justify-center">
-            <ActivityIndicator size="large" color={colors.tint} />
-          </View>
-        }
-      >
-        <EntriesList dataPromise={dataPromise} />
-      </Suspense>
+      <QueryBoundary>
+        <EntriesList />
+      </QueryBoundary>
     </View>
   );
 }

@@ -11,18 +11,26 @@ import {
 import { Saira_700Bold, Saira_800ExtraBold } from "@expo-google-fonts/saira";
 import { useFonts } from "expo-font";
 import { Stack, type ErrorBoundaryProps } from "expo-router";
-import { View } from "react-native";
+import { useEffect, useRef, useState } from "react";
+import { AppState, Platform, View } from "react-native";
 import "react-native-reanimated";
 
 import { ThemedText } from "@/components/ThemedText";
 import { Button } from "@/components/ds";
 import { AuthProvider, useAuth } from "@/contexts/AuthContext";
+import { QUERY_STALE_TIME } from "@/data/firebase/queries";
 import { useColorScheme } from "@/hooks/useColorScheme";
 import {
   DarkTheme,
   DefaultTheme,
   ThemeProvider,
 } from "@react-navigation/native";
+import {
+  focusManager,
+  QueryClient,
+  QueryClientProvider,
+  useQueryClient,
+} from "@tanstack/react-query";
 import { StatusBar } from "expo-status-bar";
 import "../global.css";
 
@@ -58,6 +66,19 @@ export function ErrorBoundary({ error, retry }: ErrorBoundaryProps) {
 
 function RootNavigator() {
   const { user, initializing } = useAuth();
+  const queryClient = useQueryClient();
+
+  // Entries and exercises are per-account data. Dropping the cache on sign-out
+  // stops the next person who logs in on this device from seeing a flash of the
+  // previous account's benchmarks.
+  const uid = user?.uid ?? null;
+  const previousUid = useRef(uid);
+  useEffect(() => {
+    if (previousUid.current === uid) return;
+    const hadUser = previousUid.current !== null;
+    previousUid.current = uid;
+    if (hadUser) queryClient.clear();
+  }, [uid, queryClient]);
 
   if (initializing) {
     return null;
@@ -80,8 +101,34 @@ function RootNavigator() {
   );
 }
 
+function createQueryClient() {
+  return new QueryClient({
+    defaultOptions: {
+      queries: {
+        staleTime: QUERY_STALE_TIME,
+        gcTime: 5 * 60_000,
+        retry: 2,
+        refetchOnReconnect: true,
+      },
+    },
+  });
+}
+
 export default function RootLayout() {
   const colorScheme = useColorScheme();
+  // Created once per app session, never per render.
+  const [queryClient] = useState(createQueryClient);
+
+  // React Query's own focus tracking is a browser `visibilitychange` listener;
+  // on native it needs AppState instead.
+  useEffect(() => {
+    if (Platform.OS === "web") return;
+    const subscription = AppState.addEventListener("change", (status) => {
+      focusManager.setFocused(status === "active");
+    });
+    return () => subscription.remove();
+  }, []);
+
   // DS type system: Saira (display), Hanken Grotesk (sans), JetBrains Mono.
   // These ship as static per-weight TTFs, so each weight registers as its own
   // family name (the map key) and is referenced explicitly via the
@@ -103,11 +150,13 @@ export default function RootLayout() {
   }
 
   return (
-    <ThemeProvider value={colorScheme === "dark" ? DarkTheme : DefaultTheme}>
-      <AuthProvider>
-        <RootNavigator />
-      </AuthProvider>
-      <StatusBar style="auto" />
-    </ThemeProvider>
+    <QueryClientProvider client={queryClient}>
+      <ThemeProvider value={colorScheme === "dark" ? DarkTheme : DefaultTheme}>
+        <AuthProvider>
+          <RootNavigator />
+        </AuthProvider>
+        <StatusBar style="auto" />
+      </ThemeProvider>
+    </QueryClientProvider>
   );
 }
