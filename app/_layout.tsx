@@ -11,7 +11,7 @@ import {
 import { Saira_700Bold, Saira_800ExtraBold } from "@expo-google-fonts/saira";
 import { useFonts } from "expo-font";
 import { Stack, type ErrorBoundaryProps } from "expo-router";
-import { useEffect, useRef, useState } from "react";
+import { useEffect } from "react";
 import { AppState, Platform, View } from "react-native";
 import "react-native-reanimated";
 
@@ -29,10 +29,24 @@ import {
   focusManager,
   QueryClient,
   QueryClientProvider,
-  useQueryClient,
 } from "@tanstack/react-query";
 import { StatusBar } from "expo-status-bar";
 import "../global.css";
+
+/**
+ * One client for the life of the app. The cache is dropped on sign-out (see
+ * app/settings.tsx) rather than rebuilt here.
+ */
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      staleTime: QUERY_STALE_TIME,
+      gcTime: 5 * 60_000,
+      retry: 2,
+      refetchOnReconnect: true,
+    },
+  },
+});
 
 /**
  * Expo Router picks up this named export and wraps the root route in it, so it
@@ -66,19 +80,6 @@ export function ErrorBoundary({ error, retry }: ErrorBoundaryProps) {
 
 function RootNavigator() {
   const { user, initializing } = useAuth();
-  const queryClient = useQueryClient();
-
-  // Entries and exercises are per-account data. Dropping the cache on sign-out
-  // stops the next person who logs in on this device from seeing a flash of the
-  // previous account's benchmarks.
-  const uid = user?.uid ?? null;
-  const previousUid = useRef(uid);
-  useEffect(() => {
-    if (previousUid.current === uid) return;
-    const hadUser = previousUid.current !== null;
-    previousUid.current = uid;
-    if (hadUser) queryClient.clear();
-  }, [uid, queryClient]);
 
   if (initializing) {
     return null;
@@ -101,23 +102,8 @@ function RootNavigator() {
   );
 }
 
-function createQueryClient() {
-  return new QueryClient({
-    defaultOptions: {
-      queries: {
-        staleTime: QUERY_STALE_TIME,
-        gcTime: 5 * 60_000,
-        retry: 2,
-        refetchOnReconnect: true,
-      },
-    },
-  });
-}
-
 export default function RootLayout() {
   const colorScheme = useColorScheme();
-  // Created once per app session, never per render.
-  const [queryClient] = useState(createQueryClient);
 
   // React Query's own focus tracking is a browser `visibilitychange` listener;
   // on native it needs AppState instead.

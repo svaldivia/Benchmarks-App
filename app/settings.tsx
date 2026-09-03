@@ -3,6 +3,7 @@ import { Avatar, Button, Card, IconButton } from "@/components/ds";
 import { IconSymbol } from "@/components/ui/IconSymbol";
 import { auth } from "@/data/firebase/firebaseConfig";
 import { useAppColors } from "@/hooks/useAppColors";
+import { useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "expo-router";
 import { signOut } from "firebase/auth";
 import React, { useState } from "react";
@@ -11,6 +12,7 @@ import { Alert, ScrollView, View } from "react-native";
 export default function SettingsScreen() {
   const router = useRouter();
   const colors = useAppColors();
+  const queryClient = useQueryClient();
   const [isSigningOut, setIsSigningOut] = useState(false);
 
   const email = auth.currentUser?.email ?? "";
@@ -21,6 +23,16 @@ export default function SettingsScreen() {
     setIsSigningOut(true);
     try {
       await signOut(auth);
+      // Entries and exercises are per-account, so drop them here rather than
+      // leaving the next person to log in on this device with a flash of the
+      // previous account's benchmarks.
+      //
+      // Ordering matters: signOut only resolves after Firebase has notified
+      // the auth listener, so AuthProvider's setUser(null) is already queued
+      // and React unmounts <Stack.Protected> in the same batch as this clear.
+      // Clearing while those screens are still mounted would instead have
+      // their queries refetch as a signed-out user.
+      queryClient.clear();
     } catch (error) {
       console.error("Logout failed", error);
       Alert.alert("Error", "Logout failed");
