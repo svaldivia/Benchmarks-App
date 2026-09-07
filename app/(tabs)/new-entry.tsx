@@ -8,7 +8,6 @@ import { dateToTimestamp } from "@/data/firebase/helpers";
 import { exercisesQuery, queryKeys } from "@/data/firebase/queries";
 import { commonEntryTags, EntryTag } from "@/data/firebase/types";
 import { useAppColors } from "@/hooks/useAppColors";
-import { useRefreshOnFocus } from "@/hooks/useRefreshOnFocus";
 import {
   useMutation,
   useQueryClient,
@@ -403,8 +402,6 @@ function NewEntryScreenContent() {
 }
 
 export default function NewEntryScreen() {
-  useRefreshOnFocus(queryKeys.exercises);
-
   return (
     <QueryBoundary>
       <NewEntryScreenContent />

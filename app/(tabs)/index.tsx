@@ -4,12 +4,7 @@ import { Avatar, Badge, Card, StatTile } from "@/components/ds";
 import { useAuth } from "@/contexts/AuthContext";
 import { EntryWithId } from "@/data/firebase/entries";
 import { timestampToDate } from "@/data/firebase/helpers";
-import {
-  entriesQuery,
-  exercisesQuery,
-  queryKeys,
-} from "@/data/firebase/queries";
-import { useRefreshOnFocus } from "@/hooks/useRefreshOnFocus";
+import { entriesQuery, exercisesQuery } from "@/data/firebase/queries";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { router } from "expo-router";
 import React from "react";
@@ -138,8 +133,6 @@ function HomeContent() {
 }
 
 export default function Index() {
-  useRefreshOnFocus(queryKeys.entries, queryKeys.exercises);
-
   return (
     <QueryBoundary>
       <HomeContent />

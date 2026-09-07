@@ -4,12 +4,7 @@ import { Badge, Card } from "@/components/ds";
 import { EntryWithId } from "@/data/firebase/entries";
 import { ExerciseWithId } from "@/data/firebase/exercises";
 import { timestampToDate } from "@/data/firebase/helpers";
-import {
-  entriesQuery,
-  exercisesQuery,
-  queryKeys,
-} from "@/data/firebase/queries";
-import { useRefreshOnFocus } from "@/hooks/useRefreshOnFocus";
+import { entriesQuery, exercisesQuery } from "@/data/firebase/queries";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { router } from "expo-router";
 import React from "react";
@@ -71,8 +66,6 @@ function EntriesList() {
 }
 
 export default function EntriesScreen() {
-  useRefreshOnFocus(queryKeys.entries, queryKeys.exercises);
-
   return (
     <View className="flex-1 bg-bg pt-15">
       <View className="px-5 pb-4">

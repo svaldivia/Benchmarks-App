@@ -28,17 +28,16 @@ function withTimeout<T>(label: string, promise: Promise<T>): Promise<T> {
 }
 
 /**
- * How long fetched data counts as fresh. Screens stay mounted behind the tab
- * bar, so this is what stops a tab switch from re-hitting Firestore for data
- * fetched moments ago. Shared by the QueryClient defaults and the focus
- * refresh in hooks/useRefreshOnFocus.ts — they have to agree.
+ * How long fetched data counts as fresh, and the app's only freshness knob.
+ * Tab screens stay mounted, so nothing refetches while you move between them;
+ * a stale query is refreshed when the browser tab or app regains focus, when
+ * the network reconnects, or when a mutation invalidates it.
+ *
+ * Keep this at or above one second: React Query clamps suspense queries to a
+ * 1s minimum (`ensureSuspenseTimers`), so a smaller value here would silently
+ * not be the value the observer uses.
  */
 export const QUERY_STALE_TIME = 30_000;
-
-/**
- * Module-level constants so the identities stay stable across renders — these
- * are used as effect dependencies.
- */
 export const queryKeys = {
   entries: ["entries"] as const,
   exercises: ["exercises"] as const,

@@ -7,7 +7,6 @@ import { addExercise, ExerciseWithId } from "@/data/firebase/exercises";
 import { exercisesQuery, queryKeys } from "@/data/firebase/queries";
 import { commonExerciseTags, ExerciseTag } from "@/data/firebase/types";
 import { useAppColors } from "@/hooks/useAppColors";
-import { useRefreshOnFocus } from "@/hooks/useRefreshOnFocus";
 import {
   useMutation,
   useQueryClient,
@@ -319,8 +318,6 @@ function ExercisesScreenContent() {
 }
 
 export default function ExercisesScreen() {
-  useRefreshOnFocus(queryKeys.exercises);
-
   return (
     <QueryBoundary>
       <ExercisesScreenContent />
