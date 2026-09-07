@@ -1,14 +1,19 @@
+import { QueryBoundary } from "@/components/QueryBoundary";
 import { ThemedText } from "@/components/ThemedText";
 import { Button, Input } from "@/components/ds";
 import { IconSymbol } from "@/components/ui/IconSymbol";
 import { Palette } from "@/constants/Colors";
 import { addEntry } from "@/data/firebase/entries";
-import { ExerciseWithId, getExercises } from "@/data/firebase/exercises";
 import { dateToTimestamp } from "@/data/firebase/helpers";
+import { exercisesQuery, queryKeys } from "@/data/firebase/queries";
 import { commonEntryTags, EntryTag } from "@/data/firebase/types";
 import { useAppColors } from "@/hooks/useAppColors";
-import { usePromise } from "@/hooks/usePromise";
-import React, { Suspense, use, useEffect, useState } from "react";
+import {
+  useMutation,
+  useQueryClient,
+  useSuspenseQuery,
+} from "@tanstack/react-query";
+import React, { useEffect, useRef, useState } from "react";
 import {
   ActivityIndicator,
   Animated,
@@ -24,12 +29,9 @@ import {
   View,
 } from "react-native";
 
-function NewEntryScreenContent({
-  exercisesPromise,
-}: {
-  exercisesPromise: Promise<ExerciseWithId[]>;
-}) {
+function NewEntryScreenContent() {
   const colors = useAppColors();
+  const queryClient = useQueryClient();
   const [selectedExercise, setSelectedExercise] = useState("");
   const [weight, setWeight] = useState("");
   const [repMax, setRepMax] = useState("");
@@ -37,13 +39,13 @@ function NewEntryScreenContent({
   const [selectedTags, setSelectedTags] = useState<EntryTag[]>([]);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [isRepMaxDropdownOpen, setIsRepMaxDropdownOpen] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
 
-  const exerciseOptions = use(exercisesPromise);
+  const { data: exerciseOptions } = useSuspenseQuery(exercisesQuery());
 
-  const successOpacity = new Animated.Value(0);
-  const checkmarkScale = new Animated.Value(0);
+  // Refs, not fresh instances each render — see exercises.tsx.
+  const successOpacity = useRef(new Animated.Value(0)).current;
+  const checkmarkScale = useRef(new Animated.Value(0)).current;
 
   const repMaxOptions = Array.from({ length: 10 }, (_, i) => i + 1);
 
@@ -92,24 +94,13 @@ function NewEntryScreenContent({
     if (showSuccess) animateSuccess();
   }, [showSuccess]);
 
-  const saveEntry = async () => {
-    if (!selectedExercise || !weight || !repMax) return;
-
-    const newEntry = {
-      exerciseId: selectedExercise,
-      value: parseFloat(weight),
-      unit: "lbs",
-      repMax: parseInt(repMax, 10),
-      createdDate: dateToTimestamp(new Date()),
-      tags: selectedTags,
-      notes,
-    };
-
-    try {
-      setIsLoading(true);
-      const newEntryId = await addEntry(newEntry);
-      console.log("New entry created with ID:", newEntryId);
-      setIsLoading(false);
+  const { mutate: createEntry, isPending: isSaving } = useMutation({
+    mutationFn: addEntry,
+    onSuccess: () => {
+      // Home and Entries read the same cached list, so invalidating here is
+      // what makes a new benchmark show up on those tabs. Previously they only
+      // picked it up on their next focus refetch.
+      void queryClient.invalidateQueries({ queryKey: queryKeys.entries });
       setShowSuccess(true);
       setTimeout(() => {
         setSelectedExercise("");
@@ -118,10 +109,24 @@ function NewEntryScreenContent({
         setNotes("");
         setSelectedTags([]);
       }, 1800);
-    } catch (error) {
+    },
+    onError: (error) => {
       console.error("Error saving entry:", error);
-      setIsLoading(false);
-    }
+    },
+  });
+
+  const saveEntry = () => {
+    if (!selectedExercise || !weight || !repMax) return;
+
+    createEntry({
+      exerciseId: selectedExercise,
+      value: parseFloat(weight),
+      unit: "lbs",
+      repMax: parseInt(repMax, 10),
+      createdDate: dateToTimestamp(new Date()),
+      tags: selectedTags,
+      notes,
+    });
   };
 
   return (
@@ -355,14 +360,14 @@ function NewEntryScreenContent({
           size="lg"
           full
           onPress={saveEntry}
-          disabled={isLoading || !isFormValid}
+          disabled={isSaving || !isFormValid}
         >
           Save Entry
         </Button>
       </ScrollView>
 
       {/* Loading Overlay */}
-      {isLoading && (
+      {isSaving && (
         <View className="absolute inset-0 z-10 items-center justify-center bg-scrim">
           <View className="w-4/5 max-w-70 items-center rounded-lg bg-surface p-6 shadow-lg">
             <ActivityIndicator size="large" color={colors.tint} />
@@ -397,18 +402,9 @@ function NewEntryScreenContent({
 }
 
 export default function NewEntryScreen() {
-  const colors = useAppColors();
-  const [exercisesPromise] = usePromise<ExerciseWithId[]>(getExercises);
-
   return (
-    <Suspense
-      fallback={
-        <View className="flex-1 items-center justify-center bg-bg">
-          <ActivityIndicator size="large" color={colors.tint} />
-        </View>
-      }
-    >
-      <NewEntryScreenContent exercisesPromise={exercisesPromise} />
-    </Suspense>
+    <QueryBoundary>
+      <NewEntryScreenContent />
+    </QueryBoundary>
   );
 }

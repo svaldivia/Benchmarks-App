@@ -1,20 +1,14 @@
+import { QueryBoundary } from "@/components/QueryBoundary";
 import { ThemedText } from "@/components/ThemedText";
 import { Avatar, Badge, Card, StatTile } from "@/components/ds";
 import { useAuth } from "@/contexts/AuthContext";
-import { EntryWithId, getEntries } from "@/data/firebase/entries";
-import { ExerciseWithId, getExercises } from "@/data/firebase/exercises";
+import { EntryWithId } from "@/data/firebase/entries";
 import { timestampToDate } from "@/data/firebase/helpers";
-import { useAppColors } from "@/hooks/useAppColors";
-import { usePromise } from "@/hooks/usePromise";
+import { entriesQuery, exercisesQuery } from "@/data/firebase/queries";
+import { useSuspenseQuery } from "@tanstack/react-query";
 import { router } from "expo-router";
-import React, { Suspense, use } from "react";
-import { ActivityIndicator, Pressable, ScrollView, View } from "react-native";
-
-type HomeData = [EntryWithId[], ExerciseWithId[]];
-
-function fetchHomeData(): Promise<HomeData> {
-  return Promise.all([getEntries(), getExercises()]);
-}
+import React from "react";
+import { Pressable, ScrollView, View } from "react-native";
 
 const WEEK_MS = 7 * 24 * 60 * 60 * 1000;
 
@@ -59,9 +53,10 @@ function RecentRow({
   );
 }
 
-function HomeContent({ dataPromise }: { dataPromise: Promise<HomeData> }) {
+function HomeContent() {
   const { user } = useAuth();
-  const [entries, exercises] = use(dataPromise);
+  const { data: entries } = useSuspenseQuery(entriesQuery());
+  const { data: exercises } = useSuspenseQuery(exercisesQuery());
 
   const nameById = new Map(exercises.map((ex) => [ex.id, ex.name]));
   const now = Date.now();
@@ -138,18 +133,9 @@ function HomeContent({ dataPromise }: { dataPromise: Promise<HomeData> }) {
 }
 
 export default function Index() {
-  const colors = useAppColors();
-  const [dataPromise] = usePromise<HomeData>(fetchHomeData);
-
   return (
-    <Suspense
-      fallback={
-        <View className="flex-1 items-center justify-center bg-bg">
-          <ActivityIndicator size="large" color={colors.tint} />
-        </View>
-      }
-    >
-      <HomeContent dataPromise={dataPromise} />
-    </Suspense>
+    <QueryBoundary>
+      <HomeContent />
+    </QueryBoundary>
   );
 }

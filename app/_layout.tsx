@@ -11,20 +11,42 @@ import {
 import { Saira_700Bold, Saira_800ExtraBold } from "@expo-google-fonts/saira";
 import { useFonts } from "expo-font";
 import { Stack, type ErrorBoundaryProps } from "expo-router";
-import { View } from "react-native";
+import { useEffect } from "react";
+import { AppState, Platform, View } from "react-native";
 import "react-native-reanimated";
 
 import { ThemedText } from "@/components/ThemedText";
 import { Button } from "@/components/ds";
 import { AuthProvider, useAuth } from "@/contexts/AuthContext";
+import { QUERY_STALE_TIME } from "@/data/firebase/queries";
 import { useColorScheme } from "@/hooks/useColorScheme";
 import {
   DarkTheme,
   DefaultTheme,
   ThemeProvider,
 } from "@react-navigation/native";
+import {
+  focusManager,
+  QueryClient,
+  QueryClientProvider,
+} from "@tanstack/react-query";
 import { StatusBar } from "expo-status-bar";
 import "../global.css";
+
+/**
+ * One client for the life of the app. The cache is dropped on sign-out (see
+ * app/settings.tsx) rather than rebuilt here.
+ */
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      staleTime: QUERY_STALE_TIME,
+      gcTime: 5 * 60_000,
+      retry: 2,
+      refetchOnReconnect: true,
+    },
+  },
+});
 
 /**
  * Expo Router picks up this named export and wraps the root route in it, so it
@@ -82,6 +104,17 @@ function RootNavigator() {
 
 export default function RootLayout() {
   const colorScheme = useColorScheme();
+
+  // React Query's own focus tracking is a browser `visibilitychange` listener;
+  // on native it needs AppState instead.
+  useEffect(() => {
+    if (Platform.OS === "web") return;
+    const subscription = AppState.addEventListener("change", (status) => {
+      focusManager.setFocused(status === "active");
+    });
+    return () => subscription.remove();
+  }, []);
+
   // DS type system: Saira (display), Hanken Grotesk (sans), JetBrains Mono.
   // These ship as static per-weight TTFs, so each weight registers as its own
   // family name (the map key) and is referenced explicitly via the
@@ -103,11 +136,13 @@ export default function RootLayout() {
   }
 
   return (
-    <ThemeProvider value={colorScheme === "dark" ? DarkTheme : DefaultTheme}>
-      <AuthProvider>
-        <RootNavigator />
-      </AuthProvider>
-      <StatusBar style="auto" />
-    </ThemeProvider>
+    <QueryClientProvider client={queryClient}>
+      <ThemeProvider value={colorScheme === "dark" ? DarkTheme : DefaultTheme}>
+        <AuthProvider>
+          <RootNavigator />
+        </AuthProvider>
+        <StatusBar style="auto" />
+      </ThemeProvider>
+    </QueryClientProvider>
   );
 }
