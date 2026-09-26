@@ -1,33 +1,17 @@
+import { QueryBoundary } from "@/components/QueryBoundary";
 import { ThemedText } from "@/components/ThemedText";
 import { Badge, Card, StatTile } from "@/components/ds";
-import { getEntryById } from "@/data/firebase/entries";
-import { getExerciseById } from "@/data/firebase/exercises";
 import { timestampToDate } from "@/data/firebase/helpers";
-import { Entry, Exercise } from "@/data/firebase/types";
-import { useAppColors } from "@/hooks/useAppColors";
-import { usePromise } from "@/hooks/usePromise";
+import { entryDetailQuery } from "@/data/firebase/queries";
+import { useSuspenseQuery } from "@tanstack/react-query";
 import { useLocalSearchParams } from "expo-router";
-import React, { Suspense, use } from "react";
-import { ActivityIndicator, ScrollView, View } from "react-native";
-
-type EntryDetailData = (Entry & { exercise: Exercise }) | null;
+import React from "react";
+import { ScrollView, View } from "react-native";
 
 const LABEL = "mb-1.5 text-xs font-medium uppercase tracking-caps text-text-3";
 
-function fetchEntryDetail(entryId: string): Promise<EntryDetailData> {
-  return getEntryById(entryId).then(async (entry) => {
-    if (!entry) return null;
-    const exercise = await getExerciseById(entry.exerciseId);
-    return exercise ? { ...entry, exercise } : null;
-  });
-}
-
-function EntryDetail({
-  entryPromise,
-}: {
-  entryPromise: Promise<EntryDetailData>;
-}) {
-  const entry = use(entryPromise);
+function EntryDetail({ entryId }: { entryId: string }) {
+  const { data: entry } = useSuspenseQuery(entryDetailQuery(entryId));
 
   if (!entry) {
     return (
@@ -126,10 +110,6 @@ function EntryDetail({
 
 export default function EntryDetailScreen() {
   const { entryId } = useLocalSearchParams<{ entryId: string }>();
-  const colors = useAppColors();
-  const [entryPromise] = usePromise<EntryDetailData>(() =>
-    entryId ? fetchEntryDetail(entryId) : Promise.resolve(null),
-  );
 
   if (!entryId) {
     return (
@@ -140,14 +120,8 @@ export default function EntryDetailScreen() {
   }
 
   return (
-    <Suspense
-      fallback={
-        <View className="flex-1 items-center justify-center bg-bg">
-          <ActivityIndicator size="large" color={colors.tint} />
-        </View>
-      }
-    >
-      <EntryDetail entryPromise={entryPromise} />
-    </Suspense>
+    <QueryBoundary>
+      <EntryDetail entryId={entryId} />
+    </QueryBoundary>
   );
 }
