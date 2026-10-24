@@ -2,7 +2,7 @@ import { QueryBoundary } from "@/components/QueryBoundary";
 import { ThemedText } from "@/components/ThemedText";
 import { Badge, Card, StatTile } from "@/components/ds";
 import { timestampToDate } from "@/data/firebase/helpers";
-import { entryDetailQuery } from "@/data/firebase/queries";
+import { entriesQuery, exercisesQuery } from "@/data/firebase/queries";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { useLocalSearchParams } from "expo-router";
 import React from "react";
@@ -10,8 +10,23 @@ import { ScrollView, View } from "react-native";
 
 const LABEL = "mb-1.5 text-xs font-medium uppercase tracking-caps text-text-3";
 
+/**
+ * Reads from the same list queries the Home and Entries tabs use rather than
+ * fetching the document on its own. Every way into this screen goes through
+ * one of those lists, so the data is already cached and the screen renders
+ * without a network round-trip. Fetching the entry on its own here stalled on
+ * the first open after a fresh page load. On a deep link the lists load
+ * normally.
+ */
 function EntryDetail({ entryId }: { entryId: string }) {
-  const { data: entry } = useSuspenseQuery(entryDetailQuery(entryId));
+  const { data: entries } = useSuspenseQuery(entriesQuery());
+  const { data: exercises } = useSuspenseQuery(exercisesQuery());
+
+  const found = entries.find((e) => e.id === entryId);
+  const exercise = found
+    ? exercises.find((ex) => ex.id === found.exerciseId)
+    : undefined;
+  const entry = found && exercise ? { ...found, exercise } : null;
 
   if (!entry) {
     return (
