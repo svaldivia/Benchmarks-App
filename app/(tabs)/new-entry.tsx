@@ -13,7 +13,7 @@ import {
   useQueryClient,
   useSuspenseQuery,
 } from "@tanstack/react-query";
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   ActivityIndicator,
   Animated,
@@ -43,9 +43,9 @@ function NewEntryScreenContent() {
 
   const { data: exerciseOptions } = useSuspenseQuery(exercisesQuery());
 
-  // Refs, not fresh instances each render — see exercises.tsx.
-  const successOpacity = useRef(new Animated.Value(0)).current;
-  const checkmarkScale = useRef(new Animated.Value(0)).current;
+  // Created once per mount, not fresh instances each render — see exercises.tsx.
+  const [successOpacity] = useState(() => new Animated.Value(0));
+  const [checkmarkScale] = useState(() => new Animated.Value(0));
 
   const repMaxOptions = Array.from({ length: 10 }, (_, i) => i + 1);
 
