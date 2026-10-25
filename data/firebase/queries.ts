@@ -36,7 +36,7 @@ function withTimeout<T>(label: string, promise: Promise<T>): Promise<T> {
  * 1s minimum (`ensureSuspenseTimers`), so a smaller value here would silently
  * not be the value the observer uses.
  */
-export const QUERY_STALE_TIME = 30_000;
+export const QUERY_STALE_TIME = 5 * 60_000;
 export const queryKeys = {
   entries: ["entries"] as const,
   exercises: ["exercises"] as const,
