@@ -6,6 +6,8 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ### Development Commands
 
+- **Package manager:** npm only. `package-lock.json` is the single lock file (EAS infers the package manager from it); don't use yarn/pnpm/bun.
+
 - **Start the development server:**
   ```bash
   npx expo start

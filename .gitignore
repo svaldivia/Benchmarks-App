@@ -3,6 +3,12 @@
 # dependencies
 node_modules/
 
+# This project uses npm; package-lock.json is the only lock file
+yarn.lock
+pnpm-lock.yaml
+bun.lock
+bun.lockb
+
 # Expo
 .expo/
 dist/
