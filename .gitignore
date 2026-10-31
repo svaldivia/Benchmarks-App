@@ -3,6 +3,21 @@
 # dependencies
 node_modules/
 
+# This project uses Yarn; yarn.lock is the only lock file
+package-lock.json
+pnpm-lock.yaml
+bun.lock
+bun.lockb
+
+# Yarn (Berry): commit the release in .yarn/releases, ignore caches/install state
+.yarn/*
+!.yarn/patches
+!.yarn/plugins
+!.yarn/releases
+!.yarn/sdks
+!.yarn/versions
+.pnp.*
+
 # Expo
 .expo/
 dist/

@@ -6,6 +6,8 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ### Development Commands
 
+- **Package manager:** Yarn 4 only (version set by `packageManager` in `package.json`; the release is committed in `.yarn/releases` and selected by `.yarnrc.yml`, so a global Yarn 1 or Corepack both run it). `yarn.lock` is the single lock file (EAS infers the package manager from it); don't use npm/pnpm/bun to install. The `resolutions` pin on `lightningcss` in `package.json` is required for NativeWind and is only honored by Yarn.
+
 - **Start the development server:**
   ```bash
   npx expo start
@@ -15,18 +17,18 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - **Run on specific platforms:**
   ```bash
   # Run on iOS simulator
-  npm run ios
+  yarn ios
 
   # Run on Android emulator
-  npm run android
+  yarn android
 
   # Run in web browser
-  npm run web
+  yarn web
   ```
 
 - **Linting:**
   ```bash
-  npm run lint
+  yarn lint
   ```
   This runs ESLint to check for code quality and style issues.
 
