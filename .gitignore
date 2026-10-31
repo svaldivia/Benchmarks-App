@@ -3,8 +3,8 @@
 # dependencies
 node_modules/
 
-# This project uses npm; package-lock.json is the only lock file
-yarn.lock
+# This project uses Yarn; yarn.lock is the only lock file
+package-lock.json
 pnpm-lock.yaml
 bun.lock
 bun.lockb
