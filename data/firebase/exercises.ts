@@ -6,17 +6,27 @@ import {
   doc,
   getDoc,
   getDocs,
+  query,
   updateDoc,
+  where,
 } from 'firebase/firestore';
-import { Exercise, ExerciseId } from './types';
+import { Exercise, ExerciseId, GLOBAL_OWNER } from './types';
 
 const EXERCISES_COLLECTION = 'exercises';
 
 export type ExerciseWithId = { id: ExerciseId } & Exercise;
 
-export const getExercises = async (): Promise<ExerciseWithId[]> => {
+export const getExercises = async (
+  userId: string
+): Promise<ExerciseWithId[]> => {
   try {
-    const querySnapshot = await getDocs(collection(db, EXERCISES_COLLECTION));
+    // The built-in catalog plus this user's own movements. Single-field `in`
+    // with no orderBy, so no composite index is required.
+    const q = query(
+      collection(db, EXERCISES_COLLECTION),
+      where('ownerId', 'in', [GLOBAL_OWNER, userId])
+    );
+    const querySnapshot = await getDocs(q);
 
     const exercises = querySnapshot.docs.map((doc) => ({
       id: doc.id,
@@ -31,17 +41,21 @@ export const getExercises = async (): Promise<ExerciseWithId[]> => {
 };
 
 export const getExerciseById = async (
-  exerciseId: ExerciseId
+  exerciseId: ExerciseId,
+  userId: string
 ): Promise<Exercise | null> => {
   try {
     const docRef = doc(db, EXERCISES_COLLECTION, exerciseId);
     const docSnap = await getDoc(docRef);
 
-    if (docSnap.exists()) {
-      return docSnap.data() as Exercise;
-    } else {
-      return null;
-    }
+    if (!docSnap.exists()) return null;
+
+    // A document read bypasses the `where` clause above, so readability is
+    // re-checked here: built-ins are public, custom movements are not.
+    const exercise = docSnap.data() as Exercise;
+    const readable =
+      exercise.ownerId === GLOBAL_OWNER || exercise.ownerId === userId;
+    return readable ? exercise : null;
   } catch (error) {
     console.error('Error getting exercise:', error);
     throw new Error(`Failed to fetch exercise with ID: ${exerciseId}`);

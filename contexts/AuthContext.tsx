@@ -42,3 +42,17 @@ export function useAuth(): AuthState {
   }
   return ctx;
 }
+
+/**
+ * The signed-in user's uid, for screens that cannot render without one.
+ * Safe inside `Stack.Protected guard={!!user}` (see app/_layout.tsx), which is
+ * where every data-reading screen lives — so the throw is a wiring bug, not a
+ * state a user can reach by signing out.
+ */
+export function useUserId(): string {
+  const { user } = useAuth();
+  if (!user) {
+    throw new Error("useUserId requires a signed-in user");
+  }
+  return user.uid;
+}

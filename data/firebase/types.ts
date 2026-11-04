@@ -20,11 +20,19 @@ export const commonEntryTags = [
 
 export type EntryTag = (typeof commonEntryTags)[number];
 
+/**
+ * Sentinel `ownerId` for the built-in movement catalog. Every user can read
+ * these; nobody can write them (enforced in firestore.rules, not here).
+ */
+export const GLOBAL_OWNER = 'global';
+
 export type Exercise = {
   name: string;
   tags: ExerciseTag[];
   link: string;
   description: string;
+  /** `GLOBAL_OWNER` for built-ins, otherwise the creating user's uid. */
+  ownerId: string;
 };
 
 export type ExerciseId = string;
@@ -37,6 +45,8 @@ export type Entry = {
   createdDate: Timestamp;
   tags: EntryTag[];
   notes: string;
+  /** Owning user's uid. Entries are never shared. */
+  userId: string;
 };
 
 export type EntryId = string;

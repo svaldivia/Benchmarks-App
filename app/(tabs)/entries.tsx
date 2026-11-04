@@ -1,4 +1,5 @@
 import { QueryBoundary } from "@/components/QueryBoundary";
+import { useUserId } from "@/contexts/AuthContext";
 import { ThemedText } from "@/components/ThemedText";
 import { Badge, Card } from "@/components/ds";
 import { EntryWithId } from "@/data/firebase/entries";
@@ -49,8 +50,9 @@ function EntryListItem({
 }
 
 function EntriesList() {
-  const { data: entries } = useSuspenseQuery(entriesQuery());
-  const { data: exercises } = useSuspenseQuery(exercisesQuery());
+  const userId = useUserId();
+  const { data: entries } = useSuspenseQuery(entriesQuery(userId));
+  const { data: exercises } = useSuspenseQuery(exercisesQuery(userId));
 
   return (
     <FlatList

@@ -1,4 +1,5 @@
 import { QueryBoundary } from "@/components/QueryBoundary";
+import { useUserId } from "@/contexts/AuthContext";
 import { ThemedText } from "@/components/ThemedText";
 import { Button, Input } from "@/components/ds";
 import { IconSymbol } from "@/components/ui/IconSymbol";
@@ -32,6 +33,7 @@ import {
 function NewEntryScreenContent() {
   const colors = useAppColors();
   const queryClient = useQueryClient();
+  const userId = useUserId();
   const [selectedExercise, setSelectedExercise] = useState("");
   const [weight, setWeight] = useState("");
   const [repMax, setRepMax] = useState("");
@@ -41,7 +43,7 @@ function NewEntryScreenContent() {
   const [isRepMaxDropdownOpen, setIsRepMaxDropdownOpen] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
 
-  const { data: exerciseOptions } = useSuspenseQuery(exercisesQuery());
+  const { data: exerciseOptions } = useSuspenseQuery(exercisesQuery(userId));
 
   // Created once per mount, not fresh instances each render — see exercises.tsx.
   const [successOpacity] = useState(() => new Animated.Value(0));
@@ -100,7 +102,9 @@ function NewEntryScreenContent() {
       // Home and Entries read the same cached list, so invalidating here is
       // what makes a new benchmark show up on those tabs. Previously they only
       // picked it up on their next focus refetch.
-      void queryClient.invalidateQueries({ queryKey: queryKeys.entries });
+      void queryClient.invalidateQueries({
+        queryKey: queryKeys.entries(userId),
+      });
       setShowSuccess(true);
       setTimeout(() => {
         setSelectedExercise("");
@@ -126,6 +130,7 @@ function NewEntryScreenContent() {
       createdDate: dateToTimestamp(new Date()),
       tags: selectedTags,
       notes,
+      userId,
     });
   };
 
