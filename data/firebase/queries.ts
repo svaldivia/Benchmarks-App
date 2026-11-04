@@ -1,8 +1,7 @@
 import { queryOptions } from "@tanstack/react-query";
 
-import { getEntries, getEntryById } from "./entries";
-import { getExerciseById, getExercises } from "./exercises";
-import { Entry, EntryId, Exercise } from "./types";
+import { getEntries } from "./entries";
+import { getExercises } from "./exercises";
 
 /**
  * Firestore reads resolve through a long-lived stream. When that stream stalls
@@ -37,13 +36,10 @@ function withTimeout<T>(label: string, promise: Promise<T>): Promise<T> {
  * 1s minimum (`ensureSuspenseTimers`), so a smaller value here would silently
  * not be the value the observer uses.
  */
-export const QUERY_STALE_TIME = 30_000;
+export const QUERY_STALE_TIME = 5 * 60_000;
 export const queryKeys = {
   entries: ["entries"] as const,
   exercises: ["exercises"] as const,
-  // Nested under `entries` so invalidating the list also refreshes any open
-  // detail view.
-  entryDetail: (entryId: EntryId) => ["entries", entryId, "detail"] as const,
 };
 
 export const entriesQuery = () =>
@@ -56,19 +52,4 @@ export const exercisesQuery = () =>
   queryOptions({
     queryKey: queryKeys.exercises,
     queryFn: () => withTimeout("Exercises", getExercises()),
-  });
-
-export type EntryDetail = (Entry & { exercise: Exercise }) | null;
-
-async function fetchEntryDetail(entryId: EntryId): Promise<EntryDetail> {
-  const entry = await getEntryById(entryId);
-  if (!entry) return null;
-  const exercise = await getExerciseById(entry.exerciseId);
-  return exercise ? { ...entry, exercise } : null;
-}
-
-export const entryDetailQuery = (entryId: EntryId) =>
-  queryOptions({
-    queryKey: queryKeys.entryDetail(entryId),
-    queryFn: () => withTimeout("Entry", fetchEntryDetail(entryId)),
   });
