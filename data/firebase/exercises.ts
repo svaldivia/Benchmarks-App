@@ -10,6 +10,7 @@ import {
   updateDoc,
   where,
 } from 'firebase/firestore';
+import { isPermissionDenied } from './helpers';
 import { Exercise, ExerciseId, GLOBAL_OWNER } from './types';
 
 const EXERCISES_COLLECTION = 'exercises';
@@ -57,6 +58,7 @@ export const getExerciseById = async (
       exercise.ownerId === GLOBAL_OWNER || exercise.ownerId === userId;
     return readable ? exercise : null;
   } catch (error) {
+    if (isPermissionDenied(error)) return null;
     console.error('Error getting exercise:', error);
     throw new Error(`Failed to fetch exercise with ID: ${exerciseId}`);
   }
