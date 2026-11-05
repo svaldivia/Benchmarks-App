@@ -1,0 +1,55 @@
+rules_version = '2';
+
+// Ownership model:
+//   entries   — always private. `userId` is the owning uid.
+//   exercises — `ownerId` is either a uid (private, user-created) or the
+//               sentinel "global" (the built-in catalog: world-readable to
+//               signed-in users, writable by nobody through the client).
+//
+// The client also filters by owner (see data/firebase/{entries,exercises}.ts),
+// but that is for correctness of what is displayed. These rules are what makes
+// the data unreachable — a client-side `where` is a display preference, not an
+// access control.
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    // Guards against a client writing a document it would not then be allowed
+    // to read, and against reassigning a document to another user on update.
+    function ownsIncoming(field) {
+      return isSignedIn() && request.resource.data[field] == request.auth.uid;
+    }
+
+    function ownsStored(field) {
+      return isSignedIn() && resource.data[field] == request.auth.uid;
+    }
+
+    match /entries/{entryId} {
+      allow get, list: if ownsStored('userId');
+      allow create: if ownsIncoming('userId');
+      // Both sides: the caller must own it now and still own it afterwards.
+      allow update: if ownsStored('userId') && ownsIncoming('userId');
+      allow delete: if ownsStored('userId');
+    }
+
+    match /exercises/{exerciseId} {
+      allow get, list: if isSignedIn()
+                       && (resource.data.ownerId == 'global'
+                           || resource.data.ownerId == request.auth.uid);
+      // "global" is seeded and maintained out-of-band (console / admin SDK),
+      // never by a client, so a user cannot inject into the shared catalog.
+      allow create: if ownsIncoming('ownerId');
+      allow update: if ownsStored('ownerId') && ownsIncoming('ownerId');
+      allow delete: if ownsStored('ownerId');
+    }
+
+    // Anything not matched above is denied. Keeping this explicit so adding a
+    // collection is a deliberate act rather than an inherited allow.
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

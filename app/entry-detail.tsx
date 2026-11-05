@@ -1,4 +1,5 @@
 import { QueryBoundary } from "@/components/QueryBoundary";
+import { useUserId } from "@/contexts/AuthContext";
 import { ThemedText } from "@/components/ThemedText";
 import { Badge, Card, StatTile } from "@/components/ds";
 import { timestampToDate } from "@/data/firebase/helpers";
@@ -11,7 +12,8 @@ import { ScrollView, View } from "react-native";
 const LABEL = "mb-1.5 text-xs font-medium uppercase tracking-caps text-text-3";
 
 function EntryDetail({ entryId }: { entryId: string }) {
-  const { data: entry } = useSuspenseQuery(entryDetailQuery(entryId));
+  const userId = useUserId();
+  const { data: entry } = useSuspenseQuery(entryDetailQuery(userId, entryId));
 
   if (!entry) {
     return (

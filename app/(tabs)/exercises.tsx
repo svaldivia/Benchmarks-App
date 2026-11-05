@@ -1,4 +1,5 @@
 import { QueryBoundary } from "@/components/QueryBoundary";
+import { useUserId } from "@/contexts/AuthContext";
 import { ThemedText } from "@/components/ThemedText";
 import { Badge, Button, Card, IconButton } from "@/components/ds";
 import { IconSymbol } from "@/components/ui/IconSymbol";
@@ -27,10 +28,11 @@ import {
 function ExercisesScreenContent() {
   const colors = useAppColors();
   const queryClient = useQueryClient();
+  const userId = useUserId();
   const [isAddModalVisible, setIsAddModalVisible] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
 
-  const { data: exerciseList } = useSuspenseQuery(exercisesQuery());
+  const { data: exerciseList } = useSuspenseQuery(exercisesQuery(userId));
 
   const [newExerciseName, setNewExerciseName] = useState("");
   const [newExerciseDescription, setNewExerciseDescription] = useState("");
@@ -96,7 +98,9 @@ function ExercisesScreenContent() {
       // Marks the list stale and refetches it in the background. The screen
       // already has data, so it updates in place rather than re-suspending and
       // hiding the success animation behind a spinner.
-      void queryClient.invalidateQueries({ queryKey: queryKeys.exercises });
+      void queryClient.invalidateQueries({
+        queryKey: queryKeys.exercises(userId),
+      });
       setIsAddModalVisible(false);
       setShowSuccess(true);
       setNewExerciseName("");
@@ -117,6 +121,8 @@ function ExercisesScreenContent() {
       description: newExerciseDescription.trim(),
       link: newExerciseLink.trim(),
       tags: selectedTags,
+      // User-created, so owned by this user rather than the global catalog.
+      ownerId: userId,
     });
   };
 

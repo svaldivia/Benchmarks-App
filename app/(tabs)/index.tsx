@@ -1,7 +1,7 @@
 import { QueryBoundary } from "@/components/QueryBoundary";
 import { ThemedText } from "@/components/ThemedText";
 import { Avatar, Badge, Card, StatTile } from "@/components/ds";
-import { useAuth } from "@/contexts/AuthContext";
+import { useAuth, useUserId } from "@/contexts/AuthContext";
 import { EntryWithId } from "@/data/firebase/entries";
 import { timestampToDate } from "@/data/firebase/helpers";
 import { entriesQuery, exercisesQuery } from "@/data/firebase/queries";
@@ -55,8 +55,9 @@ function RecentRow({
 
 function HomeContent() {
   const { user } = useAuth();
-  const { data: entries } = useSuspenseQuery(entriesQuery());
-  const { data: exercises } = useSuspenseQuery(exercisesQuery());
+  const userId = useUserId();
+  const { data: entries } = useSuspenseQuery(entriesQuery(userId));
+  const { data: exercises } = useSuspenseQuery(exercisesQuery(userId));
 
   const nameById = new Map(exercises.map((ex) => [ex.id, ex.name]));
   // Pin the window's end to first render so the count can't shift underneath a

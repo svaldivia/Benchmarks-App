@@ -19,10 +19,13 @@ const ENTRIES_COLLECTION = "entries";
 
 export type EntryWithId = { id: EntryId } & Entry;
 
-export const getEntries = async (): Promise<EntryWithId[]> => {
+export const getEntries = async (userId: string): Promise<EntryWithId[]> => {
   try {
+    // Composite query (equality + orderBy) — needs the userId/createdDate
+    // index declared in firestore.indexes.json.
     const q = query(
       collection(db, ENTRIES_COLLECTION),
+      where("userId", "==", userId),
       orderBy("createdDate", "desc"),
     );
     const querySnapshot = await getDocs(q);
@@ -40,10 +43,12 @@ export const getEntries = async (): Promise<EntryWithId[]> => {
 
 export const getEntriesForExercise = async (
   exerciseId: ExerciseId,
+  userId: string,
 ): Promise<Record<EntryId, Entry>> => {
   try {
     const q = query(
       collection(db, ENTRIES_COLLECTION),
+      where("userId", "==", userId),
       where("exerciseId", "==", exerciseId),
       orderBy("createdDate", "desc"),
     );
@@ -63,16 +68,21 @@ export const getEntriesForExercise = async (
   }
 };
 
-export const getEntryById = async (entryId: EntryId): Promise<Entry | null> => {
+export const getEntryById = async (
+  entryId: EntryId,
+  userId: string,
+): Promise<Entry | null> => {
   try {
     const docRef = doc(db, ENTRIES_COLLECTION, entryId);
     const docSnap = await getDoc(docRef);
 
-    if (docSnap.exists()) {
-      return docSnap.data() as Entry;
-    } else {
-      return null;
-    }
+    if (!docSnap.exists()) return null;
+
+    // A document read bypasses any `where` clause, so ownership is checked
+    // here as well. Reported as "not found" rather than "forbidden" so a
+    // guessed ID cannot confirm that someone else's entry exists.
+    const entry = docSnap.data() as Entry;
+    return entry.userId === userId ? entry : null;
   } catch (error) {
     console.error("Error getting entry:", error);
     throw new Error(`Failed to fetch entry with ID: ${entryId}`);

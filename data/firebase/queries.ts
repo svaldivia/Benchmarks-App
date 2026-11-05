@@ -38,37 +38,47 @@ function withTimeout<T>(label: string, promise: Promise<T>): Promise<T> {
  * not be the value the observer uses.
  */
 export const QUERY_STALE_TIME = 30_000;
+
+/**
+ * Every key is scoped by uid. Two users on one device must never share a cache
+ * entry, and `queryClient.clear()` on sign-out (see app/settings.tsx) is a
+ * belt-and-braces second line rather than the only defence.
+ */
 export const queryKeys = {
-  entries: ["entries"] as const,
-  exercises: ["exercises"] as const,
-  // Nested under `entries` so invalidating the list also refreshes any open
-  // detail view.
-  entryDetail: (entryId: EntryId) => ["entries", entryId, "detail"] as const,
+  entries: (userId: string) => ["entries", userId] as const,
+  exercises: (userId: string) => ["exercises", userId] as const,
+  // Nested under the user's entries key so invalidating the list also
+  // refreshes any open detail view.
+  entryDetail: (userId: string, entryId: EntryId) =>
+    ["entries", userId, entryId, "detail"] as const,
 };
 
-export const entriesQuery = () =>
+export const entriesQuery = (userId: string) =>
   queryOptions({
-    queryKey: queryKeys.entries,
-    queryFn: () => withTimeout("Entries", getEntries()),
+    queryKey: queryKeys.entries(userId),
+    queryFn: () => withTimeout("Entries", getEntries(userId)),
   });
 
-export const exercisesQuery = () =>
+export const exercisesQuery = (userId: string) =>
   queryOptions({
-    queryKey: queryKeys.exercises,
-    queryFn: () => withTimeout("Exercises", getExercises()),
+    queryKey: queryKeys.exercises(userId),
+    queryFn: () => withTimeout("Exercises", getExercises(userId)),
   });
 
 export type EntryDetail = (Entry & { exercise: Exercise }) | null;
 
-async function fetchEntryDetail(entryId: EntryId): Promise<EntryDetail> {
-  const entry = await getEntryById(entryId);
+async function fetchEntryDetail(
+  entryId: EntryId,
+  userId: string,
+): Promise<EntryDetail> {
+  const entry = await getEntryById(entryId, userId);
   if (!entry) return null;
-  const exercise = await getExerciseById(entry.exerciseId);
+  const exercise = await getExerciseById(entry.exerciseId, userId);
   return exercise ? { ...entry, exercise } : null;
 }
 
-export const entryDetailQuery = (entryId: EntryId) =>
+export const entryDetailQuery = (userId: string, entryId: EntryId) =>
   queryOptions({
-    queryKey: queryKeys.entryDetail(entryId),
-    queryFn: () => withTimeout("Entry", fetchEntryDetail(entryId)),
+    queryKey: queryKeys.entryDetail(userId, entryId),
+    queryFn: () => withTimeout("Entry", fetchEntryDetail(entryId, userId)),
   });
