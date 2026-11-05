@@ -13,6 +13,7 @@ import {
   updateDoc,
   where,
 } from "firebase/firestore";
+import { isPermissionDenied } from "./helpers";
 import { Entry, EntryId, ExerciseId } from "./types";
 
 const ENTRIES_COLLECTION = "entries";
@@ -84,6 +85,7 @@ export const getEntryById = async (
     const entry = docSnap.data() as Entry;
     return entry.userId === userId ? entry : null;
   } catch (error) {
+    if (isPermissionDenied(error)) return null;
     console.error("Error getting entry:", error);
     throw new Error(`Failed to fetch entry with ID: ${entryId}`);
   }
