@@ -1,7 +1,7 @@
 import { ExternalLink } from "@/components/ExternalLink";
 import { QueryBoundary } from "@/components/QueryBoundary";
 import { ThemedText } from "@/components/ThemedText";
-import { Badge, Card, Sparkline, StatTile } from "@/components/ds";
+import { Badge, Card, StatTile } from "@/components/ds";
 import { cx } from "@/components/ds/cn";
 import { useUserId } from "@/contexts/AuthContext";
 import { EntryWithId } from "@/data/firebase/entries";
@@ -63,16 +63,56 @@ function EntryRow({ entry }: { entry: EntryWithId }) {
 }
 
 /**
- * Best and trend only compare like with like: entries logged in the same unit
- * as the most recent one. Entries arrive newest first.
+ * The heaviest entry, compared only against entries in the same unit as the
+ * most recent one so kg and lb are never mixed. Ties go to the earliest entry,
+ * the day the PB was first hit. Entries arrive newest first.
  */
-function summarize(entries: EntryWithId[]) {
+function findPersonalBest(entries: EntryWithId[]): EntryWithId | null {
   const latest = entries[0];
   if (!latest) return null;
-  const sameUnit = entries.filter((e) => e.unit === latest.unit);
-  const best = Math.max(...sameUnit.map((e) => e.value));
-  const trend = sameUnit.map((e) => e.value).reverse();
-  return { latest, best, unit: latest.unit, trend };
+  let best: EntryWithId | null = null;
+  for (const entry of entries) {
+    if (entry.unit !== latest.unit) continue;
+    if (!best || entry.value >= best.value) best = entry;
+  }
+  return best;
+}
+
+function PersonalBestCard({ entry }: { entry: EntryWithId }) {
+  const date = timestampToDate(entry.createdDate).toLocaleDateString("en-US", {
+    year: "numeric",
+    month: "long",
+    day: "numeric",
+  });
+  return (
+    <Card
+      variant="brand"
+      onPress={() =>
+        router.push({
+          pathname: "/entry-detail",
+          params: { entryId: entry.id },
+        })
+      }
+    >
+      <View className="flex-row items-end justify-between gap-3">
+        <StatTile
+          onBrand
+          label="Personal Best"
+          value={entry.value}
+          unit={entry.unit}
+        />
+        <ThemedText className="font-sans-bold text-body-lg text-white">
+          {entry.repMax} RM
+        </ThemedText>
+      </View>
+      <ThemedText className="mt-2 text-sm text-white/70">{date}</ThemedText>
+      {entry.notes ? (
+        <ThemedText className="mt-1 text-sm text-white/90" numberOfLines={2}>
+          {entry.notes}
+        </ThemedText>
+      ) : null}
+    </Card>
+  );
 }
 
 function ExerciseDetail({ exerciseId }: { exerciseId: string }) {
@@ -86,7 +126,7 @@ function ExerciseDetail({ exerciseId }: { exerciseId: string }) {
 
   if (!exercise) return <NotFound />;
 
-  const summary = summarize(entries);
+  const personalBest = findPersonalBest(entries);
 
   return (
     <View className="flex-1 bg-bg">
@@ -120,34 +160,7 @@ function ExerciseDetail({ exerciseId }: { exerciseId: string }) {
           ) : null}
         </Card>
 
-        {summary ? (
-          <>
-            <View className="flex-row gap-3">
-              <Card className="flex-1">
-                <StatTile
-                  size="sm"
-                  label="Best"
-                  value={summary.best}
-                  unit={summary.unit}
-                />
-              </Card>
-              <Card className="flex-1">
-                <StatTile
-                  size="sm"
-                  label="Latest"
-                  value={summary.latest.value}
-                  unit={summary.unit}
-                />
-              </Card>
-            </View>
-            {summary.trend.length >= 2 ? (
-              <Card>
-                <ThemedText className={LABEL}>Progress</ThemedText>
-                <Sparkline data={summary.trend} width={300} height={56} />
-              </Card>
-            ) : null}
-          </>
-        ) : null}
+        {personalBest ? <PersonalBestCard entry={personalBest} /> : null}
 
         <ThemedText className={cx(LABEL, "mt-2")}>
           Entries ({entries.length})
