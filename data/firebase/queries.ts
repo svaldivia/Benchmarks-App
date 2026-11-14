@@ -1,8 +1,8 @@
 import { queryOptions } from "@tanstack/react-query";
 
-import { getEntries, getEntryById } from "./entries";
+import { getEntries, getEntriesForExercise, getEntryById } from "./entries";
 import { getExerciseById, getExercises } from "./exercises";
-import { Entry, EntryId, Exercise } from "./types";
+import { Entry, EntryId, Exercise, ExerciseId } from "./types";
 
 /**
  * Firestore reads resolve through a long-lived stream. When that stream stalls
@@ -51,6 +51,12 @@ export const queryKeys = {
   // refreshes any open detail view.
   entryDetail: (userId: string, entryId: EntryId) =>
     ["entries", userId, entryId, "detail"] as const,
+  // Also under the user's entries key, so logging a new entry refreshes it.
+  entriesForExercise: (userId: string, exerciseId: ExerciseId) =>
+    ["entries", userId, "exercise", exerciseId] as const,
+  // Under the exercises key, so adding an exercise refreshes an open detail.
+  exerciseDetail: (userId: string, exerciseId: ExerciseId) =>
+    ["exercises", userId, exerciseId, "detail"] as const,
 };
 
 export const entriesQuery = (userId: string) =>
@@ -81,4 +87,21 @@ export const entryDetailQuery = (userId: string, entryId: EntryId) =>
   queryOptions({
     queryKey: queryKeys.entryDetail(userId, entryId),
     queryFn: () => withTimeout("Entry", fetchEntryDetail(entryId, userId)),
+  });
+
+export const exerciseDetailQuery = (userId: string, exerciseId: ExerciseId) =>
+  queryOptions({
+    queryKey: queryKeys.exerciseDetail(userId, exerciseId),
+    queryFn: () =>
+      withTimeout("Exercise", getExerciseById(exerciseId, userId)),
+  });
+
+export const entriesForExerciseQuery = (
+  userId: string,
+  exerciseId: ExerciseId,
+) =>
+  queryOptions({
+    queryKey: queryKeys.entriesForExercise(userId, exerciseId),
+    queryFn: () =>
+      withTimeout("Entries", getEntriesForExercise(exerciseId, userId)),
   });

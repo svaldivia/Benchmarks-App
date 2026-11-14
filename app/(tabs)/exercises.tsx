@@ -13,6 +13,7 @@ import {
   useQueryClient,
   useSuspenseQuery,
 } from "@tanstack/react-query";
+import { router } from "expo-router";
 import React, { useEffect, useState } from "react";
 import {
   Animated,
@@ -127,7 +128,15 @@ function ExercisesScreenContent() {
   };
 
   const renderExerciseItem = ({ item }: { item: ExerciseWithId }) => (
-    <Card className="mb-3">
+    <Card
+      className="mb-3"
+      onPress={() =>
+        router.push({
+          pathname: "/exercise-detail",
+          params: { exerciseId: item.id },
+        })
+      }
+    >
       <ThemedText type="defaultSemiBold" className="mb-2 text-body-lg">
         {item.name}
       </ThemedText>

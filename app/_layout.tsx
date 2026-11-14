@@ -93,6 +93,10 @@ function RootNavigator() {
         {/* Renders its own header row, so suppress the navigator's. */}
         <Stack.Screen name="settings" options={{ headerShown: false }} />
         <Stack.Screen name="entry-detail" options={{ title: "Entry" }} />
+        <Stack.Screen
+          name="exercise-detail"
+          options={{ title: "Exercise" }}
+        />
       </Stack.Protected>
       <Stack.Screen
         name="login"

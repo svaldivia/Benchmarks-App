@@ -4,12 +4,10 @@ import {
   collection,
   deleteDoc,
   doc,
-  DocumentData,
   getDoc,
   getDocs,
   orderBy,
   query,
-  QuerySnapshot,
   updateDoc,
   where,
 } from "firebase/firestore";
@@ -45,24 +43,21 @@ export const getEntries = async (userId: string): Promise<EntryWithId[]> => {
 export const getEntriesForExercise = async (
   exerciseId: ExerciseId,
   userId: string,
-): Promise<Record<EntryId, Entry>> => {
+): Promise<EntryWithId[]> => {
   try {
+    // Needs the userId/exerciseId/createdDate composite index declared in
+    // firestore.indexes.json.
     const q = query(
       collection(db, ENTRIES_COLLECTION),
       where("userId", "==", userId),
       where("exerciseId", "==", exerciseId),
       orderBy("createdDate", "desc"),
     );
-    const querySnapshot: QuerySnapshot<DocumentData> = await getDocs(q);
-    const entries: Record<EntryId, Entry> = querySnapshot.docs.reduce(
-      (result, doc) => {
-        result[doc.id] = doc.data() as Entry;
-        return result;
-      },
-      {} as Record<EntryId, Entry>,
-    );
-
-    return entries;
+    const querySnapshot = await getDocs(q);
+    return querySnapshot.docs.map((doc) => ({
+      id: doc.id,
+      ...(doc.data() as Entry),
+    }));
   } catch (error) {
     console.error("Error getting entries for exercise:", error);
     throw new Error(`Failed to fetch entries for exercise: ${exerciseId}`);
