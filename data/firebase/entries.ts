@@ -7,6 +7,7 @@ import {
   DocumentData,
   getDoc,
   getDocs,
+  limit,
   orderBy,
   query,
   QuerySnapshot,
@@ -14,11 +15,19 @@ import {
   where,
 } from "firebase/firestore";
 import { isPermissionDenied } from "./helpers";
-import { Entry, EntryId, ExerciseId } from "./types";
+import { entrySearchKeywords, toSearchTerm } from "./searchKeywords";
+import { Entry, EntryId, Exercise, ExerciseId } from "./types";
 
 const ENTRIES_COLLECTION = "entries";
+const EXERCISES_COLLECTION = "exercises";
+
+/** Upper bound on search hits, so a one-letter term cannot pull every entry. */
+const SEARCH_LIMIT = 50;
 
 export type EntryWithId = { id: EntryId } & Entry;
+
+/** What a caller supplies; `searchKeywords` is derived on write. */
+export type NewEntry = Omit<Entry, "searchKeywords">;
 
 export const getEntries = async (userId: string): Promise<EntryWithId[]> => {
   try {
@@ -39,6 +48,37 @@ export const getEntries = async (userId: string): Promise<EntryWithId[]> => {
   } catch (error) {
     console.error("Error getting entries:", error);
     throw new Error("Failed to fetch entries");
+  }
+};
+
+/**
+ * Server-side search: matches `searchKeywords` (exercise name, tags and notes
+ * prefixes) in Firestore rather than filtering a downloaded list. Needs the
+ * userId/searchKeywords/createdDate index in firestore.indexes.json.
+ */
+export const searchEntries = async (
+  userId: string,
+  rawTerm: string,
+): Promise<EntryWithId[]> => {
+  const term = toSearchTerm(rawTerm);
+  if (!term) return getEntries(userId);
+
+  try {
+    const q = query(
+      collection(db, ENTRIES_COLLECTION),
+      where("userId", "==", userId),
+      where("searchKeywords", "array-contains", term),
+      orderBy("createdDate", "desc"),
+      limit(SEARCH_LIMIT),
+    );
+    const querySnapshot = await getDocs(q);
+    return querySnapshot.docs.map((doc) => ({
+      id: doc.id,
+      ...(doc.data() as Entry),
+    }));
+  } catch (error) {
+    console.error("Error searching entries:", error);
+    throw new Error("Failed to search entries");
   }
 };
 
@@ -91,9 +131,19 @@ export const getEntryById = async (
   }
 };
 
-export const addEntry = async (entry: Entry): Promise<EntryId> => {
+export const addEntry = async ({
+  entry,
+  exerciseName,
+}: {
+  entry: NewEntry;
+  /** Denormalized into `searchKeywords` so the entry is findable by exercise. */
+  exerciseName: string;
+}): Promise<EntryId> => {
   try {
-    const docRef = await addDoc(collection(db, ENTRIES_COLLECTION), entry);
+    const docRef = await addDoc(collection(db, ENTRIES_COLLECTION), {
+      ...entry,
+      searchKeywords: entrySearchKeywords({ ...entry, exerciseName }),
+    });
     return docRef.id;
   } catch (error) {
     console.error("Error adding entry:", error);
@@ -103,11 +153,33 @@ export const addEntry = async (entry: Entry): Promise<EntryId> => {
 
 export const updateEntry = async (
   entryId: EntryId,
-  entry: Partial<Entry>,
+  entry: Partial<NewEntry>,
 ): Promise<void> => {
   try {
     const docRef = doc(db, ENTRIES_COLLECTION, entryId);
-    await updateDoc(docRef, entry);
+    const touchesSearch =
+      "exerciseId" in entry || "tags" in entry || "notes" in entry;
+
+    if (!touchesSearch) {
+      await updateDoc(docRef, entry);
+      return;
+    }
+
+    // Keywords cover several fields, so rebuild them from the merged result.
+    const current = (await getDoc(docRef)).data() as Entry;
+    const merged = { ...current, ...entry };
+    const exerciseSnap = await getDoc(
+      doc(db, EXERCISES_COLLECTION, merged.exerciseId),
+    );
+    const exerciseName = (exerciseSnap.data() as Exercise | undefined)?.name;
+    await updateDoc(docRef, {
+      ...entry,
+      searchKeywords: entrySearchKeywords({
+        exerciseName: exerciseName ?? "",
+        tags: merged.tags ?? [],
+        notes: merged.notes ?? "",
+      }),
+    });
   } catch (error) {
     console.error("Error updating entry:", error);
     throw new Error(`Failed to update entry with ID: ${entryId}`);

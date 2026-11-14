@@ -12,6 +12,8 @@ export type InputProps = TextInputProps & {
   required?: boolean;
   icon?: ReactNode;
   suffix?: string;
+  /** Element after the field, e.g. a clear button. Rendered after `suffix`. */
+  trailing?: ReactNode;
   error?: string | null;
   hint?: string | null;
   numeric?: boolean;
@@ -23,6 +25,7 @@ export function Input({
   required = false,
   icon,
   suffix,
+  trailing,
   error,
   hint,
   numeric = false,
@@ -78,6 +81,7 @@ export function Input({
         {suffix && (
           <Text className="font-mono-medium text-sm text-text-3">{suffix}</Text>
         )}
+        {trailing}
       </View>
       {error ? (
         <Text className="font-sans text-sm text-danger">{error}</Text>

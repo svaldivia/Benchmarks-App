@@ -1,13 +1,15 @@
 import { QueryBoundary } from "@/components/QueryBoundary";
+import { SearchBar } from "@/components/SearchBar";
 import { useUserId } from "@/contexts/AuthContext";
 import { ThemedText } from "@/components/ThemedText";
 import { Badge, Button, Card, IconButton } from "@/components/ds";
 import { IconSymbol } from "@/components/ui/IconSymbol";
 import { Palette } from "@/constants/Colors";
 import { addExercise, ExerciseWithId } from "@/data/firebase/exercises";
-import { exercisesQuery, queryKeys } from "@/data/firebase/queries";
+import { exerciseSearchQuery, queryKeys } from "@/data/firebase/queries";
 import { commonExerciseTags, ExerciseTag } from "@/data/firebase/types";
 import { useAppColors } from "@/hooks/useAppColors";
+import { useServerSearch } from "@/hooks/useServerSearch";
 import {
   useMutation,
   useQueryClient,
@@ -25,14 +27,66 @@ import {
   View,
 } from "react-native";
 
-function ExercisesScreenContent() {
+function ExerciseListItem({ item }: { item: ExerciseWithId }) {
+  return (
+    <Card className="mb-3">
+      <ThemedText type="defaultSemiBold" className="mb-2 text-body-lg">
+        {item.name}
+      </ThemedText>
+
+      {item.tags.length > 0 ? (
+        <View className="mb-1 flex-row flex-wrap gap-1.5">
+          {item.tags.map((tag, index) => (
+            <Badge key={index} tone="brand">
+              {tag}
+            </Badge>
+          ))}
+        </View>
+      ) : null}
+
+      {item.description ? (
+        <ThemedText className="mt-2 text-sm/snug text-text-2" numberOfLines={2}>
+          {item.description}
+        </ThemedText>
+      ) : null}
+    </Card>
+  );
+}
+
+function ExerciseList({ term }: { term: string }) {
+  const userId = useUserId();
+  // Filtered by Firestore, not here: see searchExercises.
+  const { data: exerciseList } = useSuspenseQuery(
+    exerciseSearchQuery(userId, term)
+  );
+
+  return (
+    <FlatList
+      data={exerciseList}
+      keyExtractor={(item) => item.id}
+      renderItem={({ item }) => <ExerciseListItem item={item} />}
+      contentContainerClassName="px-5 pb-5"
+      showsVerticalScrollIndicator={false}
+      keyboardShouldPersistTaps="handled"
+      keyboardDismissMode="on-drag"
+      ListEmptyComponent={
+        <ThemedText className="mt-10 text-center text-text-3">
+          {term.trim()
+            ? `No exercises match “${term.trim()}”`
+            : "No exercises yet"}
+        </ThemedText>
+      }
+    />
+  );
+}
+
+export default function ExercisesScreen() {
   const colors = useAppColors();
   const queryClient = useQueryClient();
   const userId = useUserId();
+  const search = useServerSearch();
   const [isAddModalVisible, setIsAddModalVisible] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
-
-  const { data: exerciseList } = useSuspenseQuery(exercisesQuery(userId));
 
   const [newExerciseName, setNewExerciseName] = useState("");
   const [newExerciseDescription, setNewExerciseDescription] = useState("");
@@ -126,50 +180,31 @@ function ExercisesScreenContent() {
     });
   };
 
-  const renderExerciseItem = ({ item }: { item: ExerciseWithId }) => (
-    <Card className="mb-3">
-      <ThemedText type="defaultSemiBold" className="mb-2 text-body-lg">
-        {item.name}
-      </ThemedText>
-
-      {item.tags.length > 0 ? (
-        <View className="mb-1 flex-row flex-wrap gap-1.5">
-          {item.tags.map((tag, index) => (
-            <Badge key={index} tone="brand">
-              {tag}
-            </Badge>
-          ))}
-        </View>
-      ) : null}
-
-      {item.description ? (
-        <ThemedText className="mt-2 text-sm/snug text-text-2" numberOfLines={2}>
-          {item.description}
-        </ThemedText>
-      ) : null}
-    </Card>
-  );
-
   return (
     <View className="flex-1 bg-bg">
-      <View className="flex-row items-center justify-between px-5 pt-15 pb-4">
-        <ThemedText type="title">Exercises</ThemedText>
-        <IconButton
-          variant="solid"
-          round
-          onPress={() => setIsAddModalVisible(true)}
-        >
-          <IconSymbol size={22} name="plus" color={Palette.white} />
-        </IconButton>
+      <View className="gap-4 px-5 pt-15 pb-4">
+        <View className="flex-row items-center justify-between">
+          <ThemedText type="title">Exercises</ThemedText>
+          <IconButton
+            variant="solid"
+            round
+            onPress={() => setIsAddModalVisible(true)}
+          >
+            <IconSymbol size={22} name="plus" color={Palette.white} />
+          </IconButton>
+        </View>
+        <SearchBar
+          value={search.text}
+          onChangeText={search.setText}
+          placeholder="Search by name or tag"
+          isSearching={search.isSearching}
+        />
       </View>
 
-      <FlatList
-        data={exerciseList}
-        keyExtractor={(item) => item.id}
-        renderItem={renderExerciseItem}
-        contentContainerClassName="px-5 pb-5"
-        showsVerticalScrollIndicator={false}
-      />
+      {/* Only the list suspends, so the header and search box stay put. */}
+      <QueryBoundary resetKeys={[search.term]}>
+        <ExerciseList term={search.term} />
+      </QueryBoundary>
 
       <Modal
         visible={isAddModalVisible}
@@ -320,13 +355,5 @@ function ExercisesScreenContent() {
         </Animated.View>
       )}
     </View>
-  );
-}
-
-export default function ExercisesScreen() {
-  return (
-    <QueryBoundary>
-      <ExercisesScreenContent />
-    </QueryBoundary>
   );
 }

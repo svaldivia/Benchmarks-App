@@ -33,6 +33,12 @@ export type Exercise = {
   description: string;
   /** `GLOBAL_OWNER` for built-ins, otherwise the creating user's uid. */
   ownerId: string;
+  /**
+   * Lowercased word prefixes of `name` and `tags`, queried with
+   * `array-contains` by searchExercises. Written by addExercise/updateExercise;
+   * older documents get it from scripts/backfill-search-keywords.ts.
+   */
+  searchKeywords?: string[];
 };
 
 export type ExerciseId = string;
@@ -47,6 +53,12 @@ export type Entry = {
   notes: string;
   /** Owning user's uid. Entries are never shared. */
   userId: string;
+  /**
+   * Lowercased word prefixes of the exercise name, `tags` and `notes`, queried
+   * with `array-contains` by searchEntries. The exercise name is denormalized
+   * here because Firestore cannot join; see entrySearchKeywords.
+   */
+  searchKeywords?: string[];
 };
 
 export type EntryId = string;

@@ -57,15 +57,19 @@ function ScreenError({ error, resetErrorBoundary }: FallbackProps) {
 export function QueryBoundary({
   children,
   fallback,
+  resetKeys,
 }: {
   children: ReactNode;
   fallback?: ReactNode;
+  /** Clears a shown error when any of these change, e.g. a new search term. */
+  resetKeys?: unknown[];
 }) {
   return (
     <QueryErrorResetBoundary>
       {({ reset }) => (
         <ErrorBoundary
           onReset={reset}
+          resetKeys={resetKeys}
           FallbackComponent={ScreenError}
           onError={(error) => console.error("Screen failed to load", error)}
         >

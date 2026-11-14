@@ -1,11 +1,13 @@
 import { QueryBoundary } from "@/components/QueryBoundary";
+import { SearchBar } from "@/components/SearchBar";
 import { useUserId } from "@/contexts/AuthContext";
 import { ThemedText } from "@/components/ThemedText";
 import { Badge, Card } from "@/components/ds";
 import { EntryWithId } from "@/data/firebase/entries";
 import { ExerciseWithId } from "@/data/firebase/exercises";
 import { timestampToDate } from "@/data/firebase/helpers";
-import { entriesQuery, exercisesQuery } from "@/data/firebase/queries";
+import { entrySearchQuery, exercisesQuery } from "@/data/firebase/queries";
+import { useServerSearch } from "@/hooks/useServerSearch";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { router } from "expo-router";
 import React from "react";
@@ -49,9 +51,10 @@ function EntryListItem({
   );
 }
 
-function EntriesList() {
+function EntriesList({ term }: { term: string }) {
   const userId = useUserId();
-  const { data: entries } = useSuspenseQuery(entriesQuery(userId));
+  // Filtered by Firestore, not here: see searchEntries.
+  const { data: entries } = useSuspenseQuery(entrySearchQuery(userId, term));
   const { data: exercises } = useSuspenseQuery(exercisesQuery(userId));
 
   return (
@@ -63,18 +66,33 @@ function EntriesList() {
       )}
       contentContainerClassName="px-5 pb-5"
       showsVerticalScrollIndicator={false}
+      keyboardShouldPersistTaps="handled"
+      keyboardDismissMode="on-drag"
+      ListEmptyComponent={
+        <ThemedText className="mt-10 text-center text-text-3">
+          {term.trim() ? `No entries match “${term.trim()}”` : "No entries yet"}
+        </ThemedText>
+      }
     />
   );
 }
 
 export default function EntriesScreen() {
+  const search = useServerSearch();
+
   return (
     <View className="flex-1 bg-bg pt-15">
-      <View className="px-5 pb-4">
+      <View className="gap-4 px-5 pb-4">
         <ThemedText type="title">Entries</ThemedText>
+        <SearchBar
+          value={search.text}
+          onChangeText={search.setText}
+          placeholder="Search by exercise, tag or note"
+          isSearching={search.isSearching}
+        />
       </View>
-      <QueryBoundary>
-        <EntriesList />
+      <QueryBoundary resetKeys={[search.term]}>
+        <EntriesList term={search.term} />
       </QueryBoundary>
     </View>
   );

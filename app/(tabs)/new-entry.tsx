@@ -123,14 +123,20 @@ function NewEntryScreenContent() {
     if (!selectedExercise || !weight || !repMax) return;
 
     createEntry({
-      exerciseId: selectedExercise,
-      value: parseFloat(weight),
-      unit: "lbs",
-      repMax: parseInt(repMax, 10),
-      createdDate: dateToTimestamp(new Date()),
-      tags: selectedTags,
-      notes,
-      userId,
+      entry: {
+        exerciseId: selectedExercise,
+        value: parseFloat(weight),
+        unit: "lbs",
+        repMax: parseInt(repMax, 10),
+        createdDate: dateToTimestamp(new Date()),
+        tags: selectedTags,
+        notes,
+        userId,
+      },
+      // Stored in the entry's search keywords so Entries search finds it by
+      // exercise name.
+      exerciseName:
+        exerciseOptions.find((ex) => ex.id === selectedExercise)?.name ?? "",
     });
   };
 

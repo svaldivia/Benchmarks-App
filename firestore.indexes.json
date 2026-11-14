@@ -18,6 +18,25 @@
         { "fieldPath": "exerciseId", "order": "ASCENDING" },
         { "fieldPath": "createdDate", "order": "DESCENDING" }
       ]
+    },
+    {
+      "comment": "searchEntries: where(userId) + array-contains(searchKeywords) + orderBy(createdDate desc)",
+      "collectionGroup": "entries",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "userId", "order": "ASCENDING" },
+        { "fieldPath": "searchKeywords", "arrayConfig": "CONTAINS" },
+        { "fieldPath": "createdDate", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "comment": "searchExercises: where(ownerId in [...]) + array-contains(searchKeywords)",
+      "collectionGroup": "exercises",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "ownerId", "order": "ASCENDING" },
+        { "fieldPath": "searchKeywords", "arrayConfig": "CONTAINS" }
+      ]
     }
   ],
   "fieldOverrides": []

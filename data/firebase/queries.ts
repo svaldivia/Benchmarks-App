@@ -1,7 +1,18 @@
-import { queryOptions } from "@tanstack/react-query";
+import { queryOptions, type QueryKey } from "@tanstack/react-query";
 
-import { getEntries, getEntryById } from "./entries";
-import { getExerciseById, getExercises } from "./exercises";
+import {
+  EntryWithId,
+  getEntries,
+  getEntryById,
+  searchEntries,
+} from "./entries";
+import {
+  ExerciseWithId,
+  getExerciseById,
+  getExercises,
+  searchExercises,
+} from "./exercises";
+import { toSearchTerm } from "./searchKeywords";
 import { Entry, EntryId, Exercise } from "./types";
 
 /**
@@ -51,6 +62,12 @@ export const queryKeys = {
   // refreshes any open detail view.
   entryDetail: (userId: string, entryId: EntryId) =>
     ["entries", userId, entryId, "detail"] as const,
+  // Also nested under the list keys, so a new entry or exercise invalidates
+  // every cached search result along with the full list.
+  entrySearch: (userId: string, term: string) =>
+    ["entries", userId, "search", term] as const,
+  exerciseSearch: (userId: string, term: string) =>
+    ["exercises", userId, "search", term] as const,
 };
 
 export const entriesQuery = (userId: string) =>
@@ -64,6 +81,45 @@ export const exercisesQuery = (userId: string) =>
     queryKey: queryKeys.exercises(userId),
     queryFn: () => withTimeout("Exercises", getExercises(userId)),
   });
+
+/**
+ * Entries matching `rawTerm`, queried in Firestore. A blank term is the full
+ * list and shares its cache entry with entriesQuery, so clearing the search
+ * box shows the list instantly. Terms are normalized before keying, so "Squat"
+ * and "squat " are one request.
+ */
+export const entrySearchQuery = (userId: string, rawTerm: string) => {
+  const term = toSearchTerm(rawTerm);
+  // Same key and fetcher as entriesQuery, typed with a general key so both
+  // branches share one return type.
+  return queryOptions<EntryWithId[], Error, EntryWithId[], QueryKey>(
+    term
+      ? {
+          queryKey: queryKeys.entrySearch(userId, term),
+          queryFn: () => withTimeout("Search", searchEntries(userId, term)),
+        }
+      : {
+          queryKey: queryKeys.entries(userId),
+          queryFn: () => withTimeout("Entries", getEntries(userId)),
+        },
+  );
+};
+
+/** Exercises matching `rawTerm`, queried in Firestore. See entrySearchQuery. */
+export const exerciseSearchQuery = (userId: string, rawTerm: string) => {
+  const term = toSearchTerm(rawTerm);
+  return queryOptions<ExerciseWithId[], Error, ExerciseWithId[], QueryKey>(
+    term
+      ? {
+          queryKey: queryKeys.exerciseSearch(userId, term),
+          queryFn: () => withTimeout("Search", searchExercises(userId, term)),
+        }
+      : {
+          queryKey: queryKeys.exercises(userId),
+          queryFn: () => withTimeout("Exercises", getExercises(userId)),
+        },
+  );
+};
 
 export type EntryDetail = (Entry & { exercise: Exercise }) | null;
 
